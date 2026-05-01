@@ -4,88 +4,147 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Salon Art - لوحة التحكم</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Tajawal',sans-serif;direction:rtl;background:#0d0d0d;color:#f0ece4;min-height:100vh;}
-.app{padding-bottom:70px;}
-.header{background:#111;border-bottom:1px solid #1e1e1e;padding:22px 18px 18px;
-  display:flex;align-items:center;justify-content:space-between;max-width:520px;margin:0 auto;}
-.header-left h1{font-size:19px;font-weight:900;}
-.header-left p{font-size:12px;color:#555;margin-top:2px;}
-.badge{background:#c9a84c;color:#0d0d0d;font-weight:900;font-size:13px;padding:5px 14px;border-radius:50px;}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:16px 18px 0;max-width:520px;margin:0 auto;}
-.stat{background:#1a1a1a;border:1px solid #222;border-radius:11px;padding:13px 10px;text-align:center;}
-.stat-n{font-size:22px;font-weight:900;color:#c9a84c;}
-.stat-l{font-size:10px;color:#555;margin-top:3px;}
-.section{padding:18px 18px 0;max-width:520px;margin:0 auto;}
-.sec-title{font-size:11px;font-weight:700;color:#444;letter-spacing:2px;margin-bottom:12px;
-  display:flex;align-items:center;justify-content:space-between;}
-.refresh-btn{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;
-  color:#777;font-family:'Tajawal',sans-serif;font-size:11px;padding:4px 10px;cursor:pointer;}
-.refresh-btn:hover{border-color:#c9a84c;color:#c9a84c;}
+body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0ece4;min-height:100vh;}
+.app{padding-bottom:80px;}
+
+/* HEADER */
+.header{
+  background:linear-gradient(160deg,#0d0d0d,#111008);
+  border-bottom:1px solid #1a1a1a;
+  padding:18px 18px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:520px;margin:0 auto;
+}
+.logo-row{display:flex;align-items:center;gap:10px;}
+.logo-sm{width:38px;height:38px;}
+.brand-sm{font-family:'Playfair Display',serif;font-size:16px;font-weight:900;
+  color:#f0ece4;letter-spacing:2px;}
+.brand-sm span{color:#c9a84c;}
+.header-sub{font-size:11px;color:#333;margin-top:1px;}
+.total-badge{background:linear-gradient(135deg,#c9a84c,#e8c96a);
+  color:#0d0d0d;font-weight:900;font-size:13px;padding:6px 16px;border-radius:50px;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  padding:14px 18px 0;max-width:520px;margin:0 auto;}
+.stat{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px 8px;text-align:center;}
+.stat-n{font-size:24px;font-weight:900;color:#c9a84c;}
+.stat-l{font-size:10px;color:#333;margin-top:3px;}
+
+/* SECTION */
+.section{padding:16px 18px 0;max-width:520px;margin:0 auto;}
+.sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-size:10px;font-weight:700;color:#333;letter-spacing:3px;}
+.refresh-btn{background:#111;border:1px solid #1a1a1a;border-radius:6px;
+  color:#444;font-family:'Tajawal',sans-serif;font-size:11px;padding:5px 12px;cursor:pointer;}
+.refresh-btn:hover{border-color:#c9a84c55;color:#c9a84c;}
+
+/* DAY TABS */
 .day-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;}
 .day-tabs::-webkit-scrollbar{display:none;}
-.day-tab{background:#1a1a1a;border:1px solid #222;border-radius:8px;
-  padding:7px 13px;color:#555;font-family:'Tajawal',sans-serif;
-  font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
-.day-tab:hover{color:#aaa;}
+.day-tab{background:#111;border:1px solid #1a1a1a;border-radius:8px;
+  padding:7px 13px;color:#333;font-family:'Tajawal',sans-serif;
+  font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s;}
+.day-tab:hover{color:#888;}
 .day-tab.active{background:#c9a84c;border-color:#c9a84c;color:#0d0d0d;font-weight:900;}
-.card{background:#1a1a1a;border:1px solid #222;border-radius:13px;padding:15px 16px;margin-bottom:9px;}
-.card.late{border-color:#e05555;background:#1f1010;}
-.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px;}
-.day-badge{font-size:10px;color:#777;background:#222;border-radius:5px;padding:2px 8px;margin-bottom:5px;display:inline-block;}
-.c-name{font-size:16px;font-weight:900;color:#f0ece4;}
-.reminded-tag{font-size:10px;color:#4a8a3a;background:#1a2a1a;border:1px solid #2a4a2a;
-  border-radius:50px;padding:2px 8px;margin-right:6px;}
-.late-tag{font-size:10px;color:#e05555;background:#2a1515;border:1px solid #3d1f1f;
-  border-radius:50px;padding:2px 8px;margin-right:6px;}
-.time-badge{background:#222;border-radius:8px;padding:5px 11px;font-size:13px;font-weight:700;color:#c9a84c;white-space:nowrap;}
-.timer{font-size:11px;color:#e09050;margin-top:4px;text-align:left;}
-.card-info{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:11px;}
-.info-item{font-size:12px;color:#666;}
+
+/* CARD */
+.card{background:#111;border:1px solid #1a1a1a;border-radius:14px;
+  padding:16px;margin-bottom:10px;transition:border-color .2s;}
+.card:hover{border-color:#222;}
+.card.late{border-color:#c0404033;background:#110808;}
+
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.day-badge{font-size:10px;color:#444;background:#1a1a1a;border-radius:5px;
+  padding:2px 8px;margin-bottom:5px;display:inline-block;}
+.c-name{font-size:17px;font-weight:900;color:#f0ece4;}
+.tag{font-size:10px;border-radius:50px;padding:2px 9px;margin-right:4px;display:inline-block;margin-top:3px;}
+.tag-ok{color:#4a9a4a;background:#0a1a0a;border:1px solid #1a3a1a;}
+.tag-late{color:#e05050;background:#1a0808;border:1px solid #3a1010;}
+.time-badge{background:#1a1a1a;border-radius:9px;padding:6px 14px;
+  font-size:14px;font-weight:700;color:#c9a84c;white-space:nowrap;flex-shrink:0;}
+
+.card-info{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
+.info-item{font-size:12px;color:#333;}
+
+/* ACTIONS */
 .actions{display:flex;gap:7px;}
-.remind-btn{flex:1;background:#c9a84c;color:#0d0d0d;border:none;border-radius:8px;
-  padding:10px 0;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
-.remind-btn:hover:not(:disabled){background:#dbb95a;}
-.remind-btn:disabled{background:#1e2a1a;color:#4a8a3a;cursor:default;border:1px solid #2a3a20;}
-.cancel-btn{background:#2a1515;border:1px solid #3d1f1f;border-radius:8px;
-  padding:10px 14px;color:#e05555;font-family:'Tajawal',sans-serif;
-  font-size:13px;font-weight:700;cursor:pointer;}
-.cancel-btn:hover{background:#3d1f1f;}
-.auto-cancel-btn{width:100%;background:#e05555;border:none;border-radius:8px;
-  padding:10px;color:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;
-  cursor:pointer;margin-top:7px;}
-.auto-cancel-btn:hover{background:#c03030;}
-.msg-box{background:#1a2a1a;border:1px solid #2a4a2a;border-radius:9px;
-  padding:11px 14px;margin-top:8px;font-size:13px;color:#7ac97a;line-height:1.7;display:none;}
-.empty{text-align:center;color:#333;font-size:14px;padding:38px 0;border:1px dashed #222;border-radius:13px;}
-.empty-icon{font-size:34px;margin-bottom:9px;}
+
+.wa-btn{
+  flex:1;background:linear-gradient(135deg,#128c3a,#1aad48);
+  color:#fff;border:none;border-radius:9px;
+  padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.wa-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 16px #128c3a44;}
+.wa-btn:disabled{background:#0a1a0f;color:#1a4a1a;cursor:default;transform:none;box-shadow:none;}
+
+.cancel-btn{background:#1a0808;border:1px solid #3a1010;border-radius:9px;
+  padding:11px 14px;color:#e05050;font-family:'Tajawal',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;}
+.cancel-btn:hover{background:#2a0808;}
+
+/* Late action */
+.late-action{width:100%;margin-top:8px;background:#c04040;border:none;border-radius:9px;
+  padding:11px;color:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.late-action:hover{background:#a03030;}
+
+/* WA preview */
+.wa-preview{background:#0a180a;border:1px solid #1a3a1a;border-radius:9px;
+  padding:12px 14px;margin-top:8px;font-size:13px;color:#5ab05a;line-height:1.8;display:none;}
+.wa-preview.show{display:block;}
+
+/* EMPTY */
+.empty{text-align:center;padding:44px 0;border:1px dashed #1a1a1a;border-radius:14px;}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.3;}
+.empty p{color:#222;font-size:14px;}
+.empty small{color:#1a1a1a;font-size:11px;margin-top:6px;display:block;}
+
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  background:#c9a84c;color:#0d0d0d;padding:11px 26px;border-radius:50px;
-  font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;
-  z-index:999;white-space:nowrap;display:none;}
+  background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0d0d0d;
+  padding:12px 28px;border-radius:50px;font-family:'Tajawal',sans-serif;
+  font-size:14px;font-weight:700;z-index:999;white-space:nowrap;display:none;
+  box-shadow:0 4px 24px #c9a84c55;}
 </style>
 </head>
 <body>
 <div class="app">
+
   <div class="header">
-    <div class="header-left">
-      <h1>✂️ Salon Art</h1>
-      <p>لوحة التحكم • إدارة الحجوزات</p>
+    <div class="logo-row">
+      <svg class="logo-sm" viewBox="0 0 54 54" fill="none">
+        <line x1="27" y1="27" x2="6" y2="10" stroke="#c9a84c" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="27" y1="27" x2="6" y2="44" stroke="#c9a84c" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="27" y1="27" x2="48" y2="10" stroke="#e8c96a" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="27" y1="27" x2="48" y2="44" stroke="#e8c96a" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="6" cy="10" r="4.5" stroke="#c9a84c" stroke-width="1.8" fill="#080808"/>
+        <circle cx="6" cy="44" r="4.5" stroke="#c9a84c" stroke-width="1.8" fill="#080808"/>
+        <circle cx="48" cy="10" r="4.5" stroke="#e8c96a" stroke-width="1.8" fill="#080808"/>
+        <circle cx="48" cy="44" r="4.5" stroke="#e8c96a" stroke-width="1.8" fill="#080808"/>
+        <circle cx="27" cy="27" r="4" fill="#c9a84c"/>
+        <circle cx="27" cy="27" r="1.8" fill="#080808"/>
+      </svg>
+      <div>
+        <div class="brand-sm">SALON <span>ART</span></div>
+        <div class="header-sub">لوحة التحكم</div>
+      </div>
     </div>
-    <div class="badge" id="totalBadge">0 حجز</div>
+    <div class="total-badge" id="totalBadge">0 حجز</div>
   </div>
 
   <div class="stats">
     <div class="stat"><div class="stat-n" id="st-total">0</div><div class="stat-l">إجمالي</div></div>
-    <div class="stat"><div class="stat-n" id="st-pending">0</div><div class="stat-l">بانتظار التذكير</div></div>
+    <div class="stat"><div class="stat-n" id="st-pending">0</div><div class="stat-l">لم يُذكَّر</div></div>
     <div class="stat"><div class="stat-n" id="st-reminded">0</div><div class="stat-l">تم التذكير</div></div>
   </div>
 
-  <div class="section" style="margin-top:20px">
-    <div class="sec-title">
-      <span>الحجوزات</span>
+  <div class="section" style="margin-top:18px">
+    <div class="sec-row">
+      <div class="sec-title">الحجوزات</div>
       <button class="refresh-btn" onclick="loadAndRender()">🔄 تحديث</button>
     </div>
     <div class="day-tabs" id="dayTabs"></div>
@@ -98,148 +157,152 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#0d0d0d;color:#f0
 <script>
 const DAYS       = ["السبت","الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة"];
 const SLOT_ORDER = ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
-const STORAGE_KEY = "saloart_bookings_v1";
-const EXPIRE_MS   = 24 * 60 * 60 * 1000;  // 24 ساعة
-const LATE_MS     = 15 * 60 * 1000;        // 15 دقيقة
+// خريطة الساعات — لمعرفة وقت الموعد الفعلي اليوم
+const SLOT_HOURS = {"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23};
+const KEY = "saloart_v2";
 
-let bookings   = [];
-let selectedDay = "الكل";
-let previewId   = null;
+let bookings=[], selDay="الكل", previewId=null;
 
-function loadBookings() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    const now = Date.now();
-    // حذف الحجوزات اللي انتهت 24 ساعة
-    bookings = raw.filter(b => (now - b.id) < EXPIRE_MS);
-    saveBookings();
-  } catch { bookings = []; }
+function load(){
+  try{ bookings=JSON.parse(localStorage.getItem(KEY))||[]; }
+  catch{ bookings=[]; }
+  const week=7*24*60*60*1000;
+  bookings=bookings.filter(b=>(Date.now()-b.createdAt)<week&&!b.cancelled);
+  save();
+}
+function save(){ localStorage.setItem(KEY,JSON.stringify(bookings)); }
+
+// هل الزبون تأخر أكثر من 15 دقيقة عن موعده الفعلي؟
+function isLate(b){
+  const now=new Date();
+  const todayDay=DAYS[now.getDay()===0?6:now.getDay()-6<0?now.getDay()+1:now.getDay()];
+  // نقارن اليوم والساعة الفعلية
+  if(b.day!==todayDay) return false; // موعد ليوم ثاني مو متأخر
+  const slotHour=SLOT_HOURS[b.slot];
+  if(slotHour===undefined) return false;
+  const slotTime=new Date();
+  slotTime.setHours(slotHour,0,0,0);
+  const diff=now-slotTime; // بالميلي ثانية
+  return diff>15*60*1000; // أكثر من 15 دقيقة بعد الموعد
 }
 
-function saveBookings() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+// دقائق التأخر عن الموعد الفعلي
+function lateMinutes(b){
+  const now=new Date();
+  const slotHour=SLOT_HOURS[b.slot];
+  if(slotHour===undefined) return 0;
+  const slotTime=new Date();
+  slotTime.setHours(slotHour,0,0,0);
+  return Math.floor((now-slotTime)/60000);
 }
 
-function minutesSince(id) {
-  return Math.floor((Date.now() - id) / 60000);
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 3000);
+function openWA(phone,name,day,slot){
+  const clean=phone.replace(/\D/g,'');
+  const intl=clean.startsWith('0')?'964'+clean.slice(1):clean;
+  const msg=`السلام عليكم ${name} 👋\n\nتذكير بموعدك في *Salon Art* ✂️\n📅 يوم: *${day}*\n⏰ الساعة: *${slot}*\n\n⚠️ التأخر أكثر من 15 دقيقة بعد الموعد يلغي الحجز تلقائياً.\n\nنشوفك قريب! 🌟`;
+  window.open(`https://wa.me/${intl}?text=${encodeURIComponent(msg)},'_blank'`);
 }
 
-function remind(id) {
-  const b = bookings.find(x => x.id === id);
-  if (!b) return;
-  b.reminded = true;
-  previewId = previewId === id ? null : id;
-  saveBookings(); render();
-  showToast(`🔔 تم إرسال تذكير لـ ${b.name}`);
-}
-
-function cancelBooking(id) {
-  const b = bookings.find(x => x.id === id);
-  bookings = bookings.filter(x => x.id !== id);
-  saveBookings();
-  if (previewId === id) previewId = null;
+function remind(id){
+  const b=bookings.find(x=>x.id===id); if(!b)return;
+  b.reminded=true; save();
+  previewId=previewId===id?null:id;
   render();
-  showToast(`🗑️ تم إلغاء موعد ${b?.name}`);
+  openWA(b.phone,b.name,b.day,b.slot);
+  showToast(`✅ فُتح واتساب لـ ${b.name}`);
 }
 
-function autoCancelLate(id) {
-  const b = bookings.find(x => x.id === id);
-  bookings = bookings.filter(x => x.id !== id);
-  saveBookings();
-  render();
-  showToast(`⛔ تم إلغاء حجز ${b?.name} بسبب التأخر`);
+function cancelBooking(id){
+  const b=bookings.find(x=>x.id===id);
+  bookings=bookings.filter(x=>x.id!==id);
+  save(); if(previewId===id)previewId=null;
+  render(); showToast(`🗑️ تم إلغاء موعد ${b?.name}`);
 }
 
-function render() {
-  const reminded = bookings.filter(b => b.reminded).length;
-  const now = Date.now();
+function cancelLate(id){
+  const b=bookings.find(x=>x.id===id);
+  bookings=bookings.filter(x=>x.id!==id);
+  save(); render();
+  showToast(`⛔ أُلغي حجز ${b?.name} بسبب التأخر`);
+}
 
-  document.getElementById('totalBadge').textContent = `${bookings.length} حجز ✂️`;
-  document.getElementById('st-total').textContent    = bookings.length;
-  document.getElementById('st-pending').textContent  = bookings.length - reminded;
-  document.getElementById('st-reminded').textContent = reminded;
+function render(){
+  const active=bookings.filter(b=>!b.cancelled);
+  const reminded=active.filter(b=>b.reminded).length;
+  document.getElementById('totalBadge').textContent=`${active.length} حجز`;
+  document.getElementById('st-total').textContent=active.length;
+  document.getElementById('st-pending').textContent=active.length-reminded;
+  document.getElementById('st-reminded').textContent=reminded;
 
-  // Day tabs
-  const tabs = document.getElementById('dayTabs');
-  tabs.innerHTML = '';
-  ["الكل", ...DAYS].forEach(d => {
-    const count = d === "الكل" ? bookings.length : bookings.filter(b => b.day === d).length;
-    const btn = document.createElement('button');
-    btn.className = 'day-tab' + (selectedDay === d ? ' active' : '');
-    btn.textContent = d === "الكل" ? `الكل (${bookings.length})` : `${d} (${count})`;
-    btn.onclick = () => { selectedDay = d; render(); };
+  // Tabs
+  const tabs=document.getElementById('dayTabs'); tabs.innerHTML='';
+  ["الكل",...DAYS].forEach(d=>{
+    const cnt=d==="الكل"?active.length:active.filter(b=>b.day===d).length;
+    const btn=document.createElement('button');
+    btn.className='day-tab'+(selDay===d?' active':'');
+    btn.textContent=`${d} (${cnt})`;
+    btn.onclick=()=>{selDay=d;render();};
     tabs.appendChild(btn);
   });
 
   // Filter & sort
-  const filtered = selectedDay === "الكل" ? bookings : bookings.filter(b => b.day === selectedDay);
-  const sorted = [...filtered].sort((a, b) => {
-    if (a.day !== b.day) return DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
-    return SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot);
+  const filtered=selDay==="الكل"?active:active.filter(b=>b.day===selDay);
+  const sorted=[...filtered].sort((a,b)=>{
+    if(a.day!==b.day)return DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
+    return SLOT_ORDER.indexOf(a.slot)-SLOT_ORDER.indexOf(b.slot);
   });
 
-  const list = document.getElementById('cardsList');
-  if (sorted.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">📋</div>
-      <div>ما في حجوزات ${selectedDay !== "الكل" ? "ليوم " + selectedDay : ""}</div>
-      <div style="font-size:11px;color:#2a2a2a;margin-top:6px">تتحدث تلقائياً كل 30 ثانية</div></div>`;
+  const list=document.getElementById('cardsList');
+  if(!sorted.length){
+    list.innerHTML=`<div class="empty">
+      <div class="empty-icon">✂️</div>
+      <p>ما في حجوزات ${selDay!=="الكل"?"ليوم "+selDay:""}</p>
+      <small>تتحدث تلقائياً كل دقيقة</small></div>`;
     return;
   }
 
-  list.innerHTML = sorted.map(b => {
-    const mins = minutesSince(b.id);
-    const isLate = mins >= 15;
-    const timerText = isLate
-      ? `⛔ تأخر ${mins} دقيقة — يمكنك إلغاء حجزه`
-      : mins > 0 ? `⏱️ منذ ${mins} دقيقة` : '';
-
+  list.innerHTML=sorted.map(b=>{
+    const late=isLate(b);
+    const mins=late?lateMinutes(b):0;
+    const waIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
     return `
-    <div class="card${isLate ? ' late' : ''}">
+    <div class="card${late?' late':''}">
       <div class="card-top">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="day-badge">📅 ${b.day}</div>
-          <div>
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px">
             <span class="c-name">${b.name}</span>
-            ${b.reminded ? '<span class="reminded-tag">✓ ذُكّر</span>' : ''}
-            ${isLate ? '<span class="late-tag">⚠️ متأخر</span>' : ''}
+            ${b.reminded?'<span class="tag tag-ok">✓ ذُكِّر</span>':''}
+            ${late?`<span class="tag tag-late">⚠️ تأخر ${mins} د</span>`:''}
           </div>
-          ${timerText ? `<div class="timer">${timerText}</div>` : ''}
         </div>
-        <div class="time-badge">⏰ ${b.slot}</div>
+        <div class="time-badge" style="margin-right:8px">⏰ ${b.slot}</div>
       </div>
       <div class="card-info">
         <div class="info-item">📞 ${b.phone}</div>
         <div class="info-item">🕐 حجز الساعة ${b.bookedAt}</div>
       </div>
       <div class="actions">
-        <button class="remind-btn" onclick="remind(${b.id})" ${b.reminded ? 'disabled' : ''}>
-          ${b.reminded ? '✓ تم إرسال التذكير' : '🔔 أرسل تذكير قبل ساعة'}
+        <button class="wa-btn" onclick="remind('${b.id}')" ${b.reminded?'disabled':''}>
+          ${waIcon} ${b.reminded?'تم إرسال التذكير':'أرسل تذكير واتساب'}
         </button>
-        <button class="cancel-btn" onclick="cancelBooking(${b.id})">إلغاء</button>
+        <button class="cancel-btn" onclick="cancelBooking('${b.id}')">إلغاء</button>
       </div>
-      ${isLate ? `<button class="auto-cancel-btn" onclick="autoCancelLate(${b.id})">⛔ إلغاء تلقائي بسبب التأخر (${mins} دقيقة)</button>` : ''}
-      <div class="msg-box" id="msg-${b.id}" style="${previewId === b.id ? 'display:block' : 'display:none'}">
-        📱 <strong>نص الرسالة للزبون:</strong><br/>
-        "السلام عليكم ${b.name}، تذكير بموعدك في Salon Art يوم ${b.day} الساعة ${b.slot}. نشوفك قريب! ✂️"
-      </div>
+      ${late?`<button class="late-action" onclick="cancelLate('${b.id}')">⛔ إلغاء بسبب التأخر (${mins} دقيقة)</button>`:''}
     </div>`;
   }).join('');
 }
 
-function loadAndRender() {
-  loadBookings();
-  render();
-}
-
-// Init + auto refresh كل 30 ثانية
+function loadAndRender(){ load(); render(); }
 loadAndRender();
-setInterval(loadAndRender, 30000);
+// تحديث كل دقيقة لتحديث حالة التأخر
+setInterval(loadAndRender, 60000);
 </script>
 </body>
 </html>
