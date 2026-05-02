@@ -9,111 +9,69 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0ece4;min-height:100vh;}
 .app{padding-bottom:80px;}
-
-/* HEADER */
-.header{
-  background:linear-gradient(160deg,#0d0d0d,#111008);
-  border-bottom:1px solid #1a1a1a;
-  padding:18px 18px 14px;
-  display:flex;align-items:center;justify-content:space-between;
-  max-width:520px;margin:0 auto;
-}
+.header{background:linear-gradient(160deg,#0d0d0d,#111008);border-bottom:1px solid #1a1a1a;padding:18px 18px 14px;display:flex;align-items:center;justify-content:space-between;max-width:520px;margin:0 auto;}
 .logo-row{display:flex;align-items:center;gap:10px;}
 .logo-sm{width:38px;height:38px;}
-.brand-sm{font-family:'Playfair Display',serif;font-size:16px;font-weight:900;
-  color:#f0ece4;letter-spacing:2px;}
+.brand-sm{font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:#f0ece4;letter-spacing:2px;}
 .brand-sm span{color:#c9a84c;}
 .header-sub{font-size:11px;color:#333;margin-top:1px;}
-.total-badge{background:linear-gradient(135deg,#c9a84c,#e8c96a);
-  color:#0d0d0d;font-weight:900;font-size:13px;padding:6px 16px;border-radius:50px;}
-
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
-  padding:14px 18px 0;max-width:520px;margin:0 auto;}
+.total-badge{background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0d0d0d;font-weight:900;font-size:13px;padding:6px 16px;border-radius:50px;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 18px 0;max-width:520px;margin:0 auto;}
 .stat{background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px 8px;text-align:center;}
 .stat-n{font-size:24px;font-weight:900;color:#c9a84c;}
 .stat-l{font-size:10px;color:#333;margin-top:3px;}
-
-/* SECTION */
 .section{padding:16px 18px 0;max-width:520px;margin:0 auto;}
 .sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .sec-title{font-size:10px;font-weight:700;color:#333;letter-spacing:3px;}
-.refresh-btn{background:#111;border:1px solid #1a1a1a;border-radius:6px;
-  color:#444;font-family:'Tajawal',sans-serif;font-size:11px;padding:5px 12px;cursor:pointer;}
+.refresh-btn{background:#111;border:1px solid #1a1a1a;border-radius:6px;color:#444;font-family:'Tajawal',sans-serif;font-size:11px;padding:5px 12px;cursor:pointer;}
 .refresh-btn:hover{border-color:#c9a84c55;color:#c9a84c;}
-
-/* DAY TABS */
 .day-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;}
 .day-tabs::-webkit-scrollbar{display:none;}
-.day-tab{background:#111;border:1px solid #1a1a1a;border-radius:8px;
-  padding:7px 13px;color:#333;font-family:'Tajawal',sans-serif;
-  font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s;}
+.day-tab{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:7px 13px;color:#333;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s;}
 .day-tab:hover{color:#888;}
 .day-tab.active{background:#c9a84c;border-color:#c9a84c;color:#0d0d0d;font-weight:900;}
-
-/* CARD */
-.card{background:#111;border:1px solid #1a1a1a;border-radius:14px;
-  padding:16px;margin-bottom:10px;transition:border-color .2s;}
+.card{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:16px;margin-bottom:10px;transition:border-color .2s;}
 .card:hover{border-color:#222;}
 .card.late{border-color:#c0404033;background:#110808;}
-
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-.day-badge{font-size:10px;color:#444;background:#1a1a1a;border-radius:5px;
-  padding:2px 8px;margin-bottom:5px;display:inline-block;}
+.day-badge{font-size:10px;color:#444;background:#1a1a1a;border-radius:5px;padding:2px 8px;margin-bottom:5px;display:inline-block;}
 .c-name{font-size:17px;font-weight:900;color:#f0ece4;}
 .tag{font-size:10px;border-radius:50px;padding:2px 9px;margin-right:4px;display:inline-block;margin-top:3px;}
 .tag-ok{color:#4a9a4a;background:#0a1a0a;border:1px solid #1a3a1a;}
 .tag-late{color:#e05050;background:#1a0808;border:1px solid #3a1010;}
-.time-badge{background:#1a1a1a;border-radius:9px;padding:6px 14px;
-  font-size:14px;font-weight:700;color:#c9a84c;white-space:nowrap;flex-shrink:0;}
-
+.time-badge{background:#1a1a1a;border-radius:9px;padding:6px 14px;font-size:14px;font-weight:700;color:#c9a84c;white-space:nowrap;flex-shrink:0;}
 .card-info{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
 .info-item{font-size:12px;color:#333;}
-
-/* ACTIONS */
 .actions{display:flex;gap:7px;}
-
-.wa-btn{
-  flex:1;background:linear-gradient(135deg,#128c3a,#1aad48);
-  color:#fff;border:none;border-radius:9px;
-  padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;
-  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
-}
+.wa-btn{flex:1;background:linear-gradient(135deg,#128c3a,#1aad48);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .wa-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 16px #128c3a44;}
-.wa-btn:disabled{background:#0a1a0f;color:#1a4a1a;cursor:default;transform:none;box-shadow:none;}
-
-.cancel-btn{background:#1a0808;border:1px solid #3a1010;border-radius:9px;
-  padding:11px 14px;color:#e05050;font-family:'Tajawal',sans-serif;
-  font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;}
+.wa-btn:disabled{background:#0a1a0f;color:#1a4a1a;cursor:default;}
+.cancel-btn{background:#1a0808;border:1px solid #3a1010;border-radius:9px;padding:11px 14px;color:#e05050;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .cancel-btn:hover{background:#2a0808;}
-
-/* Late action */
-.late-action{width:100%;margin-top:8px;background:#c04040;border:none;border-radius:9px;
-  padding:11px;color:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;
-  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.late-action{width:100%;margin-top:8px;background:#c04040;border:none;border-radius:9px;padding:11px;color:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
 .late-action:hover{background:#a03030;}
-
-/* WA preview */
-.wa-preview{background:#0a180a;border:1px solid #1a3a1a;border-radius:9px;
-  padding:12px 14px;margin-top:8px;font-size:13px;color:#5ab05a;line-height:1.8;display:none;}
-.wa-preview.show{display:block;}
-
-/* EMPTY */
 .empty{text-align:center;padding:44px 0;border:1px dashed #1a1a1a;border-radius:14px;}
 .empty-icon{font-size:36px;margin-bottom:10px;opacity:.3;}
 .empty p{color:#222;font-size:14px;}
 .empty small{color:#1a1a1a;font-size:11px;margin-top:6px;display:block;}
-
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0d0d0d;
-  padding:12px 28px;border-radius:50px;font-family:'Tajawal',sans-serif;
-  font-size:14px;font-weight:700;z-index:999;white-space:nowrap;display:none;
-  box-shadow:0 4px 24px #c9a84c55;}
+.loading-screen{position:fixed;inset:0;background:#080808;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.loading-screen svg{animation:spin 1.5s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.loading-screen p{margin-top:16px;color:#444;font-size:14px;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0d0d0d;padding:12px 28px;border-radius:50px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;z-index:999;white-space:nowrap;display:none;box-shadow:0 4px 24px #c9a84c55;}
 </style>
 </head>
 <body>
-<div class="app">
 
+<div class="loading-screen" id="loadingScreen">
+  <svg width="44" height="44" viewBox="0 0 54 54" fill="none">
+    <circle cx="27" cy="27" r="24" stroke="#222" stroke-width="3"/>
+    <path d="M27 3 A24 24 0 0 1 51 27" stroke="#c9a84c" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+  <p>جاري تحميل الحجوزات...</p>
+</div>
+
+<div class="app" id="mainApp" style="display:none">
   <div class="header">
     <div class="logo-row">
       <svg class="logo-sm" viewBox="0 0 54 54" fill="none">
@@ -155,44 +113,43 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 <div class="toast" id="toast"></div>
 
 <script>
+const BIN_ID  = '69f53bd4aaba8821975f4502';
+const API_KEY = '$2a$10$xxo3kGCW6jGSoHj3200WmOpkK4wI88Bm9Ac6MBYaMAGMH0k6Ggwum';
+const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const HEADERS = {'Content-Type':'application/json','X-Master-Key':API_KEY};
+
 const DAYS       = ["السبت","الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة"];
 const SLOT_ORDER = ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
-// خريطة الساعات — لمعرفة وقت الموعد الفعلي اليوم
 const SLOT_HOURS = {"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23};
-const KEY = "saloart_v2";
 
-let bookings=[], selDay="الكل", previewId=null;
+let bookings=[], selDay="الكل";
 
-function load(){
-  try{ bookings=JSON.parse(localStorage.getItem(KEY))||[]; }
-  catch{ bookings=[]; }
-  const week=7*24*60*60*1000;
-  bookings=bookings.filter(b=>(Date.now()-b.createdAt)<week&&!b.cancelled);
-  save();
+async function loadBookings(){
+  try{
+    const r=await fetch(API_URL,{headers:{'X-Master-Key':API_KEY}});
+    const d=await r.json();
+    bookings=(d.record.bookings||[]).filter(b=>!b.cancelled);
+  }catch{ bookings=[]; }
 }
-function save(){ localStorage.setItem(KEY,JSON.stringify(bookings)); }
 
-// هل الزبون تأخر أكثر من 15 دقيقة عن موعده الفعلي؟
+async function saveBookings(){
+  await fetch(API_URL,{method:'PUT',headers:HEADERS,body:JSON.stringify({bookings})});
+}
+
 function isLate(b){
   const now=new Date();
-  const todayDay=DAYS[now.getDay()===0?6:now.getDay()-6<0?now.getDay()+1:now.getDay()];
-  // نقارن اليوم والساعة الفعلية
-  if(b.day!==todayDay) return false; // موعد ليوم ثاني مو متأخر
-  const slotHour=SLOT_HOURS[b.slot];
-  if(slotHour===undefined) return false;
-  const slotTime=new Date();
-  slotTime.setHours(slotHour,0,0,0);
-  const diff=now-slotTime; // بالميلي ثانية
-  return diff>15*60*1000; // أكثر من 15 دقيقة بعد الموعد
+  const todayName=DAYS[(now.getDay()+6)%7];
+  if(b.day!==todayName)return false;
+  const h=SLOT_HOURS[b.slot];
+  if(!h)return false;
+  const slotTime=new Date();slotTime.setHours(h,0,0,0);
+  return (now-slotTime)>15*60*1000;
 }
 
-// دقائق التأخر عن الموعد الفعلي
-function lateMinutes(b){
+function lateMin(b){
   const now=new Date();
-  const slotHour=SLOT_HOURS[b.slot];
-  if(slotHour===undefined) return 0;
-  const slotTime=new Date();
-  slotTime.setHours(slotHour,0,0,0);
+  const h=SLOT_HOURS[b.slot];if(!h)return 0;
+  const slotTime=new Date();slotTime.setHours(h,0,0,0);
   return Math.floor((now-slotTime)/60000);
 }
 
@@ -205,45 +162,43 @@ function showToast(msg){
 function openWA(phone,name,day,slot){
   const clean=phone.replace(/\D/g,'');
   const intl=clean.startsWith('0')?'964'+clean.slice(1):clean;
-  const msg=`السلام عليكم ${name} 👋\n\nتذكير بموعدك في *Salon Art* ✂️\n📅 يوم: *${day}*\n⏰ الساعة: *${slot}*\n\n⚠️ التأخر أكثر من 15 دقيقة بعد الموعد يلغي الحجز تلقائياً.\n\nنشوفك قريب! 🌟`;
-  window.open(`https://wa.me/${intl}?text=${encodeURIComponent(msg)},'_blank'`);
+  const msg=`السلام عليكم ${name} 👋\n\nتذكير بموعدك في *Salon Art* ✂️\n📅 يوم: *${day}*\n⏰ الساعة: *${slot}*\n\n⚠️ التأخر أكثر من 15 دقيقة يلغي الحجز تلقائياً.\n\nنشوفك قريب! 🌟`;
+  window.open(`https://wa.me/${intl}?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
-function remind(id){
-  const b=bookings.find(x=>x.id===id); if(!b)return;
-  b.reminded=true; save();
-  previewId=previewId===id?null:id;
-  render();
+async function remind(id){
+  const b=bookings.find(x=>x.id===id);if(!b)return;
+  b.reminded=true;
+  await saveBookings();
   openWA(b.phone,b.name,b.day,b.slot);
+  render();
   showToast(`✅ فُتح واتساب لـ ${b.name}`);
 }
 
-function cancelBooking(id){
+async function cancelBooking(id){
   const b=bookings.find(x=>x.id===id);
   bookings=bookings.filter(x=>x.id!==id);
-  save(); if(previewId===id)previewId=null;
-  render(); showToast(`🗑️ تم إلغاء موعد ${b?.name}`);
+  await saveBookings();render();
+  showToast(`🗑️ تم إلغاء موعد ${b?.name}`);
 }
 
-function cancelLate(id){
+async function cancelLate(id){
   const b=bookings.find(x=>x.id===id);
   bookings=bookings.filter(x=>x.id!==id);
-  save(); render();
+  await saveBookings();render();
   showToast(`⛔ أُلغي حجز ${b?.name} بسبب التأخر`);
 }
 
 function render(){
-  const active=bookings.filter(b=>!b.cancelled);
-  const reminded=active.filter(b=>b.reminded).length;
-  document.getElementById('totalBadge').textContent=`${active.length} حجز`;
-  document.getElementById('st-total').textContent=active.length;
-  document.getElementById('st-pending').textContent=active.length-reminded;
+  const reminded=bookings.filter(b=>b.reminded).length;
+  document.getElementById('totalBadge').textContent=`${bookings.length} حجز`;
+  document.getElementById('st-total').textContent=bookings.length;
+  document.getElementById('st-pending').textContent=bookings.length-reminded;
   document.getElementById('st-reminded').textContent=reminded;
 
-  // Tabs
-  const tabs=document.getElementById('dayTabs'); tabs.innerHTML='';
+  const tabs=document.getElementById('dayTabs');tabs.innerHTML='';
   ["الكل",...DAYS].forEach(d=>{
-    const cnt=d==="الكل"?active.length:active.filter(b=>b.day===d).length;
+    const cnt=d==="الكل"?bookings.length:bookings.filter(b=>b.day===d).length;
     const btn=document.createElement('button');
     btn.className='day-tab'+(selDay===d?' active':'');
     btn.textContent=`${d} (${cnt})`;
@@ -251,26 +206,23 @@ function render(){
     tabs.appendChild(btn);
   });
 
-  // Filter & sort
-  const filtered=selDay==="الكل"?active:active.filter(b=>b.day===selDay);
+  const filtered=selDay==="الكل"?bookings:bookings.filter(b=>b.day===selDay);
   const sorted=[...filtered].sort((a,b)=>{
     if(a.day!==b.day)return DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
     return SLOT_ORDER.indexOf(a.slot)-SLOT_ORDER.indexOf(b.slot);
   });
 
+  const waIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+
   const list=document.getElementById('cardsList');
   if(!sorted.length){
-    list.innerHTML=`<div class="empty">
-      <div class="empty-icon">✂️</div>
-      <p>ما في حجوزات ${selDay!=="الكل"?"ليوم "+selDay:""}</p>
-      <small>تتحدث تلقائياً كل دقيقة</small></div>`;
+    list.innerHTML=`<div class="empty"><div class="empty-icon">✂️</div><p>ما في حجوزات ${selDay!=="الكل"?"ليوم "+selDay:""}</p><small>تتحدث تلقائياً كل دقيقة</small></div>`;
     return;
   }
 
   list.innerHTML=sorted.map(b=>{
     const late=isLate(b);
-    const mins=late?lateMinutes(b):0;
-    const waIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+    const mins=late?lateMin(b):0;
     return `
     <div class="card${late?' late':''}">
       <div class="card-top">
@@ -299,10 +251,16 @@ function render(){
   }).join('');
 }
 
-function loadAndRender(){ load(); render(); }
-loadAndRender();
-// تحديث كل دقيقة لتحديث حالة التأخر
-setInterval(loadAndRender, 60000);
+async function loadAndRender(){
+  await loadBookings();render();
+}
+
+(async()=>{
+  await loadAndRender();
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  setInterval(loadAndRender,60000);
+})();
 </script>
 </body>
 </html>
