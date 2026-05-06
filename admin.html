@@ -20,7 +20,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .pin-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid #333;transition:all .15s;}
 .pin-dot.filled{background:#c9a84c;border-color:#c9a84c;}
 .pin-dot.error{background:#e05050;border-color:#e05050;}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:260px;direction:ltr;}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:260px;}
 .pin-btn{background:#111;border:1px solid #1a1a1a;border-radius:14px;padding:18px;font-family:'Tajawal',sans-serif;font-size:22px;font-weight:700;color:#f0ece4;cursor:pointer;text-align:center;transition:all .12s;}
 .pin-btn:hover{border-color:#c9a84c44;color:#c9a84c;}
 .pin-btn:active{transform:scale(.94);background:#1a1a1a;}
@@ -86,7 +86,6 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .wa-btn:disabled{background:#0a1a0f;color:#1a4a1a;cursor:default;}
 .cancel-btn{background:#1a0808;border:1px solid #3a1010;border-radius:9px;padding:11px 14px;color:#e05050;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .late-action{width:100%;margin-top:8px;background:#c04040;border:none;border-radius:9px;padding:11px;color:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
-.arrived-btn{flex:1;background:linear-gradient(135deg,#1a4a8a,#2060cc);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
 
 /* ===== CALENDAR VIEW ===== */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px;}
@@ -147,32 +146,6 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .tg-status{font-size:11px;padding:6px 12px;border-radius:8px;margin-top:8px;text-align:center;}
 .tg-ok{background:#0a1a0a;color:#4a9a4a;border:1px solid #1a3a1a;}
 .tg-fail{background:#1a0808;color:#e05050;border:1px solid #3a1010;}
-.logout-btn{background:#1a0808;border:1px solid #3a1010;border-radius:9px;padding:8px 14px;color:#e05050;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;}
-.logout-btn:hover{background:#2a0808;border-color:#e05050;}
-.toggle-switch{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0;}
-.toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
-.toggle-track{position:absolute;inset:0;background:#1a1a1a;border-radius:12px;border:1px solid #222;transition:.3s;}
-.toggle-switch input:checked+.toggle-track{background:#c9a84c22;border-color:#c9a84c55;}
-.toggle-thumb{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:#333;transition:.3s;z-index:1;}
-.toggle-switch input:checked~.toggle-thumb{right:calc(100% - 19px);background:#c9a84c;}
-.setting-desc{font-size:12px;color:#444;margin-bottom:14px;line-height:1.7;}
-.connect-status{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;}
-.connect-status--off{background:#111;border:1px solid #222;color:#444;}
-.connect-status--on{background:#0a1a0a;border:1px solid #1a3a1a;color:#4a9a4a;}
-.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.dot-off{background:#333;}
-.dot-on{background:#4a9a4a;box-shadow:0 0 6px #4a9a4a88;animation:pulse 2s infinite;}
-.info-box{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;}
-.info-box-title{font-size:11px;font-weight:700;color:#555;letter-spacing:1px;margin-bottom:8px;}
-.info-step{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#333;line-height:1.6;margin-bottom:4px;}
-.info-step:last-child{margin-bottom:0;}
-.info-num{background:#1a1a1a;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#555;flex-shrink:0;margin-top:2px;}
-.wa-feature-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #1a1a1a;}
-.wa-feature-row:last-of-type{border-bottom:none;}
-.wa-feature-info{flex:1;}
-.wa-feature-name{font-size:13px;font-weight:700;color:#c9a84c;}
-.wa-feature-sub{font-size:11px;color:#444;margin-top:2px;line-height:1.5;}
-.msg-preview{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;font-size:11px;color:#555;line-height:1.9;direction:rtl;}
 
 /* ===== MISC ===== */
 .empty{text-align:center;padding:44px 0;border:1px dashed #1a1a1a;border-radius:14px;}
@@ -184,41 +157,6 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .loading-screen p{margin-top:16px;color:#444;font-size:14px;}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0d0d0d;padding:12px 28px;border-radius:50px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;z-index:9999;white-space:nowrap;display:none;box-shadow:0 4px 24px #c9a84c55;}
 </style>
-<script>
-// دوال PIN — تُعرّف هنا حتى تكون جاهزة عند الضغط
-var pinEntry='';
-var ADMIN_PIN_KEY='salon_admin_pin';
-function getPin(){ return localStorage.getItem(ADMIN_PIN_KEY)||'1234'; }
-function pinPress(d){
-  if(pinEntry.length>=4)return;
-  pinEntry+=d;
-  updatePinDots();
-  if(pinEntry.length===4) setTimeout(checkPin,120);
-}
-function pinDel(){ pinEntry=pinEntry.slice(0,-1); updatePinDots(); }
-function updatePinDots(){
-  for(var i=0;i<4;i++){
-    var dot=document.getElementById('dot'+i);
-    if(!dot)return;
-    if(i<pinEntry.length){ dot.classList.add('filled'); }else{ dot.classList.remove('filled'); }
-    dot.classList.remove('error');
-  }
-}
-function checkPin(){
-  if(pinEntry===getPin()){
-    document.getElementById('pinScreen').style.display='none';
-    document.getElementById('loadingScreen').style.display='flex';
-    initApp();
-  }else{
-    for(var i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
-    document.getElementById('pinErr').classList.add('show');
-    setTimeout(function(){
-      pinEntry=''; updatePinDots();
-      document.getElementById('pinErr').classList.remove('show');
-    },1000);
-  }
-}
-</script>
 </head>
 <body>
 
@@ -246,7 +184,7 @@ function checkPin(){
     <div class="pin-dot" id="dot2"></div>
     <div class="pin-dot" id="dot3"></div>
   </div>
-  <div class="pin-pad" id="pinPad">
+  <div class="pin-pad">
     <button class="pin-btn" onclick="pinPress('1')">1</button>
     <button class="pin-btn" onclick="pinPress('2')">2</button>
     <button class="pin-btn" onclick="pinPress('3')">3</button>
@@ -293,7 +231,7 @@ function checkPin(){
       </div>
     </div>
     <div class="total-badge" id="totalBadge">0 حجز</div>
-    <button class="logout-btn" onclick="logout()" title="تسجيل الخروج">🔒 خروج</button>
+    <button onclick="logout()" style="background:#1a0808;border:1px solid #3a1010;border-radius:9px;padding:8px 14px;color:#e05050;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">🔒 خروج</button>
   </div>
 
   <div class="sync-bar">
@@ -393,115 +331,46 @@ function checkPin(){
   <div class="tab-content" id="tab-settings">
     <div class="section" style="margin-top:16px">
 
-      <!-- ===== تيليجرام ===== -->
-      <div class="setting-card">
-        <div class="setting-title">✈️ إشعارات تيليجرام</div>
-        <div class="setting-desc">يصلك إشعار فوري على تيليجرام عند كل حجز جديد أو إلغاء.</div>
-
-        <!-- حالة الاتصال -->
-        <div id="tgConnectStatus" class="connect-status connect-status--off">
-          <span id="tgStatusDot" class="status-dot dot-off"></span>
-          <span id="tgStatusText">غير متصل</span>
-        </div>
-
-        <div class="setting-row" style="margin-top:12px">
-          <div class="setting-lbl">🤖 Bot Token</div>
-          <div style="position:relative">
-            <input class="setting-inp" id="tgToken" placeholder="123456789:ABCdef..." type="password"/>
-            <button onclick="toggleVis('tgToken',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#444;cursor:pointer;font-size:14px;">👁</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-lbl">🆔 Chat ID</div>
-          <input class="setting-inp" id="tgChatId" placeholder="مثال: 93372553"/>
-        </div>
-
-        <div style="display:flex;gap:8px;margin-top:4px">
-          <button class="save-btn" style="flex:1" onclick="saveTgSettings()">💾 حفظ</button>
-          <button class="save-btn" style="flex:1;background:#111;border:1px solid #333;color:#c9a84c;" onclick="testTelegram()">🔔 اختبار</button>
-        </div>
-
-        <div id="tgStatusMsg" style="display:none;margin-top:10px"></div>
-
-        <div class="info-box" style="margin-top:12px">
-          <div class="info-box-title">📋 كيف تحصل على البيانات؟</div>
-          <div class="info-step"><span class="info-num">1</span> ابحث عن <b>@BotFather</b> في تيليجرام وأنشئ بوت جديد → احصل على الـ Token</div>
-          <div class="info-step"><span class="info-num">2</span> افتح <b>@userinfobot</b> وأرسل له أي رسالة → سيعطيك الـ Chat ID</div>
-          <div class="info-step"><span class="info-num">3</span> أرسل رسالة للبوت أولاً حتى يتمكن من مراسلتك</div>
-        </div>
-      </div>
-
-      <!-- ===== واتساب تلقائي ===== -->
-      <div class="setting-card">
-        <div class="setting-title">💬 إشعارات واتساب التلقائية</div>
-        <div class="setting-desc">إرسال رسائل واتساب للزبائن تلقائياً دون الحاجة لأي إجراء يدوي.</div>
-
-        <!-- عند الحجز -->
-        <div class="wa-feature-row">
-          <div class="wa-feature-info">
-            <div class="wa-feature-name">📩 تأكيد الحجز التلقائي</div>
-            <div class="wa-feature-sub">عند فتح لوحة التحكم يُفتح واتساب تلقائياً لإرسال رسالة تأكيد لكل حجز جديد لم يُرسل له بعد</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="autoConfirmToggle" onchange="saveWaSettings()"/>
-            <div class="toggle-track"></div>
-            <div class="toggle-thumb"></div>
-          </label>
-        </div>
-
-        <!-- تذكير قبل ساعة -->
-        <div class="wa-feature-row">
-          <div class="wa-feature-info">
-            <div class="wa-feature-name">⏰ تذكير قبل الموعد بساعة</div>
-            <div class="wa-feature-sub">يفتح واتساب تلقائياً مع تذكير للزبون قبل موعده بساعة</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="autoRemindToggle" onchange="saveWaSettings()"/>
-            <div class="toggle-track"></div>
-            <div class="toggle-thumb"></div>
-          </label>
-        </div>
-
-        <div class="info-box" style="margin-top:10px">
-          <div class="info-box-title">⚠️ كيف يعمل؟</div>
-          <div class="info-step"><span class="info-num">1</span> الزبون يحجز من صفحته — <b>لا يُفتح واتساب عنده</b></div>
-          <div class="info-step"><span class="info-num">2</span> عند فتحك للوحة التحكم → يُفتح واتساب تلقائياً ويُرسل رسالة التأكيد للزبون من هاتفك</div>
-          <div class="info-step"><span class="info-num">3</span> كل حجز يُرسل مرة واحدة فقط ولا يتكرر</div>
-        </div>
-
-        <!-- معاينة رسالة التأكيد -->
-        <div style="margin-top:12px">
-          <div class="setting-lbl" style="margin-bottom:6px">معاينة رسالة التأكيد التي يستلمها الزبون:</div>
-          <div class="msg-preview">
-            السلام عليكم [اسم الزبون] 👋<br/><br/>
-            ✅ <b>تم تثبيت حجزك في Salon Art</b><br/><br/>
-            ✂️ الخدمة: [الخدمة]<br/>
-            📅 التاريخ: [اليوم والتاريخ]<br/>
-            ⏰ الساعة: [وقت الموعد]<br/>
-            💰 السعر: [السعر]<br/><br/>
-            ⚠️ التأخر أكثر من 15 دقيقة يلغي حجزك.<br/>
-            نشوفك قريب! 🌟
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== تعطيل الأيام ===== -->
+      <!-- تعطيل الأيام -->
       <div class="setting-card">
         <div class="setting-title">📅 تعطيل يوم</div>
-        <div class="setting-desc">اضغط على اليوم لتعطيله — لن يتمكن الزبائن من الحجز فيه.</div>
+        <div class="disable-info">اضغط على اليوم لتعطيله أو تفعيله.</div>
         <div class="disable-scroll" id="disableScroll"></div>
       </div>
 
-      <!-- ===== تغيير PIN ===== -->
+      <!-- إعدادات تيليجرام -->
+      <div class="setting-card">
+        <div class="setting-title">✈️ إشعارات تيليجرام</div>
+        <div class="setting-row">
+          <div class="setting-lbl">Bot Token (من @BotFather)</div>
+          <input class="setting-inp" id="tgToken" placeholder="123456789:ABCdef..." type="password"/>
+        </div>
+        <div class="setting-row">
+          <div class="setting-lbl">Chat ID (معرف المحادثة)</div>
+          <input class="setting-inp" id="tgChatId" placeholder="مثال: 123456789"/>
+        </div>
+        <button class="save-btn" onclick="saveTgSettings()">💾 حفظ إعدادات تيليجرام</button>
+        <button class="save-btn" style="margin-top:8px;background:#1a1a1a;border:1px solid #333;color:#888;" onclick="testTelegram()">🔔 إرسال رسالة تجريبية</button>
+        <div id="tgStatusMsg" style="display:none"></div>
+        <div style="margin-top:12px;font-size:11px;color:#333;line-height:1.8;">
+          كيف تحصل على الـ Chat ID:<br/>
+          1. افتح @userinfobot على تيليجرام<br/>
+          2. أرسل أي رسالة وستحصل على الـ ID<br/>
+          3. أو أرسل رسالة للبوت أولاً ثم افتح:<br/>
+          api.telegram.org/bot[TOKEN]/getUpdates
+        </div>
+      </div>
+
+      <!-- تغيير PIN -->
       <div class="setting-card">
         <div class="setting-title">🔒 تغيير رمز الدخول</div>
         <div class="setting-row">
           <div class="setting-lbl">الرمز الحالي</div>
-          <input class="setting-inp" id="oldPin" placeholder="••••" type="password" maxlength="4"/>
+          <input class="setting-inp" id="oldPin" placeholder="الرمز الحالي" type="password" maxlength="4"/>
         </div>
         <div class="setting-row">
           <div class="setting-lbl">الرمز الجديد (4 أرقام)</div>
-          <input class="setting-inp" id="newPin" placeholder="••••" type="password" maxlength="4"/>
+          <input class="setting-inp" id="newPin" placeholder="الرمز الجديد" type="password" maxlength="4"/>
         </div>
         <button class="save-btn" onclick="changePin()">🔒 تغيير الرمز</button>
       </div>
@@ -520,8 +389,8 @@ const CONFIG = {
   BIN_ID:  '69f53bd4aaba8821975f4502',
   API_KEY: '$2a$10$xxo3kGCW6jGSoHj3200WmOpkK4wI88Bm9Ac6MBYaMAGMH0k6Ggwum',
   DEFAULT_PIN: '1234',
-  DEFAULT_TG_TOKEN: '8329343070:AAGnCvsSSxRS5qH_tHh1EYFcNFTxHVYd8N4',
-  DEFAULT_TG_CHAT:  '7706249764',
+  TG_TOKEN: '8329343070:AAGnCvsSSxRS5qH_tHh1EYFcNFTxHVYd8N4',
+  TG_CHAT:  '7706249764',
 };
 // ============================================================
 
@@ -536,7 +405,9 @@ let data={bookings:[],waitlist:[],disabledDays:[]};
 let selDateKey='all',activeTab='bookings',activeStatsTab='week';
 let lastSyncTime=null;
 
-
+// ============================================================
+// PIN LOGIC
+// ============================================================
 let pinEntry='';
 const ADMIN_PIN_KEY='salon_admin_pin';
 
@@ -581,67 +452,13 @@ function changePin(){
 }
 
 // ============================================================
-// LOGOUT
+// TELEGRAM
 // ============================================================
-function logout(){
-  if(!confirm('هل تريد تسجيل الخروج؟'))return;
-  document.getElementById('mainApp').style.display='none';
-  document.getElementById('pinScreen').style.display='flex';
-  pinEntry='';updatePinDots();
-}
-
-// ============================================================
-// AUTO REMINDER (1 hour before appointment)
-// ============================================================
-const AUTO_REMIND_KEY='salon_auto_remind';
-function getAutoRemind(){ return localStorage.getItem(AUTO_REMIND_KEY)==='true'; }
-
-// ============================================================
-// AUTO WHATSAPP FROM ADMIN
-// ============================================================
-
-// فحص الحجوزات الجديدة وإرسال واتساب من الـ admin
-function checkNewBookingsAndNotify(){
-  if(!getAutoConfirm()) return;
-  const pending = data.bookings.filter(b => !b.cancelled && !b.waSent);
-  if(!pending.length) return;
-
-  pending.forEach(b => {
-    b.waSent = true;
-    saveData().catch(()=>{ b.waSent = false; });
-
-    const msg = `السلام عليكم ${b.name} 👋\n\n✅ *تم تثبيت حجزك في Salon Art*\n\n✂️ الخدمة: *${b.service}*\n📅 التاريخ: *${b.dateLabel||b.day}*\n⏰ الساعة: *${b.slot}*\n💰 السعر: *${formatPrice(b.price)}*\n\n⚠️ التأخر أكثر من 15 دقيقة يلغي حجزك تلقائياً.\n\nنشوفك قريب! 🌟 — Salon Art ✂️`;
-
-    openWA(b.phone, msg);
-    showToast(`📲 تم إرسال تأكيد الحجز لـ ${b.name}`);
-  });
-}
-
-// فحص التذكيرات قبل ساعة
-function checkAutoReminders(){
-  if(!getAutoRemind()) return;
-  const active = data.bookings.filter(b => !b.cancelled && !b.autoReminded);
-  const now = new Date();
-  active.forEach(b => {
-    if(!b.dateKey) return;
-    const h = SLOT_HOURS[b.slot]; if(!h) return;
-    const slotTime = new Date(b.dateKey + 'T00:00:00');
-    slotTime.setHours(h, 0, 0, 0);
-    const diff = (slotTime - now) / 60000;
-    if(diff >= 55 && diff <= 65){
-      b.autoReminded = true;
-      saveData().catch(()=>{ b.autoReminded = false; });
-      const msg = `السلام عليكم ${b.name} 👋\n\n⏰ *تذكير: موعدك بعد ساعة في Salon Art*\n\n✂️ الخدمة: *${b.service}*\n📅 التاريخ: *${b.dateLabel||b.day}*\n⏰ الساعة: *${b.slot}*\n💰 السعر: *${formatPrice(b.price)}*\n\n⚠️ التأخر أكثر من 15 دقيقة يلغي حجزك.\n\nنشوفك قريب! 🌟`;
-      openWA(b.phone, msg);
-      showToast(`📲 تذكير تلقائي أُرسل لـ ${b.name}`);
-    }
-  });
-}
 const TG_TOKEN_KEY='salon_tg_token';
 const TG_CHAT_KEY ='salon_tg_chat';
 
-function getTgToken(){ return localStorage.getItem(TG_TOKEN_KEY)||CONFIG.DEFAULT_TG_TOKEN; }
-function getTgChat() { return localStorage.getItem(TG_CHAT_KEY)||CONFIG.DEFAULT_TG_CHAT; }
+function getTgToken(){ return localStorage.getItem(TG_TOKEN_KEY)||''; }
+function getTgChat() { return localStorage.getItem(TG_CHAT_KEY)||''; }
 
 function saveTgSettings(){
   const t=document.getElementById('tgToken').value.trim();
@@ -669,22 +486,17 @@ async function testTelegram(){
   const chat=document.getElementById('tgChatId').value.trim()||getTgChat();
   if(!token||!chat){showToast('⚠️ أدخل الـ Token والـ Chat ID أولاً');return;}
   const msgEl=document.getElementById('tgStatusMsg');
-  msgEl.style.display='block';msgEl.className='tg-status';msgEl.textContent='⏳ جاري الاختبار...';
+  msgEl.style.display='block';msgEl.className='tg-status';msgEl.textContent='⏳ جاري الإرسال...';
   try{
     const r=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:chat,text:'✅ <b>Salon Art</b>\n\n🔗 الاتصال يعمل بشكل صحيح!\n\nستصلك الإشعارات التالية:\n• 🎉 حجز جديد\n• 🗑️ إلغاء حجز\n• ⛔ إلغاء بسبب التأخر',parse_mode:'HTML'})
+      body:JSON.stringify({chat_id:chat,text:'✅ <b>Salon Art</b> — تيليجرام يعمل بشكل صحيح! 🎉',parse_mode:'HTML'})
     });
     const d=await r.json();
     if(d.ok){
-      msgEl.className='tg-status tg-ok';msgEl.textContent='✅ الاتصال يعمل! — تحقق من تيليجرام';
+      msgEl.className='tg-status tg-ok';msgEl.textContent='✅ تم الإرسال بنجاح!';
       localStorage.setItem(TG_TOKEN_KEY,token);localStorage.setItem(TG_CHAT_KEY,chat);
-      // تحديث مؤشر الاتصال
-      document.getElementById('tgConnectStatus').className='connect-status connect-status--on';
-      document.getElementById('tgStatusDot').className='status-dot dot-on';
-      document.getElementById('tgStatusText').textContent='متصل ✓ — الاتصال مؤكد';
-      showToast('✅ تيليجرام يعمل!');
     }else{
       msgEl.className='tg-status tg-fail';msgEl.textContent='❌ خطأ: '+d.description;
     }
@@ -816,37 +628,11 @@ async function cancelBooking(id){
     await saveData();render();
     showToast(`🗑️ تم إلغاء موعد ${b.name}`);
     sendTelegram(`🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
+    sendTelegram(`🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
   }catch(e){b.cancelled=false;b.cancelledAt=null;}
 }
 
-async function markArrived(id){
-  const b=data.bookings.find(x=>x.id===id);if(!b)return;
-  // حذف الحجز نهائياً — الزبون وصل وخلص
-  data.bookings=data.bookings.filter(x=>x.id!==id);
-  try{
-    await saveData();
-    render();
-    showToast(`💈 ${b.name} وصل — تم حذف الحجز`);
-    sendTelegram(`💈 <b>وصل الزبون</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n⏰ ${b.slot}`);
-  }catch(e){
-    data.bookings.push(b);
-  }
-}
-
-// حذف حجوزات اليوم بعد منتصف الليل تلقائياً
-function autoCleanOldBookings(){
-  const today=todayKey();
-  const before=data.bookings.length;
-  // احذف كل حجز تاريخه أقل من اليوم (أمس وما قبل)
-  data.bookings=data.bookings.filter(b=>{
-    if(!b.dateKey) return true;
-    return b.dateKey>=today;
-  });
-  if(data.bookings.length!==before){
-    saveData().catch(()=>{});
-    showToast('🗑️ تم حذف حجوزات الأيام السابقة تلقائياً');
-  }
-}
+async function cancelLate(id){
   const b=data.bookings.find(x=>x.id===id);if(!b)return;
   const mins=lateMin(b);
   b.cancelled=true;b.cancelledAt=Date.now();b.cancelReason='late';
@@ -948,7 +734,7 @@ function renderBookings(){
         <button class="wa-btn" onclick="remind('${b.id}')" ${b.reminded?'disabled':''}>
           ${waIcon} ${b.reminded?'تم التذكير':'أرسل تذكير'}
         </button>
-        <button class="arrived-btn" onclick="markArrived('${b.id}')">✅ وصل</button>
+        <button onclick="markArrived('${b.id}')" style="flex:1;background:linear-gradient(135deg,#1a4a8a,#2060cc);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;">✅ وصل</button>
         <button class="cancel-btn" onclick="cancelBooking('${b.id}')">إلغاء</button>
       </div>
       ${late?`<button class="late-action" onclick="cancelLate('${b.id}')">⛔ إلغاء بسبب التأخر (${mins} دقيقة)</button>`:''}
@@ -1087,31 +873,10 @@ function renderWaitlist(){
 // RENDER SETTINGS
 // ============================================================
 function renderSettings(){
-  // ── تيليجرام ──
-  const tok=getTgToken(); const chat=getTgChat();
-  document.getElementById('tgToken').value=tok;
-  document.getElementById('tgChatId').value=chat;
-  // حالة الاتصال — نعتبره متصل إذا البيانات موجودة
-  const statusEl=document.getElementById('tgConnectStatus');
-  const dotEl=document.getElementById('tgStatusDot');
-  const textEl=document.getElementById('tgStatusText');
-  if(tok&&chat){
-    statusEl.className='connect-status connect-status--on';
-    dotEl.className='status-dot dot-on';
-    textEl.textContent='متصل ✓ — البيانات محفوظة';
-    // إخفاء رسالة القديمة
-    document.getElementById('tgStatusMsg').style.display='none';
-  }else{
-    statusEl.className='connect-status connect-status--off';
-    dotEl.className='status-dot dot-off';
-    textEl.textContent='غير متصل — أدخل البيانات أدناه';
-  }
+  // load saved TG values
+  document.getElementById('tgToken').value=getTgToken();
+  document.getElementById('tgChatId').value=getTgChat();
 
-  // ── واتساب ──
-  document.getElementById('autoConfirmToggle').checked = getAutoConfirm();
-  document.getElementById('autoRemindToggle').checked  = getAutoRemind();
-
-  // ── تعطيل الأيام ──
   const g=document.getElementById('disableScroll');g.innerHTML='';
   const days=getNext7Days();
   days.forEach(d=>{
@@ -1136,49 +901,64 @@ function render(){
 async function loadAndRender(){ await loadData();render(); }
 
 // ============================================================
+// TELEGRAM
+// ============================================================
+async function sendTelegram(msg){
+  try{
+    await fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:CONFIG.TG_CHAT,text:msg,parse_mode:'HTML'})
+    });
+  }catch(e){}
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+function logout(){
+  if(!confirm('هل تريد تسجيل الخروج؟'))return;
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('pinScreen').style.display='flex';
+  pinEntry='';updatePinDots();
+}
+
+// ============================================================
+// ARRIVED — حذف الحجز عند وصول الزبون
+// ============================================================
+async function markArrived(id){
+  const b=data.bookings.find(x=>x.id===id);if(!b)return;
+  data.bookings=data.bookings.filter(x=>x.id!==id);
+  try{
+    await saveData();render();
+    showToast(`💈 ${b.name} وصل — تم حذف الحجز`);
+  }catch(e){ data.bookings.push(b); }
+}
+
+// ============================================================
+// AUTO CLEAN — حذف حجوزات الأيام السابقة
+// ============================================================
+function autoCleanOldBookings(){
+  const today=todayKey();
+  const before=data.bookings.length;
+  data.bookings=data.bookings.filter(b=>!b.dateKey||b.dateKey>=today);
+  if(data.bookings.length!==before) saveData().catch(()=>{});
+}
+
+// ============================================================
 // INIT
 // ============================================================
-function saveWaSettings(){
-  const autoConfirm=document.getElementById('autoConfirmToggle').checked;
-  const autoRemind=document.getElementById('autoRemindToggle').checked;
-  localStorage.setItem('salon_auto_confirm', autoConfirm?'true':'false');
-  localStorage.setItem(AUTO_REMIND_KEY, autoRemind?'true':'false');
-  showToast(autoRemind||autoConfirm ? '✅ تم حفظ إعدادات واتساب' : '🔕 تم إيقاف إشعارات واتساب');
-}
-
-function getAutoConfirm(){ return localStorage.getItem('salon_auto_confirm')!=='false'; } // default ON
-
-function toggleVis(id,btn){
-  const inp=document.getElementById(id);
-  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
-  else{inp.type='password';btn.textContent='👁';}
-}
-
 async function initApp(){
   await loadAndRender();
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
-
-  // تنظيف حجوزات الأيام السابقة فوراً
   autoCleanOldBookings();
-
-  // إرسال إشعار تيليجرام عند فتح اللوحة
   sendTelegram(`🟢 <b>Salon Art</b> — لوحة التحكم مفتوحة\n🕐 ${new Date().toLocaleTimeString('ar-IQ')}`);
-
-  // فحص فوري عند فتح اللوحة
-  setTimeout(()=>{
-    checkNewBookingsAndNotify();
-    checkAutoReminders();
-  }, 1500);
-
-  // فحص كل دقيقة
   setInterval(async()=>{
     await loadData();
     autoCleanOldBookings();
-    checkNewBookingsAndNotify();
-    checkAutoReminders();
-    if(activeTab !== 'settings') render();
-  }, 60000);
+    if(activeTab!=='settings') render();
+  },60000);
 }
 </script>
 </body>
