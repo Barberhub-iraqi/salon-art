@@ -1110,8 +1110,14 @@ async function markArrived(id){
 function autoCleanOldBookings(){
   const today=todayKey();
   const before=data.bookings.length;
-  data.bookings=data.bookings.filter(b=>!b.dateKey||b.dateKey>=today);
-  if(data.bookings.length!==before) saveData().catch(()=>{});
+  // احذف فقط حجوزات الأيام السابقة — اليوم وما بعده يبقى
+  data.bookings=data.bookings.filter(b=>{
+    if(!b.dateKey) return true; // إذا ما عنده dateKey خليه
+    return b.dateKey>=today;    // احذف بس اللي قبل اليوم
+  });
+  if(data.bookings.length!==before){
+    saveData().catch(()=>{});
+  }
 }
 
 // ============================================================
@@ -1121,11 +1127,11 @@ async function initApp(){
   await loadAndRender();
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
+  // تنظيف مرة واحدة فقط عند الفتح
   autoCleanOldBookings();
   notify('Salon Art 🟢', `لوحة التحكم مفتوحة — ${new Date().toLocaleTimeString('ar-IQ')}`);
   setInterval(async()=>{
     await loadData();
-    autoCleanOldBookings();
     if(activeTab!=='settings') render();
   },60000);
 }
