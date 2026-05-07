@@ -992,19 +992,18 @@ async function sendNtfy(title, msg){
     await fetch(`https://ntfy.sh/${CONFIG.NTFY_TOPIC}`,{
       method:'POST',
       headers:{
-        'Title': title,
+        'Title': 'Salon Art',
         'Priority': 'high',
-        'Tags': 'scissors',
-        'Content-Type': 'text/plain; charset=utf-8'
+        'Tags': 'scissors'
       },
       body: msg
     });
-  }catch(e){}
+  }catch(e){ console.log('ntfy error',e); }
 }
 
 async function notify(title, msg){
-  sendTelegram(msg);
   sendNtfy(title, msg);
+  sendTelegram(msg);
 }
 
 // ============================================================
@@ -1105,30 +1104,12 @@ async function markArrived(id){
 }
 
 // ============================================================
-// AUTO CLEAN — حذف حجوزات الأيام السابقة
-// ============================================================
-function autoCleanOldBookings(){
-  const today=todayKey();
-  const before=data.bookings.length;
-  // احذف فقط حجوزات الأيام السابقة — اليوم وما بعده يبقى
-  data.bookings=data.bookings.filter(b=>{
-    if(!b.dateKey) return true; // إذا ما عنده dateKey خليه
-    return b.dateKey>=today;    // احذف بس اللي قبل اليوم
-  });
-  if(data.bookings.length!==before){
-    saveData().catch(()=>{});
-  }
-}
-
-// ============================================================
 // INIT
 // ============================================================
 async function initApp(){
   await loadAndRender();
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
-  // تنظيف مرة واحدة فقط عند الفتح
-  autoCleanOldBookings();
   notify('Salon Art 🟢', `لوحة التحكم مفتوحة — ${new Date().toLocaleTimeString('ar-IQ')}`);
   setInterval(async()=>{
     await loadData();

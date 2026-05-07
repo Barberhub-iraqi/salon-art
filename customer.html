@@ -303,19 +303,18 @@ async function sendNtfy(title, msg){
     await fetch('https://ntfy.sh/salonart-mom18',{
       method:'POST',
       headers:{
-        'Title': title,
+        'Title': 'Salon Art',
         'Priority': 'high',
-        'Tags': 'scissors',
-        'Content-Type': 'text/plain; charset=utf-8'
+        'Tags': 'scissors'
       },
       body: msg
     });
-  }catch(e){}
+  }catch(e){ console.log('ntfy error',e); }
 }
 
 async function notify(title, msg){
-  sendTelegram(msg);
   sendNtfy(title, msg);
+  sendTelegram(msg);
 }
 
 // ✅ FIX: إخفاء المواعيد المنتهية (أقل من 30 دقيقة)
