@@ -419,6 +419,7 @@ const CONFIG = {
   DEFAULT_PIN: '1234',
   TG_TOKEN: '8329343070:AAGnCvsSSxRS5qH_tHh1EYFcNFTxHVYd8N4',
   TG_CHAT:  '7706249764',
+  NTFY_TOPIC: 'salonart-mom18',
 };
 // ============================================================
 
@@ -690,8 +691,8 @@ async function cancelBooking(id){
   try{
     await saveData();render();
     showToast(`🗑️ تم إلغاء موعد ${b.name}`);
-    sendTelegram(`🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
-    sendTelegram(`🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
+    notify('إلغاء حجز', `🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
+    notify('إلغاء حجز', `🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
   }catch(e){b.cancelled=false;b.cancelledAt=null;}
 }
 
@@ -702,7 +703,7 @@ async function cancelLate(id){
   try{
     await saveData();render();
     showToast(`⛔ أُلغي حجز ${b.name} بسبب التأخر`);
-    sendTelegram(`⛔ <b>إلغاء بسبب التأخر</b>\n\n👤 ${b.name} — تأخر ${mins} دقيقة\n⏰ ${b.slot}`);
+    notify('إلغاء بسبب التأخر', `⛔ <b>إلغاء بسبب التأخر</b>\n\n👤 ${b.name} — تأخر ${mins} دقيقة\n⏰ ${b.slot}`);
   }catch(e){b.cancelled=false;b.cancelledAt=null;b.cancelReason=null;}
 }
 
@@ -976,6 +977,26 @@ async function sendTelegram(msg){
   }catch(e){}
 }
 
+async function sendNtfy(title, msg){
+  try{
+    await fetch(`https://ntfy.sh/${CONFIG.NTFY_TOPIC}`,{
+      method:'POST',
+      headers:{
+        'Title': title,
+        'Priority': 'high',
+        'Tags': 'scissors',
+        'Content-Type': 'text/plain; charset=utf-8'
+      },
+      body: msg
+    });
+  }catch(e){}
+}
+
+async function notify(title, msg){
+  sendTelegram(msg);
+  sendNtfy(title, msg);
+}
+
 // ============================================================
 // MANUAL BOOKING
 // ============================================================
@@ -1043,7 +1064,7 @@ async function saveManualBooking(){
     await saveData();
     hideManualBooking();render();
     showToast(`✅ تم حجز ${name} — ${slot}`);
-    sendTelegram(`📞 <b>حجز يدوي</b>\n\n👤 ${name}\n✂️ ${svc}\n📅 ${dateLabel}\n⏰ ${slot}`);
+    notify('حجز يدوي 📞', `📞 <b>حجز يدوي</b>\n\n👤 ${name}\n✂️ ${svc}\n📅 ${dateLabel}\n⏰ ${slot}`);
   }catch(e){data.bookings.pop();showToast('❌ فشل الحفظ');}
 }
 
@@ -1087,7 +1108,7 @@ async function initApp(){
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
   autoCleanOldBookings();
-  sendTelegram(`🟢 <b>Salon Art</b> — لوحة التحكم مفتوحة\n🕐 ${new Date().toLocaleTimeString('ar-IQ')}`);
+  notify('Salon Art', `🟢 <b>Salon Art</b> — لوحة التحكم مفتوحة\n🕐 ${new Date().toLocaleTimeString('ar-IQ')}`);
   setInterval(async()=>{
     await loadData();
     autoCleanOldBookings();

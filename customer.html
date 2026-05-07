@@ -298,6 +298,26 @@ async function sendTelegram(msg){
   }catch(e){ console.log('Telegram error',e); }
 }
 
+async function sendNtfy(title, msg){
+  try{
+    await fetch('https://ntfy.sh/salonart-mom18',{
+      method:'POST',
+      headers:{
+        'Title': title,
+        'Priority': 'high',
+        'Tags': 'scissors',
+        'Content-Type': 'text/plain; charset=utf-8'
+      },
+      body: msg
+    });
+  }catch(e){}
+}
+
+async function notify(title, msg){
+  sendTelegram(msg);
+  sendNtfy(title, msg);
+}
+
 // ✅ FIX: إخفاء المواعيد المنتهية (أقل من 30 دقيقة)
 function isSlotPast(dateKey,slot){
   const todayStr=makeDateKey(new Date());
@@ -461,9 +481,9 @@ async function handleBook(){
     isSaving=false;return;
   }
 
-  // إشعار تيليجرام فوري لصاحب الصالون
-  sendTelegram(
-    `🎉 <b>حجز جديد!</b>\n\n👤 الاسم: <b>${name}</b>\n✂️ الخدمة: <b>${svc.name}</b>\n📅 التاريخ: <b>${selDateLabel}</b>\n⏰ الساعة: <b>${selSlot}</b>\n💰 السعر: <b>${formatPrice(svc.price)}</b>\n📞 الهاتف: <b>${phone}</b>\n\n🔗 افتح لوحة التحكم للمتابعة`
+  // إشعار فوري لصاحب الصالون (تيليجرام + ntfy)
+  notify('حجز جديد 🎉',
+    `حجز جديد!\n👤 ${name}\n✂️ ${svc.name}\n📅 ${selDateLabel}\n⏰ ${selSlot}\n💰 ${formatPrice(svc.price)}\n📞 ${phone}`
   );
   // ✅ لا يُفتح واتساب هنا — الإرسال يتم من لوحة التحكم
 
