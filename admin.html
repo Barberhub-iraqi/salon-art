@@ -691,8 +691,16 @@ async function cancelBooking(id){
   try{
     await saveData();render();
     showToast(`🗑️ تم إلغاء موعد ${b.name}`);
-    notify('إلغاء حجز', `🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
-    notify('إلغاء حجز', `🗑️ <b>إلغاء حجز</b>\n\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
+    notify('إلغاء حجز 🗑️', `إلغاء حجز
+👤 ${b.name}
+✂️ ${b.service}
+📅 ${b.dateLabel||b.day}
+⏰ ${b.slot}`);
+    notify('إلغاء حجز 🗑️', `إلغاء حجز
+👤 ${b.name}
+✂️ ${b.service}
+📅 ${b.dateLabel||b.day}
+⏰ ${b.slot}`);
   }catch(e){b.cancelled=false;b.cancelledAt=null;}
 }
 
@@ -703,7 +711,9 @@ async function cancelLate(id){
   try{
     await saveData();render();
     showToast(`⛔ أُلغي حجز ${b.name} بسبب التأخر`);
-    notify('إلغاء بسبب التأخر', `⛔ <b>إلغاء بسبب التأخر</b>\n\n👤 ${b.name} — تأخر ${mins} دقيقة\n⏰ ${b.slot}`);
+    notify('إلغاء بسبب التأخر ⛔', `إلغاء بسبب التأخر
+👤 ${b.name} — تأخر ${mins} دقيقة
+⏰ ${b.slot}`);
   }catch(e){b.cancelled=false;b.cancelledAt=null;b.cancelReason=null;}
 }
 
@@ -1064,7 +1074,11 @@ async function saveManualBooking(){
     await saveData();
     hideManualBooking();render();
     showToast(`✅ تم حجز ${name} — ${slot}`);
-    notify('حجز يدوي 📞', `📞 <b>حجز يدوي</b>\n\n👤 ${name}\n✂️ ${svc}\n📅 ${dateLabel}\n⏰ ${slot}`);
+    notify('حجز يدوي 📞', `حجز يدوي
+👤 ${name}
+✂️ ${svc}
+📅 ${dateLabel}
+⏰ ${slot}`);
   }catch(e){data.bookings.pop();showToast('❌ فشل الحفظ');}
 }
 
@@ -1108,7 +1122,7 @@ async function initApp(){
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
   autoCleanOldBookings();
-  notify('Salon Art', `🟢 <b>Salon Art</b> — لوحة التحكم مفتوحة\n🕐 ${new Date().toLocaleTimeString('ar-IQ')}`);
+  notify('Salon Art 🟢', `لوحة التحكم مفتوحة — ${new Date().toLocaleTimeString('ar-IQ')}`);
   setInterval(async()=>{
     await loadData();
     autoCleanOldBookings();
