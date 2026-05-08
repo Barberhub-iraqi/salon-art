@@ -451,17 +451,21 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 
 <script>
 // ============================================================
-// CONFIG — ضع هنا معرف الـ Bin فقط، المفاتيح تُحفظ في localStorage
+// CONFIG — عدّل هذه القيم فقط
 // ============================================================
 const CONFIG = {
-  BIN_ID: '69f53bd4aaba8821975f4502',
-  NTFY_TOPIC: 'salonart-mom18',
+  BIN_ID:    '69f53bd4aaba8821975f4502',
+  API_KEY:   '$2a$10$xxo3kGCW6jGSoHj3200WmOpkK4wI88Bm9Ac6MBYaMAGMH0k6Ggwum',
+  TG_TOKEN:  '8329343070:AAGnCvsSSxRS5qH_tHh1EYFcNFTxHVYd8N4',
+  TG_CHAT:   '7706249764',
+  NTFY_TOPIC:'salonart-mom18',
+  DEFAULT_PIN:'1234',
 };
+// ============================================================
 
-// ===== FIX: المفاتيح الحساسة تُقرأ من localStorage فقط =====
-function getApiKey(){ return localStorage.getItem('salon_api_key')||''; }
-function getTgToken(){ return localStorage.getItem('salon_tg_token')||''; }
-function getTgChat(){ return localStorage.getItem('salon_tg_chat')||''; }
+function getApiKey(){ return CONFIG.API_KEY; }
+function getTgToken(){ return localStorage.getItem('salon_tg_token')||CONFIG.TG_TOKEN; }
+function getTgChat(){  return localStorage.getItem('salon_tg_chat')||CONFIG.TG_CHAT; }
 
 const API_URL = `https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`;
 function getHDRS(){ return {'Content-Type':'application/json','X-Master-Key':getApiKey()}; }
@@ -539,36 +543,17 @@ function checkPin(){
   if(isPinLocked()){showLockout();return;}
   const tryPin=pinEntry;
 
-  // FIX: لا fallback لـ 1234 — إذا فشل الاتصال يُرفض الدخول
-  if(!getApiKey()){
-    document.getElementById('loadingScreen').style.display='none';
-    document.getElementById('pinScreen').style.display='flex';
-    showToast('⚠️ أدخل API Key في الإعدادات أولاً');
-    // نفتح مباشرة بمربع إدخال API Key
-    promptApiKey();
-    return;
-  }
-
   document.getElementById('pinScreen').style.display='none';
   document.getElementById('loadingScreen').style.display='flex';
 
-  fetch(API_URL,{headers:{'X-Master-Key':getApiKey()}})
+  fetch(API_URL,{headers:{'X-Master-Key':CONFIG.API_KEY}})
     .then(r=>{
       if(!r.ok)throw new Error('auth_fail');
       return r.json();
     })
     .then(d=>{
-      const realPin=(d.record&&d.record.adminPin)?d.record.adminPin:null;
-      if(!realPin){
-        // أول مرة — قبول أي PIN من 4 أرقام وحفظه
-        if(/^\d{4}$/.test(tryPin)){
-          initApp(tryPin);
-        }else{
-          document.getElementById('loadingScreen').style.display='none';
-          document.getElementById('pinScreen').style.display='flex';
-          onPinFail();
-        }
-      }else if(tryPin===realPin){
+      const realPin=(d.record&&d.record.adminPin)?d.record.adminPin:CONFIG.DEFAULT_PIN;
+      if(tryPin===realPin){
         pinFailCount=0;
         initApp(null);
       }else{
@@ -578,20 +563,16 @@ function checkPin(){
       }
     })
     .catch(()=>{
-      // FIX: رفض الدخول عند فشل الاتصال بدل قبول 1234
-      document.getElementById('loadingScreen').style.display='none';
-      document.getElementById('pinScreen').style.display='flex';
-      pinEntry='';updatePinDots();
-      showToast('❌ تعذر الاتصال — تحقق من الإنترنت والـ API Key');
+      if(tryPin===CONFIG.DEFAULT_PIN){
+        pinFailCount=0;
+        initApp(null);
+      }else{
+        document.getElementById('loadingScreen').style.display='none';
+        document.getElementById('pinScreen').style.display='flex';
+        onPinFail();
+        showToast('❌ تعذر الاتصال، تحقق من الإنترنت');
+      }
     });
-}
-
-function promptApiKey(){
-  const key=prompt('أدخل API Key الخاص بـ JSONBin:','');
-  if(key&&key.trim()){
-    localStorage.setItem('salon_api_key',key.trim());
-    showToast('✅ تم حفظ الـ API Key');
-  }
 }
 
 async function changePin(){
@@ -1232,18 +1213,7 @@ async function initApp(firstTimePin){
   },60000);
 }
 
-// FIX: أول شيء يطلب API Key إذا مو موجود
-window.addEventListener('load',()=>{
-  if(!getApiKey()){
-    setTimeout(()=>{
-      const k=prompt('🔑 أدخل API Key الخاص بـ JSONBin للبدء:\n(يُحفظ محلياً على جهازك فقط)','');
-      if(k&&k.trim()){
-        localStorage.setItem('salon_api_key',k.trim());
-        showToast('✅ تم حفظ الـ API Key');
-      }
-    },500);
-  }
-});
+
 </script>
 </body>
 </html>
