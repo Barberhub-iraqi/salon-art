@@ -54,7 +54,8 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f7f3ee;min-heigh
 .slot-btn.sel{background:#111;border-color:#111;color:#c9a84c;font-weight:900;}
 .slot-btn.bkd{opacity:.3;cursor:not-allowed;font-size:11px;}
 .slot-btn.bkd::after{content:"محجوز";display:block;font-size:9px;color:#e05555;}
-.slot-btn.past{opacity:.25;cursor:not-allowed;text-decoration:line-through;}
+/* FIX: past slots hidden cleanly */
+.slot-btn.past{opacity:.2;cursor:not-allowed;text-decoration:line-through;}
 .all-booked{background:#fff8f0;border:1.5px solid #f0c080;border-radius:12px;padding:18px;text-align:center;margin-top:4px;}
 .all-booked p{font-size:14px;color:#8a5000;font-weight:700;margin-bottom:6px;}
 .all-booked small{font-size:12px;color:#b07030;}
@@ -77,6 +78,8 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f7f3ee;min-heigh
 .price-row span{font-size:13px;color:#4a8a4a;font-weight:700;}
 .price-row strong{font-size:18px;color:#2a6a2a;font-weight:900;}
 .warn-box{background:#fffbf0;border:1.5px solid #f0d060;border-radius:11px;padding:14px 16px;font-size:13px;color:#7a5c00;line-height:1.9;margin-bottom:18px;}
+/* FIX: New booking button */
+.new-book-btn{width:100%;padding:14px;background:#111;border:none;border-radius:12px;color:#c9a84c;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
 .wait-success{background:#fff;border:1.5px solid #c9a84c44;border-radius:18px;padding:28px 22px;text-align:center;animation:pop .35s ease;}
 .wait-success h2{font-size:20px;font-weight:900;color:#111;margin:12px 0 6px;}
 .loading-screen{position:fixed;inset:0;background:#f7f3ee;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
@@ -101,16 +104,12 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f7f3ee;min-heigh
   <div class="header">
     <div class="logo-ring">
       <svg class="logo-svg" viewBox="0 0 160 160" fill="none">
-        <!-- دائرة خارجية -->
         <circle cx="80" cy="80" r="72" stroke="#c9a84c" stroke-width="1.2" fill="none"/>
         <circle cx="80" cy="80" r="63" stroke="#c9a84c" stroke-width="0.5" opacity="0.3" fill="none"/>
-        <!-- مقص — خطان متقاطعان -->
         <line x1="48" y1="50" x2="112" y2="106" stroke="#c9a84c" stroke-width="4" stroke-linecap="round"/>
         <line x1="112" y1="50" x2="48" y2="106" stroke="#e8c96a" stroke-width="4" stroke-linecap="round"/>
-        <!-- حلقتان -->
         <circle cx="48" cy="106" r="12" stroke="#c9a84c" stroke-width="2.5" fill="none"/>
         <circle cx="112" cy="106" r="12" stroke="#e8c96a" stroke-width="2.5" fill="none"/>
-        <!-- نقطة تقاطع -->
         <circle cx="80" cy="77" r="7" fill="#0d0d0d" stroke="#c9a84c" stroke-width="2.5"/>
         <circle cx="80" cy="77" r="2.8" fill="#c9a84c"/>
       </svg>
@@ -193,6 +192,8 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f7f3ee;min-heigh
           🔔 سيتواصل معك صاحب الصالون للتأكيد على واتساب.<br/>
           ⚠️ التأخر أكثر من <strong>15 دقيقة</strong> يلغي حجزك.
         </div>
+        <!-- FIX: زر حجز جديد -->
+        <button class="new-book-btn" onclick="resetForm()">➕ حجز موعد آخر</button>
       </div>
     </div>
   </div>
@@ -204,6 +205,8 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f7f3ee;min-heigh
         <div style="font-size:48px">⏳</div>
         <h2>تمت إضافتك لقائمة الانتظار</h2>
         <p style="font-size:13px;color:#888;margin-top:8px">راح نبلغك على واتساب إذا تفرغ وقت ليوم <strong id="w-day"></strong></p>
+        <!-- FIX: زر عودة -->
+        <button class="new-book-btn" style="margin-top:18px" onclick="resetForm()">↩ العودة للحجز</button>
       </div>
     </div>
   </div>
@@ -213,18 +216,25 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f7f3ee;min-heigh
 
 <script>
 // ============================================================
-// CONFIG — ضع هنا بياناتك فقط
+// CONFIG — FIX: لا مفاتيح سرية هنا، القراءة فقط عبر Read-only key
+// ملاحظة: استبدل READ_ONLY_KEY بـ Access Key بصلاحية قراءة فقط من JSONBin
 // ============================================================
 const CONFIG = {
-  BIN_ID:  '69f53bd4aaba8821975f4502',
-  API_KEY: '$2a$10$xxo3kGCW6jGSoHj3200WmOpkK4wI88Bm9Ac6MBYaMAGMH0k6Ggwum',
-  TG_BOT_TOKEN: '8329343070:AAGnCvsSSxRS5qH_tHh1EYFcNFTxHVYd8N4',
-  TG_CHAT_ID:   '7706249764',
+  BIN_ID: '69f53bd4aaba8821975f4502',
+  // FIX: هذا Read-only Access Key من JSONBin (ليس Master Key)
+  // أنشئه من: jsonbin.io → Access Keys → Create with READ permission only
+  READ_KEY: localStorage.getItem('salon_read_key')||'YOUR_READ_ONLY_KEY_HERE',
+  // FIX: Telegram token للعميل — يُحفظ في localStorage
+  TG_BOT_TOKEN: localStorage.getItem('salon_tg_token')||'',
+  TG_CHAT_ID:   localStorage.getItem('salon_tg_chat')||'',
 };
-// ============================================================
 
 const API_URL = `https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`;
-const HDRS    = {'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY};
+// FIX: العميل يقرأ فقط بـ Read-only key — لا Master Key هنا أبداً
+const READ_HDRS = {'X-Access-Key': CONFIG.READ_KEY};
+// للكتابة (حجز جديد): يمر عبر Master Key المحفوظ في localStorage كحل مؤقت
+// الحل الأمثل: Backend API لا يعرضه للعميل
+const getWriteHdrs = ()=>({'Content-Type':'application/json','X-Master-Key':localStorage.getItem('salon_api_key')||''});
 
 const SLOTS      = ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
 const SLOT_HOURS = {"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23};
@@ -247,8 +257,8 @@ function makeDateKey(d){
   const day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
-function makeLabel(d){ return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`; }
-function formatPrice(p){ return Number(p).toLocaleString('ar-IQ')+' د.ع'; }
+function makeLabel(d){return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;}
+function formatPrice(p){return Number(p).toLocaleString('ar-IQ')+' د.ع';}
 
 function getNext7Days(){
   const days=[];const today=new Date();today.setHours(0,0,0,0);
@@ -256,25 +266,28 @@ function getNext7Days(){
   return days;
 }
 
-// ✅ FIX: التحقق من رقم عراقي صحيح
 function isValidIraqiPhone(phone){
   const clean=phone.replace(/\D/g,'');
   return /^07[3-9]\d{8}$/.test(clean)||/^9647[3-9]\d{8}$/.test(clean);
 }
-
-// ✅ FIX: التحقق من الاسم
 function isValidName(name){
-  return name.trim().length>=3 && /[\u0600-\u06FFa-zA-Z]/.test(name);
+  return name.trim().length>=3&&/[\u0600-\u06FFa-zA-Z]/.test(name);
+}
+
+// FIX: Normalize phone before comparison
+function normalizePhone(p){
+  const clean=p.replace(/\D/g,'');
+  return clean.startsWith('964')?'0'+clean.slice(3):clean;
 }
 
 async function loadData(){
   try{
-    const r=await fetch(API_URL,{headers:{'X-Master-Key':CONFIG.API_KEY}});
-    if(!r.ok) throw new Error('fetch error');
+    const r=await fetch(API_URL,{headers:READ_HDRS});
+    if(!r.ok)throw new Error('fetch error');
     const d=await r.json();
     data=d.record||{};
-    if(!data.bookings)   data.bookings=[];
-    if(!data.waitlist)   data.waitlist=[];
+    if(!data.bookings)    data.bookings=[];
+    if(!data.waitlist)    data.waitlist=[];
     if(!data.disabledDays) data.disabledDays=[];
   }catch(e){
     showToast('❌ خطأ في الاتصال، تحقق من الإنترنت');
@@ -282,63 +295,70 @@ async function loadData(){
 }
 
 async function saveData(){
+  const hdrs=getWriteHdrs();
+  if(!hdrs['X-Master-Key']){showToast('❌ الخدمة غير متاحة مؤقتاً');throw new Error('no key');}
   try{
-    const r=await fetch(API_URL,{method:'PUT',headers:HDRS,body:JSON.stringify(data)});
-    if(!r.ok) throw new Error('save error');
+    const r=await fetch(API_URL,{method:'PUT',headers:hdrs,body:JSON.stringify(data)});
+    if(!r.ok)throw new Error('save error');
   }catch(e){
     showToast('❌ فشل حفظ البيانات، حاول مرة ثانية');
     throw e;
   }
 }
 
-// ✅ إشعار تيليجرام
+// FIX: إشعارات من localStorage فقط
 async function sendTelegram(msg){
-  if(!CONFIG.TG_BOT_TOKEN||!CONFIG.TG_CHAT_ID) return;
+  const token=localStorage.getItem('salon_tg_token')||'';
+  const chat=localStorage.getItem('salon_tg_chat')||'';
+  if(!token||!chat)return;
   try{
-    await fetch(`https://api.telegram.org/bot${CONFIG.TG_BOT_TOKEN}/sendMessage`,{
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:CONFIG.TG_CHAT_ID,text:msg,parse_mode:'HTML'})
+      body:JSON.stringify({chat_id:chat,text:msg,parse_mode:'HTML'})
     });
-  }catch(e){ console.log('Telegram error',e); }
+  }catch(e){console.log('Telegram error',e);}
 }
 
-async function sendNtfy(title, msg){
+async function sendNtfy(msg){
   try{
     await fetch('https://ntfy.sh/salonart-mom18',{
       method:'POST',
-      headers:{
-        'Title': 'Salon Art',
-        'Priority': 'high',
-        'Tags': 'scissors'
-      },
-      body: msg
+      headers:{'Title':'Salon Art','Priority':'high','Tags':'scissors'},
+      body:msg
     });
-  }catch(e){ console.log('ntfy error',e); }
+  }catch(e){console.log('ntfy error',e);}
 }
 
-async function notify(title, msg){
-  sendNtfy(title, msg);
+async function notify(title,msg){
+  sendNtfy(msg);
   sendTelegram(msg);
 }
 
-// ✅ FIX: إخفاء المواعيد المنتهية (أقل من 30 دقيقة)
+// FIX: Slot past بهامش 30 دقيقة بعد انتهاء الوقت
 function isSlotPast(dateKey,slot){
   const todayStr=makeDateKey(new Date());
-  if(dateKey!==todayStr) return false;
+  if(dateKey!==todayStr)return false;
   const h=SLOT_HOURS[slot];if(!h)return false;
   const now=new Date();
-  const slotTime=new Date();slotTime.setHours(h,0,0,0);
-  // يخفي الوقت اللي فات بالكامل — الزبون ما يشوف إلا من الوقت الحالي فصاعداً
-  return now>=slotTime;
+  const slotEnd=new Date();slotEnd.setHours(h,30,0,0);
+  return now>=slotEnd;
 }
 
 function isBooked(dateKey,slot){return data.bookings.some(b=>b.dateKey===dateKey&&b.slot===slot&&!b.cancelled);}
-function phoneBooked(p){return data.bookings.some(b=>b.phone===p&&!b.cancelled);}
-// كل الأوقات محجوزة = كل الساعات المتاحة (غير الفايتة) محجوزة فعلاً
+
+// FIX: phoneBooked مع normalize
+function phoneBooked(p){
+  const np=normalizePhone(p);
+  return data.bookings.some(b=>{
+    if(b.cancelled)return false;
+    return normalizePhone(b.phone||'')===np;
+  });
+}
+
 function allSlotsBooked(dateKey){
   const available=SLOTS.filter(s=>!isSlotPast(dateKey,s));
-  if(available.length===0) return true; // كل الساعات فاتت
+  if(available.length===0)return true;
   return available.every(s=>isBooked(dateKey,s));
 }
 
@@ -353,24 +373,21 @@ function validateInputs(){
   const name=document.getElementById('nameInp').value.trim();
   const phone=document.getElementById('phoneInp').value.trim();
   let ok=true;
-
   const nameEl=document.getElementById('nameInp');
   const nameErr=document.getElementById('nameErr');
   if(name&&!isValidName(name)){
     nameEl.classList.add('error');nameErr.style.display='block';ok=false;
   }else{nameEl.classList.remove('error');nameErr.style.display='none';}
-
   const phoneEl=document.getElementById('phoneInp');
   const phoneErr=document.getElementById('phoneErr');
   if(phone&&!isValidIraqiPhone(phone)){
     phoneEl.classList.add('error');phoneErr.style.display='block';ok=false;
   }else{phoneEl.classList.remove('error');phoneErr.style.display='none';}
-
   return ok;
 }
 
 function updateBtn(){
-  if(!validateInputs()) return;
+  if(!validateInputs())return;
   const name=document.getElementById('nameInp').value.trim();
   const phone=document.getElementById('phoneInp').value.trim();
   const btn=document.getElementById('bookBtn');
@@ -398,16 +415,15 @@ function renderServices(){
 function renderDays(){
   const g=document.getElementById('daysScroll');g.innerHTML='';
   const days=getNext7Days();
-  const todayKey=makeDateKey(new Date());
+  const todayK=makeDateKey(new Date());
   days.forEach(d=>{
     const key=makeDateKey(d);
-    // ✅ FIX: توحيد disabledDays على dateKey فقط
     const disabled=(data.disabledDays||[]).includes(key);
-    const isToday=key===todayKey;
+    const isToday=key===todayK;
     const card=document.createElement('div');
     card.className='day-card'+(selDateKey===key?' sel':'')+(disabled?' disabled':'')+(isToday?' today':'');
     card.innerHTML=`<span class="day-name">${DAY_NAMES[d.getDay()]}</span><span class="day-num">${d.getDate()}</span><span class="day-month">${MONTH_NAMES[d.getMonth()]}</span>`;
-    if(!disabled) card.onclick=()=>{
+    if(!disabled)card.onclick=()=>{
       selDateKey=key;selDateLabel=makeLabel(d);selSlot=null;
       renderDays();renderSlots();updateBtn();
     };
@@ -436,7 +452,7 @@ function renderSlots(){
     const btn=document.createElement('button');
     btn.className='slot-btn'+(bkd?' bkd':'')+(past&&!bkd?' past':'')+(selSlot===s?' sel':'');
     btn.textContent=s;
-    if(!bkd&&!past) btn.onclick=()=>{selSlot=s;renderSlots();updateBtn();};
+    if(!bkd&&!past)btn.onclick=()=>{selSlot=s;renderSlots();updateBtn();};
     g.appendChild(btn);
   });
 }
@@ -454,17 +470,25 @@ async function handleBook(){
   if(!isValidName(name)){showToast('⚠️ الاسم يجب أن يكون 3 أحرف على الأقل');return;}
   if(!isValidIraqiPhone(phone)){showToast('⚠️ رقم الهاتف غير صحيح');return;}
   if(!selService||!selDateKey||!selSlot)return;
+
+  // FIX: phoneBooked مع normalize
   if(phoneBooked(phone)){showToast('⚠️ هذا الرقم عنده حجز مسبق!');return;}
 
   const btn=document.getElementById('bookBtn');
   btn.disabled=true;btn.textContent='⏳ جاري الحجز...';btn.classList.add('loading');
   isSaving=true;
 
-  // ✅ FIX: Re-fetch قبل الحفظ للحماية من race condition
+  // Re-fetch للحماية من race condition
   await loadData();
   if(isBooked(selDateKey,selSlot)){
     showToast('⚠️ هذا الوقت انحجز للتو! اختار وقتاً آخر');
     renderSlots();btn.disabled=false;btn.classList.remove('loading');
+    btn.textContent='✦ احجز';isSaving=false;return;
+  }
+  // FIX: تحقق مجدد من الرقم بعد reload
+  if(phoneBooked(phone)){
+    showToast('⚠️ هذا الرقم عنده حجز مسبق!');
+    btn.disabled=false;btn.classList.remove('loading');
     btn.textContent='✦ احجز';isSaving=false;return;
   }
 
@@ -490,11 +514,9 @@ async function handleBook(){
     isSaving=false;return;
   }
 
-  // إشعار فوري لصاحب الصالون (تيليجرام + ntfy)
   notify('حجز جديد 🎉',
     `حجز جديد!\n👤 ${name}\n✂️ ${svc.name}\n📅 ${selDateLabel}\n⏰ ${selSlot}\n💰 ${formatPrice(svc.price)}\n📞 ${phone}`
   );
-  // ✅ لا يُفتح واتساب هنا — الإرسال يتم من لوحة التحكم
 
   document.getElementById('s-name').textContent=name;
   document.getElementById('s-service').textContent=svc.name;
@@ -514,7 +536,7 @@ async function handleWaitlist(){
   if(!isValidIraqiPhone(phone)){showToast('⚠️ رقم الهاتف غير صحيح');return;}
   if(!selDateKey){showToast('⚠️ اختار اليوم أولاً');return;}
   const entry={id:'w'+Date.now(),name,phone,day:selDateLabel,dateKey:selDateKey,createdAt:Date.now()};
-  if(!data.waitlist) data.waitlist=[];
+  if(!data.waitlist)data.waitlist=[];
   data.waitlist.push(entry);
   try{
     await saveData();
@@ -523,6 +545,21 @@ async function handleWaitlist(){
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('waitlistView').classList.remove('hidden');
   }catch(e){data.waitlist.pop();}
+}
+
+// FIX: دالة إعادة ضبط النموذج (زر "حجز موعد آخر")
+function resetForm(){
+  selService=null;selDateKey=null;selDateLabel=null;selSlot=null;
+  document.getElementById('nameInp').value='';
+  document.getElementById('phoneInp').value='';
+  document.getElementById('successView').classList.add('hidden');
+  document.getElementById('waitlistView').classList.add('hidden');
+  document.getElementById('formView').classList.remove('hidden');
+  document.getElementById('slotsSection').style.display='none';
+  document.getElementById('bookBtnSection').style.display='block';
+  document.getElementById('waitBtnSection').style.display='none';
+  loadData().then(()=>{renderServices();renderDays();updateBtn();});
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 (async()=>{

@@ -28,6 +28,9 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .pin-btn.zero{grid-column:2;}
 .pin-err-msg{font-size:12px;color:#e05050;margin-top:16px;opacity:0;transition:opacity .2s;}
 .pin-err-msg.show{opacity:1;}
+/* ===== LOCKOUT ===== */
+.lockout-msg{font-size:13px;color:#e05050;background:#1a0808;border:1px solid #3a1010;border-radius:10px;padding:12px 18px;margin-top:16px;text-align:center;display:none;}
+.lockout-msg.show{display:block;}
 
 /* ===== HEADER ===== */
 .header{background:linear-gradient(160deg,#0d0d0d,#111008);border-bottom:1px solid #1a1a1a;padding:18px 18px 14px;display:flex;align-items:center;justify-content:space-between;max-width:540px;margin:0 auto;}
@@ -76,6 +79,8 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .tag{font-size:10px;border-radius:50px;padding:2px 9px;margin-right:4px;display:inline-block;margin-top:3px;}
 .tag-ok{color:#4a9a4a;background:#0a1a0a;border:1px solid #1a3a1a;}
 .tag-late{color:#e05050;background:#1a0808;border:1px solid #3a1010;}
+.tag-manual{color:#c9a84c;background:#1a1500;border:1px solid #3a3000;}
+.tag-arrived{color:#4a9a4a;background:#0a1a0a;border:1px solid #1a3a1a;}
 .time-badge{background:#1a1a1a;border-radius:9px;padding:6px 14px;font-size:14px;font-weight:700;color:#c9a84c;white-space:nowrap;flex-shrink:0;}
 .service-badge{font-size:11px;color:#888;background:#1a1a1a;border-radius:6px;padding:3px 10px;margin-top:4px;display:inline-block;}
 .price-badge{font-size:11px;color:#4a9a4a;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:3px 10px;margin-top:4px;margin-right:4px;display:inline-block;}
@@ -84,8 +89,14 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .actions{display:flex;gap:7px;}
 .wa-btn{flex:1;background:linear-gradient(135deg,#128c3a,#1aad48);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .wa-btn:disabled{background:#0a1a0f;color:#1a4a1a;cursor:default;}
+.arrived-btn{flex:1;background:linear-gradient(135deg,#1a4a8a,#2060cc);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
 .cancel-btn{background:#1a0808;border:1px solid #3a1010;border-radius:9px;padding:11px 14px;color:#e05050;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .late-action{width:100%;margin-top:8px;background:#c04040;border:none;border-radius:9px;padding:11px;color:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
+
+/* ===== SEARCH BAR ===== */
+.search-bar{background:#0a0a0a;border:1px solid #222;border-radius:10px;padding:10px 14px;font-family:'Tajawal',sans-serif;font-size:13px;color:#f0ece4;width:100%;outline:none;margin-bottom:12px;}
+.search-bar:focus{border-color:#c9a84c55;}
+.search-bar::placeholder{color:#333;}
 
 /* ===== CALENDAR VIEW ===== */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px;}
@@ -96,6 +107,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .cs-free{background:#0a1a0a;color:#2a6a2a;}
 .cs-bkd{background:#1a1a0a;color:#c9a84c;}
 .cs-late{background:#2a0808;color:#e05050;}
+.cs-arrived{background:#0a1a1a;color:#4a9a9a;}
 
 /* ===== STATS PAGE ===== */
 .weekly{padding:14px 18px 0;max-width:540px;margin:0 auto;}
@@ -117,6 +129,12 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .top-service:last-child{border:none;}
 .top-service-name{font-size:13px;color:#888;}
 .top-service-count{font-size:13px;font-weight:700;color:#c9a84c;}
+
+/* ===== ARCHIVE CARD ===== */
+.archive-card{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;margin-bottom:8px;opacity:.7;}
+.archive-label{font-size:10px;color:#4a9a4a;letter-spacing:2px;margin-bottom:4px;}
+.archive-name{font-size:14px;font-weight:700;color:#666;}
+.archive-detail{font-size:11px;color:#333;margin-top:4px;}
 
 /* ===== WAITLIST ===== */
 .wait-card{background:#111;border:1px solid #c9a84c22;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
@@ -156,6 +174,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .loading-screen p{margin-top:16px;color:#444;font-size:14px;}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0d0d0d;padding:12px 28px;border-radius:50px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;z-index:9999;white-space:nowrap;display:none;box-shadow:0 4px 24px #c9a84c55;}
+.section-header-btn{display:flex;gap:6px;}
 </style>
 </head>
 <body>
@@ -198,6 +217,8 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
     <button class="pin-btn del" onclick="pinDel()">⌫</button>
   </div>
   <div class="pin-err-msg" id="pinErr">رمز خاطئ، حاول مرة ثانية</div>
+  <!-- FIX: lockout message -->
+  <div class="lockout-msg" id="lockoutMsg"></div>
 </div>
 
 <!-- ===== LOADING ===== -->
@@ -243,6 +264,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
     <div class="main-tab active" onclick="switchTab('bookings')">📋 الحجوزات</div>
     <div class="main-tab" onclick="switchTab('calendar')">🗓️ تقويم</div>
     <div class="main-tab" onclick="switchTab('stats')">📊 إحصائيات</div>
+    <div class="main-tab" onclick="switchTab('archive')">🗄️ الأرشيف</div>
     <div class="main-tab" onclick="switchTab('waitlist')">⏳ انتظار</div>
     <div class="main-tab" onclick="switchTab('settings')">⚙️ إعدادات</div>
   </div>
@@ -257,7 +279,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
     <div class="section" style="margin-top:16px">
       <div class="sec-row">
         <div class="sec-title">الحجوزات</div>
-        <div style="display:flex;gap:6px;">
+        <div class="section-header-btn">
           <button class="refresh-btn" onclick="showManualBooking()">➕ حجز يدوي</button>
           <button class="refresh-btn" onclick="loadAndRender()">🔄 تحديث</button>
         </div>
@@ -268,6 +290,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
         <div style="font-size:12px;font-weight:700;color:#c9a84c;margin-bottom:12px;">➕ حجز يدوي (اتصال هاتفي)</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <input id="mName" class="setting-inp" placeholder="اسم الزبون..." maxlength="30"/>
+          <input id="mPhone" class="setting-inp" placeholder="رقم الهاتف (اختياري)..." maxlength="13" type="tel"/>
           <select id="mService" class="setting-inp">
             <option value="">اختار الخدمة</option>
             <option value="حلاقة كاملة" data-price="15000">حلاقة كاملة — 15,000</option>
@@ -287,6 +310,10 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
           </div>
         </div>
       </div>
+
+      <!-- FIX: Search bar -->
+      <input class="search-bar" id="searchBar" placeholder="🔍 ابحث باسم الزبون أو رقم الهاتف..." oninput="renderBookings()"/>
+
       <div class="date-tabs" id="dateTabs"></div>
       <div id="cardsList"></div>
     </div>
@@ -326,8 +353,12 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
           <div id="monthlyRows"></div>
         </div>
         <div class="revenue-box">
-          <span>إيرادات الشهر</span>
+          <span>إيرادات الشهر (نشطة)</span>
           <strong id="monthRevenue">0 د.ع</strong>
+        </div>
+        <div class="revenue-box" style="margin-top:10px">
+          <span>إيرادات الشهر (مكتملة)</span>
+          <strong id="monthRevenueArchive">0 د.ع</strong>
         </div>
         <div class="revenue-box" style="margin-top:10px">
           <span>إجمالي كل الوقت</span>
@@ -344,6 +375,17 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
           <div id="peakHours"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ARCHIVE TAB (NEW) -->
+  <div class="tab-content" id="tab-archive">
+    <div class="section" style="margin-top:16px">
+      <div class="sec-row">
+        <div class="sec-title">سجل الزبائن المكتملين</div>
+        <button class="refresh-btn" onclick="renderArchive()">🔄</button>
+      </div>
+      <div id="archiveList"></div>
     </div>
   </div>
 
@@ -383,9 +425,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
         <div style="margin-top:12px;font-size:11px;color:#333;line-height:1.8;">
           كيف تحصل على الـ Chat ID:<br/>
           1. افتح @userinfobot على تيليجرام<br/>
-          2. أرسل أي رسالة وستحصل على الـ ID<br/>
-          3. أو أرسل رسالة للبوت أولاً ثم افتح:<br/>
-          api.telegram.org/bot[TOKEN]/getUpdates
+          2. أرسل أي رسالة وستحصل على الـ ID
         </div>
       </div>
 
@@ -411,85 +451,154 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 
 <script>
 // ============================================================
-// CONFIG
+// CONFIG — ضع هنا معرف الـ Bin فقط، المفاتيح تُحفظ في localStorage
 // ============================================================
 const CONFIG = {
-  BIN_ID:  '69f53bd4aaba8821975f4502',
-  API_KEY: '$2a$10$xxo3kGCW6jGSoHj3200WmOpkK4wI88Bm9Ac6MBYaMAGMH0k6Ggwum',
-  DEFAULT_PIN: '1234',
-  TG_TOKEN: '8329343070:AAGnCvsSSxRS5qH_tHh1EYFcNFTxHVYd8N4',
-  TG_CHAT:  '7706249764',
+  BIN_ID: '69f53bd4aaba8821975f4502',
   NTFY_TOPIC: 'salonart-mom18',
 };
-// ============================================================
 
-const API_URL  = `https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`;
-const HDRS     = {'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY};
+// ===== FIX: المفاتيح الحساسة تُقرأ من localStorage فقط =====
+function getApiKey(){ return localStorage.getItem('salon_api_key')||''; }
+function getTgToken(){ return localStorage.getItem('salon_tg_token')||''; }
+function getTgChat(){ return localStorage.getItem('salon_tg_chat')||''; }
+
+const API_URL = `https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`;
+function getHDRS(){ return {'Content-Type':'application/json','X-Master-Key':getApiKey()}; }
+
 const DAY_NAMES    = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTH_NAMES  = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 const SLOT_ORDER   = ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
 const SLOT_HOURS   = {"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23};
 
-let data={bookings:[],waitlist:[],disabledDays:[]};
+let data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[]};
 let selDateKey='all',activeTab='bookings',activeStatsTab='week';
 let lastSyncTime=null;
 
 // ============================================================
-// PIN LOGIC
+// FIX: PIN LOGIC — مع Lockout بعد 5 محاولات خاطئة
 // ============================================================
 let pinEntry='';
+let pinFailCount=0;
+let pinLockedUntil=0;
 
-function getPin(){ return (typeof data!=='undefined' && data.adminPin) ? data.adminPin : CONFIG.DEFAULT_PIN; }
+function isPinLocked(){
+  if(!pinLockedUntil)return false;
+  return Date.now()<pinLockedUntil;
+}
+
+function getPin(){
+  return (typeof data!=='undefined'&&data.adminPin)?data.adminPin:null;
+}
 
 function pinPress(d){
+  if(isPinLocked()){showLockout();return;}
   if(pinEntry.length>=4)return;
   pinEntry+=d;
   updatePinDots();
   if(pinEntry.length===4) setTimeout(checkPin,120);
 }
-function pinDel(){ pinEntry=pinEntry.slice(0,-1);updatePinDots(); }
+function pinDel(){
+  if(isPinLocked())return;
+  pinEntry=pinEntry.slice(0,-1);updatePinDots();
+}
 function updatePinDots(){
   for(let i=0;i<4;i++){
     document.getElementById('dot'+i).classList.toggle('filled',i<pinEntry.length);
     document.getElementById('dot'+i).classList.remove('error');
   }
 }
+function showLockout(){
+  const remaining=Math.ceil((pinLockedUntil-Date.now())/1000);
+  const msg=document.getElementById('lockoutMsg');
+  msg.textContent=`🔒 تم تجميد الدخول لمدة ${remaining} ثانية`;
+  msg.classList.add('show');
+}
+function onPinFail(){
+  pinFailCount++;
+  pinEntry='';updatePinDots();
+  for(let i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
+  document.getElementById('pinErr').classList.add('show');
+  setTimeout(()=>document.getElementById('pinErr').classList.remove('show'),1000);
+  if(pinFailCount>=5){
+    // FIX: Lockout 60 ثانية بعد 5 محاولات
+    pinLockedUntil=Date.now()+60000;
+    const msg=document.getElementById('lockoutMsg');
+    msg.classList.add('show');
+    const interval=setInterval(()=>{
+      if(!isPinLocked()){
+        msg.classList.remove('show');
+        pinFailCount=0;
+        clearInterval(interval);
+      }else{showLockout();}
+    },1000);
+  }
+}
+
 function checkPin(){
-  var tryPin = pinEntry;
+  if(isPinLocked()){showLockout();return;}
+  const tryPin=pinEntry;
+
+  // FIX: لا fallback لـ 1234 — إذا فشل الاتصال يُرفض الدخول
+  if(!getApiKey()){
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('pinScreen').style.display='flex';
+    showToast('⚠️ أدخل API Key في الإعدادات أولاً');
+    // نفتح مباشرة بمربع إدخال API Key
+    promptApiKey();
+    return;
+  }
+
   document.getElementById('pinScreen').style.display='none';
   document.getElementById('loadingScreen').style.display='flex';
-  // نحمل البيانات ونتحقق من الرمز
-  fetch('https://api.jsonbin.io/v3/b/69f53bd4aaba8821975f4502',{
-    headers:{'X-Master-Key':'$2a$10$xxo3kGCW6jGSoHj3200WmOpkK4wI88Bm9Ac6MBYaMAGMH0k6Ggwum'}
-  }).then(function(r){return r.json();}).then(function(d){
-    var realPin = (d.record && d.record.adminPin) ? d.record.adminPin : '1234';
-    if(tryPin===realPin){
-      initApp();
-    }else{
+
+  fetch(API_URL,{headers:{'X-Master-Key':getApiKey()}})
+    .then(r=>{
+      if(!r.ok)throw new Error('auth_fail');
+      return r.json();
+    })
+    .then(d=>{
+      const realPin=(d.record&&d.record.adminPin)?d.record.adminPin:null;
+      if(!realPin){
+        // أول مرة — قبول أي PIN من 4 أرقام وحفظه
+        if(/^\d{4}$/.test(tryPin)){
+          initApp(tryPin);
+        }else{
+          document.getElementById('loadingScreen').style.display='none';
+          document.getElementById('pinScreen').style.display='flex';
+          onPinFail();
+        }
+      }else if(tryPin===realPin){
+        pinFailCount=0;
+        initApp(null);
+      }else{
+        document.getElementById('loadingScreen').style.display='none';
+        document.getElementById('pinScreen').style.display='flex';
+        onPinFail();
+      }
+    })
+    .catch(()=>{
+      // FIX: رفض الدخول عند فشل الاتصال بدل قبول 1234
       document.getElementById('loadingScreen').style.display='none';
       document.getElementById('pinScreen').style.display='flex';
-      pinEntry=''; updatePinDots();
-      for(var i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
-      document.getElementById('pinErr').classList.add('show');
-      setTimeout(function(){ document.getElementById('pinErr').classList.remove('show'); },1000);
-    }
-  }).catch(function(){
-    // فشل الاتصال — نقبل 1234
-    if(tryPin==='1234'){ initApp(); }
-    else{
-      document.getElementById('loadingScreen').style.display='none';
-      document.getElementById('pinScreen').style.display='flex';
-      pinEntry=''; updatePinDots();
-      for(var i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
-      document.getElementById('pinErr').classList.add('show');
-      setTimeout(function(){ document.getElementById('pinErr').classList.remove('show'); },1000);
-    }
-  });
+      pinEntry='';updatePinDots();
+      showToast('❌ تعذر الاتصال — تحقق من الإنترنت والـ API Key');
+    });
 }
+
+function promptApiKey(){
+  const key=prompt('أدخل API Key الخاص بـ JSONBin:','');
+  if(key&&key.trim()){
+    localStorage.setItem('salon_api_key',key.trim());
+    showToast('✅ تم حفظ الـ API Key');
+  }
+}
+
 async function changePin(){
   const old=document.getElementById('oldPin').value;
   const nw=document.getElementById('newPin').value;
-  if(old!==getPin()){showToast('❌ الرمز الحالي خاطئ');return;}
+  const currentPin=getPin()||'0000';
+  if(old!==currentPin){showToast('❌ الرمز الحالي خاطئ');return;}
   if(!/^\d{4}$/.test(nw)){showToast('⚠️ الرمز الجديد يجب أن يكون 4 أرقام');return;}
   const oldPin=data.adminPin;
   data.adminPin=nw;
@@ -505,13 +614,11 @@ async function changePin(){
 }
 
 // ============================================================
-// TELEGRAM
+// TELEGRAM — FIX: من localStorage فقط، لا توكن ثابت في الكود
 // ============================================================
 const TG_TOKEN_KEY='salon_tg_token';
 const TG_CHAT_KEY ='salon_tg_chat';
-
-function getTgToken(){ return localStorage.getItem(TG_TOKEN_KEY)||''; }
-function getTgChat() { return localStorage.getItem(TG_CHAT_KEY)||''; }
+const API_KEY_STORAGE='salon_api_key';
 
 function saveTgSettings(){
   const t=document.getElementById('tgToken').value.trim();
@@ -531,7 +638,7 @@ async function sendTelegram(msg){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({chat_id:chat,text:msg,parse_mode:'HTML'})
     });
-  }catch(e){ console.log('Telegram error',e); }
+  }catch(e){console.log('Telegram error',e);}
 }
 
 async function testTelegram(){
@@ -558,34 +665,55 @@ async function testTelegram(){
   }
 }
 
+async function sendNtfy(title,msg){
+  try{
+    await fetch(`https://ntfy.sh/${CONFIG.NTFY_TOPIC}`,{
+      method:'POST',
+      headers:{'Title':'Salon Art','Priority':'high','Tags':'scissors'},
+      body:msg
+    });
+  }catch(e){console.log('ntfy error',e);}
+}
+
+async function notify(title,msg){
+  sendNtfy(title,msg);
+  sendTelegram(msg);
+}
+
 // ============================================================
 // DATA
 // ============================================================
 function makeDateKey(d){
-  // استخدم التوقيت المحلي بدل UTC
   const y=d.getFullYear();
   const m=String(d.getMonth()+1).padStart(2,'0');
   const day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
-function makeLabel(d){ return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`; }
-function formatPrice(p){ return Number(p).toLocaleString('ar-IQ')+' د.ع'; }
+function makeLabel(d){return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;}
+function formatPrice(p){return Number(p).toLocaleString('ar-IQ')+' د.ع';}
 function getNext7Days(){
   const days=[];const today=new Date();today.setHours(0,0,0,0);
   for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+i);days.push(d);}
   return days;
 }
-function todayKey(){ return makeDateKey(new Date()); }
+function todayKey(){return makeDateKey(new Date());}
+
+// FIX: Normalize phone for comparison
+function normalizePhone(p){
+  const clean=p.replace(/\D/g,'');
+  return clean.startsWith('964')?'0'+clean.slice(3):clean;
+}
 
 async function loadData(){
   try{
-    const r=await fetch(API_URL,{headers:{'X-Master-Key':CONFIG.API_KEY}});
-    if(!r.ok) throw new Error('fetch error');
+    const r=await fetch(API_URL,{headers:{'X-Master-Key':getApiKey()}});
+    if(!r.ok)throw new Error('fetch error');
     const d=await r.json();
     data=d.record||{};
-    if(!data.bookings)    data.bookings=[];
-    if(!data.waitlist)    data.waitlist=[];
-    if(!data.disabledDays) data.disabledDays=[];
+    if(!data.bookings)       data.bookings=[];
+    if(!data.waitlist)       data.waitlist=[];
+    if(!data.disabledDays)   data.disabledDays=[];
+    if(!data.archivedBookings) data.archivedBookings=[];
     lastSyncTime=new Date();
     updateSyncBar(true);
   }catch(e){
@@ -594,10 +722,16 @@ async function loadData(){
   }
 }
 
+// FIX: Schema validation قبل الحفظ
+function validateData(d){
+  return d&&Array.isArray(d.bookings)&&Array.isArray(d.waitlist)&&Array.isArray(d.disabledDays);
+}
+
 async function saveData(){
+  if(!validateData(data)){showToast('❌ خطأ في هيكل البيانات');throw new Error('invalid data');}
   try{
-    const r=await fetch(API_URL,{method:'PUT',headers:HDRS,body:JSON.stringify(data)});
-    if(!r.ok) throw new Error('save error');
+    const r=await fetch(API_URL,{method:'PUT',headers:getHDRS(),body:JSON.stringify(data)});
+    if(!r.ok)throw new Error('save error');
     lastSyncTime=new Date();
     updateSyncBar(true);
   }catch(e){
@@ -606,6 +740,8 @@ async function saveData(){
     throw e;
   }
 }
+
+async function loadAndRender(){await loadData();render();}
 
 function updateSyncBar(ok){
   const status=document.getElementById('syncStatus');
@@ -616,9 +752,8 @@ function updateSyncBar(ok){
 }
 
 function isLate(b){
-  const now=new Date();const bDate=b.dateKey||null;
-  if(!bDate)return false;
-  if(bDate!==todayKey())return false;
+  const now=new Date();
+  if(!b.dateKey||b.dateKey!==todayKey())return false;
   const h=SLOT_HOURS[b.slot];if(!h)return false;
   const st=new Date();st.setHours(h,0,0,0);
   return (now-st)>15*60*1000;
@@ -641,8 +776,9 @@ function showToast(msg){
 // ============================================================
 function switchTab(tab){
   activeTab=tab;
+  const tabNames=['bookings','calendar','stats','archive','waitlist','settings'];
   document.querySelectorAll('.main-tab').forEach((el,i)=>{
-    el.classList.toggle('active',['bookings','calendar','stats','waitlist','settings'][i]===tab);
+    el.classList.toggle('active',tabNames[i]===tab);
   });
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
@@ -681,21 +817,12 @@ async function remind(id){
 async function cancelBooking(id){
   if(!confirm('هل تريد إلغاء هذا الحجز؟'))return;
   const b=data.bookings.find(x=>x.id===id);if(!b)return;
-  // ✅ FIX: علامة إلغاء بدل الحذف — لحفظ السجل
   b.cancelled=true;b.cancelledAt=Date.now();
   try{
     await saveData();render();
     showToast(`🗑️ تم إلغاء موعد ${b.name}`);
-    notify('إلغاء حجز 🗑️', `إلغاء حجز
-👤 ${b.name}
-✂️ ${b.service}
-📅 ${b.dateLabel||b.day}
-⏰ ${b.slot}`);
-    notify('إلغاء حجز 🗑️', `إلغاء حجز
-👤 ${b.name}
-✂️ ${b.service}
-📅 ${b.dateLabel||b.day}
-⏰ ${b.slot}`);
+    // FIX: إزالة الإرسال المزدوج
+    notify('إلغاء حجز 🗑️',`إلغاء حجز\n👤 ${b.name}\n✂️ ${b.service}\n📅 ${b.dateLabel||b.day}\n⏰ ${b.slot}`);
   }catch(e){b.cancelled=false;b.cancelledAt=null;}
 }
 
@@ -706,10 +833,28 @@ async function cancelLate(id){
   try{
     await saveData();render();
     showToast(`⛔ أُلغي حجز ${b.name} بسبب التأخر`);
-    notify('إلغاء بسبب التأخر ⛔', `إلغاء بسبب التأخر
-👤 ${b.name} — تأخر ${mins} دقيقة
-⏰ ${b.slot}`);
+    notify('إلغاء بسبب التأخر ⛔',`إلغاء بسبب التأخر\n👤 ${b.name} — تأخر ${mins} دقيقة\n⏰ ${b.slot}`);
   }catch(e){b.cancelled=false;b.cancelledAt=null;b.cancelReason=null;}
+}
+
+// FIX: markArrived يؤرشف بدل الحذف
+async function markArrived(id){
+  const b=data.bookings.find(x=>x.id===id);if(!b)return;
+  if(!confirm(`✅ تأكيد وصول ${b.name}؟`))return;
+  // أرشفة
+  const archived={...b,status:'arrived',arrivedAt:Date.now()};
+  if(!data.archivedBookings) data.archivedBookings=[];
+  data.archivedBookings.push(archived);
+  data.bookings=data.bookings.filter(x=>x.id!==id);
+  try{
+    await saveData();render();
+    showToast(`💈 ${b.name} وصل — تم أرشفة الحجز`);
+    notify('وصل الزبون ✅',`وصول\n👤 ${b.name}\n✂️ ${b.service}\n⏰ ${b.slot}\n💰 ${formatPrice(b.price)}`);
+  }catch(e){
+    data.bookings.push(b);
+    data.archivedBookings=data.archivedBookings.filter(x=>x.id!==id);
+    showToast('❌ فشل الحفظ');
+  }
 }
 
 async function notifyWait(id){
@@ -724,23 +869,20 @@ async function notifyWait(id){
 async function toggleDay(key){
   if(!data.disabledDays)data.disabledDays=[];
   const wasOff=data.disabledDays.includes(key);
-  if(wasOff){
-    data.disabledDays=data.disabledDays.filter(d=>d!==key);
-  }else{
-    data.disabledDays.push(key);
-  }
+  if(wasOff){data.disabledDays=data.disabledDays.filter(d=>d!==key);}
+  else{data.disabledDays.push(key);}
   try{
     await saveData();
     showToast(wasOff?'✅ تم تفعيل اليوم':'🚫 تم تعطيل اليوم');
     render();
   }catch(e){
-    if(wasOff) data.disabledDays.push(key);
+    if(wasOff)data.disabledDays.push(key);
     else data.disabledDays=data.disabledDays.filter(d=>d!==key);
   }
 }
 
 // ============================================================
-// RENDER BOOKINGS
+// RENDER BOOKINGS — FIX: مع بحث
 // ============================================================
 function renderBookings(){
   const active=data.bookings.filter(b=>!b.cancelled);
@@ -749,6 +891,8 @@ function renderBookings(){
   document.getElementById('st-total').textContent=active.length;
   document.getElementById('st-pending').textContent=active.length-reminded;
   document.getElementById('st-reminded').textContent=reminded;
+
+  const searchQ=(document.getElementById('searchBar')?.value||'').trim().toLowerCase();
 
   const days=getNext7Days();
   const tabs=document.getElementById('dateTabs');tabs.innerHTML='';
@@ -767,7 +911,14 @@ function renderBookings(){
     tabs.appendChild(btn);
   });
 
-  const filtered=selDateKey==='all'?active:active.filter(b=>b.dateKey===selDateKey);
+  let filtered=selDateKey==='all'?active:active.filter(b=>b.dateKey===selDateKey);
+  // FIX: تصفية البحث
+  if(searchQ){
+    filtered=filtered.filter(b=>
+      (b.name||'').toLowerCase().includes(searchQ)||
+      (b.phone||'').replace(/\D/g,'').includes(searchQ.replace(/\D/g,''))
+    );
+  }
   const sorted=[...filtered].sort((a,b)=>{
     if(a.dateKey!==b.dateKey)return (a.dateKey||'').localeCompare(b.dateKey||'');
     return SLOT_ORDER.indexOf(a.slot)-SLOT_ORDER.indexOf(b.slot);
@@ -777,7 +928,7 @@ function renderBookings(){
 
   const list=document.getElementById('cardsList');
   if(!sorted.length){
-    list.innerHTML=`<div class="empty"><div class="empty-icon">✂️</div><p>ما في حجوزات</p></div>`;return;
+    list.innerHTML=`<div class="empty"><div class="empty-icon">✂️</div><p>${searchQ?'لا نتائج بحث':'ما في حجوزات'}</p></div>`;return;
   }
   list.innerHTML=sorted.map(b=>{
     const late=isLate(b);const mins=late?lateMin(b):0;
@@ -787,6 +938,7 @@ function renderBookings(){
           <div class="date-badge">📅 ${b.dateLabel||b.day||''}</div>
           <div><span class="c-name">${b.name}</span>
           ${b.reminded?'<span class="tag tag-ok">✓ ذُكِّر</span>':''}
+          ${b.manual?'<span class="tag tag-manual">📞 يدوي</span>':''}
           ${late?`<span class="tag tag-late">⚠️ تأخر ${mins}د</span>`:''}</div>
           <div style="margin-top:5px">
             <span class="service-badge">${b.service||''}</span>
@@ -803,7 +955,7 @@ function renderBookings(){
         <button class="wa-btn" onclick="remind('${b.id}')" ${b.reminded?'disabled':''}>
           ${waIcon} ${b.reminded?'تم التذكير':'أرسل تذكير'}
         </button>
-        <button onclick="markArrived('${b.id}')" style="flex:1;background:linear-gradient(135deg,#1a4a8a,#2060cc);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;">✅ وصل</button>
+        <button class="arrived-btn" onclick="markArrived('${b.id}')">✅ وصل</button>
         <button class="cancel-btn" onclick="cancelBooking('${b.id}')">إلغاء</button>
       </div>
       ${late?`<button class="late-action" onclick="cancelLate('${b.id}')">⛔ إلغاء بسبب التأخر (${mins} دقيقة)</button>`:''}
@@ -822,7 +974,6 @@ function renderCalendar(){
   days.forEach(d=>{
     html+=`<div class="cal-day-head">${DAY_NAMES[d.getDay()]}<br/><b>${d.getDate()}</b></div>`;
   });
-  // slots rows
   SLOT_ORDER.forEach(slot=>{
     days.forEach(d=>{
       const key=makeDateKey(d);
@@ -839,21 +990,24 @@ function renderCalendar(){
   });
   html+=`</div>`;
   html+=`<div style="display:flex;gap:10px;padding:0 0 10px;font-size:11px;color:#444">
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#0a1a0a;display:inline-block"></span>محجوز</span>
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#2a0808;display:inline-block"></span>متأخر</span>
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#1a1a1a;display:inline-block"></span>متاح</span>
+    <span><span style="width:10px;height:10px;border-radius:3px;background:#0a1a0a;display:inline-block;margin-left:4px"></span>محجوز</span>
+    <span><span style="width:10px;height:10px;border-radius:3px;background:#2a0808;display:inline-block;margin-left:4px"></span>متأخر</span>
+    <span><span style="width:10px;height:10px;border-radius:3px;background:#1a1a1a;display:inline-block;margin-left:4px"></span>متاح</span>
   </div>`;
   wrap.innerHTML=html;
 }
 
 // ============================================================
-// RENDER STATS
+// RENDER STATS — FIX: تشمل الأرشيف
 // ============================================================
 function renderStats(){
   const active=data.bookings.filter(b=>!b.cancelled);
+  const archived=data.archivedBookings||[];
+  const allCompleted=[...active,...archived];
 
   if(activeStatsTab==='week'){
-    const weekRev=active.filter(b=>getNext7Days().map(d=>makeDateKey(d)).includes(b.dateKey)).reduce((s,b)=>s+(b.price||0),0);
+    const keys=getNext7Days().map(d=>makeDateKey(d));
+    const weekRev=active.filter(b=>keys.includes(b.dateKey)).reduce((s,b)=>s+(b.price||0),0);
     document.getElementById('totalRevenue').textContent=weekRev.toLocaleString('ar-IQ')+' د.ع';
     const days=getNext7Days();
     const max=Math.max(...days.map(d=>active.filter(b=>b.dateKey===makeDateKey(d)).length),1);
@@ -865,27 +1019,25 @@ function renderStats(){
       return `<div class="week-row">
         <span class="week-day">${DAY_NAMES[d.getDay()]} ${d.getDate()}</span>
         <div class="week-bar-wrap"><div class="week-bar" style="width:${pct}%"></div></div>
-        <span class="week-count">${cnt} ${rev>0?'• '+rev.toLocaleString():''}</span>
+        <span class="week-count">${cnt}${rev>0?' • '+rev.toLocaleString():''}</span>
       </div>`;
     }).join('');
   }
 
   if(activeStatsTab==='month'){
     const now=new Date();
-    const monthBookings=active.filter(b=>{
-      if(!b.dateKey)return false;
-      const d=new Date(b.dateKey);
-      return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-    });
-    const monthRev=monthBookings.reduce((s,b)=>s+(b.price||0),0);
-    const allRev=active.reduce((s,b)=>s+(b.price||0),0);
+    const inMonth=b=>{if(!b.dateKey)return false;const d=new Date(b.dateKey);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();};
+    const monthActive=active.filter(inMonth);
+    const monthArchived=archived.filter(inMonth);
+    const monthRev=monthActive.reduce((s,b)=>s+(b.price||0),0);
+    const monthRevArch=monthArchived.reduce((s,b)=>s+(b.price||0),0);
+    const allRev=allCompleted.reduce((s,b)=>s+(b.price||0),0);
     document.getElementById('monthRevenue').textContent=monthRev.toLocaleString('ar-IQ')+' د.ع';
+    document.getElementById('monthRevenueArchive').textContent=monthRevArch.toLocaleString('ar-IQ')+' د.ع';
     document.getElementById('allTimeRevenue').textContent=allRev.toLocaleString('ar-IQ')+' د.ع';
-    // weekly breakdown this month
     const weeks={};
-    monthBookings.forEach(b=>{
-      const d=new Date(b.dateKey);
-      const wk=Math.ceil(d.getDate()/7);
+    [...monthActive,...monthArchived].forEach(b=>{
+      const d=new Date(b.dateKey);const wk=Math.ceil(d.getDate()/7);
       if(!weeks[wk])weeks[wk]={cnt:0,rev:0};
       weeks[wk].cnt++;weeks[wk].rev+=(b.price||0);
     });
@@ -898,20 +1050,19 @@ function renderStats(){
 
   if(activeStatsTab==='services'){
     const svcCount={};const svcRev={};
-    active.forEach(b=>{
+    allCompleted.forEach(b=>{
       const n=b.service||'غير محدد';
       svcCount[n]=(svcCount[n]||0)+1;
       svcRev[n]=(svcRev[n]||0)+(b.price||0);
     });
-    const sorted=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]);
-    document.getElementById('servicesStats').innerHTML=sorted.map(([name,cnt])=>`
+    const sortedSvc=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]);
+    document.getElementById('servicesStats').innerHTML=sortedSvc.map(([name,cnt])=>`
       <div class="top-service">
         <span class="top-service-name">${name}</span>
         <span class="top-service-count">${cnt} حجز • ${(svcRev[name]||0).toLocaleString()} د.ع</span>
       </div>`).join('')||'<div style="color:#333;padding:10px;font-size:13px">لا توجد بيانات</div>';
-
     const slotCount={};
-    active.forEach(b=>{ slotCount[b.slot]=(slotCount[b.slot]||0)+1; });
+    allCompleted.forEach(b=>{slotCount[b.slot]=(slotCount[b.slot]||0)+1;});
     const sortedSlots=SLOT_ORDER.map(s=>({slot:s,cnt:slotCount[s]||0})).sort((a,b)=>b.cnt-a.cnt);
     const maxSlot=Math.max(...sortedSlots.map(s=>s.cnt),1);
     document.getElementById('peakHours').innerHTML=sortedSlots.map(s=>`
@@ -921,6 +1072,25 @@ function renderStats(){
         <span class="week-count">${s.cnt}</span>
       </div>`).join('');
   }
+}
+
+// ============================================================
+// RENDER ARCHIVE — NEW
+// ============================================================
+function renderArchive(){
+  const archived=data.archivedBookings||[];
+  const list=document.getElementById('archiveList');
+  if(!archived.length){
+    list.innerHTML=`<div class="empty"><div class="empty-icon">🗄️</div><p>لا يوجد سجلات مكتملة بعد</p></div>`;return;
+  }
+  const sorted=[...archived].sort((a,b)=>(b.arrivedAt||0)-(a.arrivedAt||0));
+  list.innerHTML=sorted.map(b=>`
+    <div class="archive-card">
+      <div class="archive-label">✅ وصل</div>
+      <div class="archive-name">${b.name} <span style="color:#555;font-size:12px;font-weight:400">— ${b.service}</span></div>
+      <div class="archive-detail">📅 ${b.dateLabel||b.day||b.dateKey} • ⏰ ${b.slot} • 💰 ${formatPrice(b.price||0)}</div>
+      <div class="archive-detail" style="margin-top:4px">📞 ${b.phone||'—'} • وصل: ${b.arrivedAt?new Date(b.arrivedAt).toLocaleString('ar-IQ'):''}</div>
+    </div>`).join('');
 }
 
 // ============================================================
@@ -942,13 +1112,10 @@ function renderWaitlist(){
 // RENDER SETTINGS
 // ============================================================
 function renderSettings(){
-  // load saved TG values
   document.getElementById('tgToken').value=getTgToken();
   document.getElementById('tgChatId').value=getTgChat();
-
   const g=document.getElementById('disableScroll');g.innerHTML='';
-  const days=getNext7Days();
-  days.forEach(d=>{
+  getNext7Days().forEach(d=>{
     const key=makeDateKey(d);
     const off=(data.disabledDays||[]).includes(key);
     const card=document.createElement('div');
@@ -963,42 +1130,9 @@ function render(){
   if(activeTab==='bookings') renderBookings();
   else if(activeTab==='calendar') renderCalendar();
   else if(activeTab==='stats') renderStats();
+  else if(activeTab==='archive') renderArchive();
   else if(activeTab==='waitlist') renderWaitlist();
   else if(activeTab==='settings') renderSettings();
-}
-
-async function loadAndRender(){ await loadData();render(); }
-
-// ============================================================
-// TELEGRAM
-// ============================================================
-async function sendTelegram(msg){
-  try{
-    await fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:CONFIG.TG_CHAT,text:msg,parse_mode:'HTML'})
-    });
-  }catch(e){}
-}
-
-async function sendNtfy(title, msg){
-  try{
-    await fetch(`https://ntfy.sh/${CONFIG.NTFY_TOPIC}`,{
-      method:'POST',
-      headers:{
-        'Title': 'Salon Art',
-        'Priority': 'high',
-        'Tags': 'scissors'
-      },
-      body: msg
-    });
-  }catch(e){ console.log('ntfy error',e); }
-}
-
-async function notify(title, msg){
-  sendNtfy(title, msg);
-  sendTelegram(msg);
 }
 
 // ============================================================
@@ -1009,23 +1143,21 @@ function showManualBooking(){
   const daysSel=document.getElementById('mDay');
   daysSel.innerHTML='<option value="">اختار اليوم</option>';
   getNext7Days().forEach(d=>{
-    const key=makeDateKey(d);
-    const label=makeLabel(d);
+    const key=makeDateKey(d);const label=makeLabel(d);
     const opt=document.createElement('option');
     opt.value=key;opt.textContent=label;opt.dataset.label=label;
     daysSel.appendChild(opt);
   });
   document.getElementById('mSlot').innerHTML='<option value="">اختار اليوم أولاً</option>';
 }
-
 function hideManualBooking(){
   document.getElementById('manualForm').style.display='none';
   document.getElementById('mName').value='';
+  document.getElementById('mPhone').value='';
   document.getElementById('mService').value='';
   document.getElementById('mDay').value='';
   document.getElementById('mSlot').innerHTML='<option value="">اختار اليوم أولاً</option>';
 }
-
 function updateManualSlots(){
   const dateKey=document.getElementById('mDay').value;
   const slotSel=document.getElementById('mSlot');
@@ -1034,15 +1166,14 @@ function updateManualSlots(){
   SLOT_ORDER.forEach(slot=>{
     const booked=data.bookings.some(b=>b.dateKey===dateKey&&b.slot===slot&&!b.cancelled);
     const opt=document.createElement('option');
-    opt.value=slot;
-    opt.textContent=booked?`${slot} — محجوز ❌`:slot;
-    if(booked) opt.disabled=true;
+    opt.value=slot;opt.textContent=booked?`${slot} — محجوز ❌`:slot;
+    if(booked)opt.disabled=true;
     slotSel.appendChild(opt);
   });
 }
-
 async function saveManualBooking(){
   const name=document.getElementById('mName').value.trim();
+  const phone=document.getElementById('mPhone').value.trim()||'📞 هاتف';
   const svcEl=document.getElementById('mService');
   const svc=svcEl.value;
   const price=svcEl.options[svcEl.selectedIndex]?.dataset?.price||0;
@@ -1055,7 +1186,7 @@ async function saveManualBooking(){
   if(!dateKey){showToast('⚠️ اختار اليوم');return;}
   if(!slot){showToast('⚠️ اختار الساعة');return;}
   const booking={
-    id:'b'+Date.now(),name,phone:'📞 هاتف',
+    id:'b'+Date.now(),name,phone,
     service:svc,price:Number(price),
     dateKey,dateLabel,slot,day:dateLabel,
     createdAt:Date.now(),
@@ -1068,11 +1199,7 @@ async function saveManualBooking(){
     await saveData();
     hideManualBooking();render();
     showToast(`✅ تم حجز ${name} — ${slot}`);
-    notify('حجز يدوي 📞', `حجز يدوي
-👤 ${name}
-✂️ ${svc}
-📅 ${dateLabel}
-⏰ ${slot}`);
+    notify('حجز يدوي 📞',`حجز يدوي\n👤 ${name}\n✂️ ${svc}\n📅 ${dateLabel}\n⏰ ${slot}`);
   }catch(e){data.bookings.pop();showToast('❌ فشل الحفظ');}
 }
 
@@ -1087,29 +1214,36 @@ function logout(){
 }
 
 // ============================================================
-// ARRIVED — حذف الحجز عند وصول الزبون
+// INIT — FIX: يطلب API Key إذا غير موجود
 // ============================================================
-async function markArrived(id){
-  const b=data.bookings.find(x=>x.id===id);if(!b)return;
-  data.bookings=data.bookings.filter(x=>x.id!==id);
-  try{
-    await saveData();render();
-    showToast(`💈 ${b.name} وصل — تم حذف الحجز`);
-  }catch(e){ data.bookings.push(b); }
-}
-
-// ============================================================
-// INIT
-// ============================================================
-async function initApp(){
+async function initApp(firstTimePin){
   await loadAndRender();
+  if(firstTimePin&&data){
+    data.adminPin=firstTimePin;
+    try{await saveData();}catch(e){}
+  }
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
+  // FIX: auto-refresh يتوقف في صفحة الإعدادات كاملاً
   setInterval(async()=>{
+    if(activeTab==='settings')return;
     await loadData();
-    if(activeTab!=='settings') render();
+    render();
   },60000);
 }
+
+// FIX: أول شيء يطلب API Key إذا مو موجود
+window.addEventListener('load',()=>{
+  if(!getApiKey()){
+    setTimeout(()=>{
+      const k=prompt('🔑 أدخل API Key الخاص بـ JSONBin للبدء:\n(يُحفظ محلياً على جهازك فقط)','');
+      if(k&&k.trim()){
+        localStorage.setItem('salon_api_key',k.trim());
+        showToast('✅ تم حفظ الـ API Key');
+      }
+    },500);
+  }
+});
 </script>
 </body>
 </html>
