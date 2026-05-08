@@ -1,0 +1,26 @@
+{
+  "name": "Salon Art - لوحة التحكم",
+  "short_name": "Salon Admin",
+  "description": "لوحة تحكم Salon Art للإدارة",
+  "start_url": "/salon-art/admin.html",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#c9a84c",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "https://mom18art-dev.github.io/salon-art/icon-admin-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://mom18art-dev.github.io/salon-art/icon-admin-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
