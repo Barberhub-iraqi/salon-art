@@ -129,6 +129,22 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .top-service:last-child{border:none;}
 .top-service-name{font-size:13px;color:#888;}
 .top-service-count{font-size:13px;font-weight:700;color:#c9a84c;}
+/* ===== ACCOUNTS ===== */
+.acc-summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a;}
+.acc-summary-row:last-child{border:none;}
+.acc-net{margin-top:4px;background:#1a1a0a;border-radius:8px;padding:12px 10px!important;margin:8px -4px -4px;}
+.acc-label{font-size:13px;color:#666;}
+.acc-val{font-size:16px;font-weight:900;}
+.acc-val.green{color:#4a9a4a;}
+.acc-val.red{color:#e05050;}
+.acc-val.gold{color:#c9a84c;font-size:20px;}
+.exp-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a;}
+.exp-item:last-child{border:none;}
+.exp-name{font-size:13px;color:#888;}
+.exp-month-tag{font-size:10px;color:#444;margin-top:2px;}
+.exp-amount{font-size:14px;font-weight:700;color:#e05050;white-space:nowrap;}
+.exp-del{background:none;border:none;color:#3a1010;cursor:pointer;font-size:16px;padding:0 4px;}
+.exp-del:hover{color:#e05050;}
 
 /* ===== ARCHIVE CARD ===== */
 .archive-card{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;margin-bottom:8px;opacity:.7;}
@@ -336,6 +352,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
         <button class="stats-tab active" onclick="switchStats('week')" id="stab-week">أسبوعي</button>
         <button class="stats-tab" onclick="switchStats('month')" id="stab-month">شهري</button>
         <button class="stats-tab" onclick="switchStats('services')" id="stab-services">الخدمات</button>
+        <button class="stats-tab" onclick="switchStats('accounts')" id="stab-accounts">💰 الحسابات</button>
       </div>
       <div id="stats-week">
         <div class="week-card">
@@ -374,6 +391,48 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
           <div class="week-title">أوقات الذروة</div>
           <div id="peakHours"></div>
         </div>
+      </div>
+
+      <!-- ===== الحسابات ===== -->
+      <div id="stats-accounts" style="display:none">
+
+        <!-- ملخص مالي -->
+        <div class="week-card" style="border:1px solid #c9a84c22">
+          <div class="week-title">📊 الملخص المالي — هذا الشهر</div>
+          <div class="acc-summary-row">
+            <span class="acc-label">💰 إجمالي الإيرادات</span>
+            <span class="acc-val green" id="acc-revenue">0 د.ع</span>
+          </div>
+          <div class="acc-summary-row">
+            <span class="acc-label">📤 إجمالي الصرفيات</span>
+            <span class="acc-val red" id="acc-expenses">0 د.ع</span>
+          </div>
+          <div class="acc-summary-row acc-net">
+            <span class="acc-label">✨ صافي الربح</span>
+            <span class="acc-val gold" id="acc-profit">0 د.ع</span>
+          </div>
+        </div>
+
+        <!-- إضافة صرفية -->
+        <div class="week-card">
+          <div class="week-title">➕ إضافة صرفية</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <input id="expName" class="setting-inp" placeholder="اسم الصرفية (مثال: إيجار، كهرباء...)" maxlength="40"/>
+            <input id="expAmount" class="setting-inp" placeholder="المبلغ بالدينار العراقي" type="number" min="0"/>
+            <select id="expMonth" class="setting-inp"></select>
+            <button class="save-btn" onclick="addExpense()">➕ إضافة</button>
+          </div>
+        </div>
+
+        <!-- قائمة الصرفيات -->
+        <div class="week-card">
+          <div class="week-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>📋 الصرفيات</span>
+            <select id="filterMonth" class="setting-inp" style="width:auto;font-size:11px;padding:4px 8px" onchange="renderAccounts()"></select>
+          </div>
+          <div id="expensesList"></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -483,121 +542,30 @@ let lastSyncTime=null;
 // FIX: PIN LOGIC — مع Lockout بعد 5 محاولات خاطئة
 // ============================================================
 let pinEntry='';
-let pinFailCount=0;
-let pinLockedUntil=0;
-
-function isPinLocked(){
-  if(!pinLockedUntil)return false;
-  return Date.now()<pinLockedUntil;
-}
-
-function getPin(){
-  return (data&&data.adminPin)?data.adminPin:CONFIG.DEFAULT_PIN;
-}
 
 function pinPress(d){
-  if(isPinLocked()){showLockout();return;}
   if(pinEntry.length>=4)return;
   pinEntry+=d;
   updatePinDots();
   if(pinEntry.length===4) setTimeout(checkPin,120);
 }
-function pinDel(){
-  if(isPinLocked())return;
-  pinEntry=pinEntry.slice(0,-1);updatePinDots();
-}
+function pinDel(){ pinEntry=pinEntry.slice(0,-1);updatePinDots(); }
 function updatePinDots(){
   for(let i=0;i<4;i++){
     document.getElementById('dot'+i).classList.toggle('filled',i<pinEntry.length);
     document.getElementById('dot'+i).classList.remove('error');
   }
 }
-function showLockout(){
-  const remaining=Math.ceil((pinLockedUntil-Date.now())/1000);
-  const msg=document.getElementById('lockoutMsg');
-  msg.textContent=`🔒 تم تجميد الدخول لمدة ${remaining} ثانية`;
-  msg.classList.add('show');
-}
-function onPinFail(){
-  pinFailCount++;
-  pinEntry='';updatePinDots();
-  for(let i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
-  document.getElementById('pinErr').classList.add('show');
-  setTimeout(()=>document.getElementById('pinErr').classList.remove('show'),1000);
-  if(pinFailCount>=5){
-    // FIX: Lockout 60 ثانية بعد 5 محاولات
-    pinLockedUntil=Date.now()+60000;
-    const msg=document.getElementById('lockoutMsg');
-    msg.classList.add('show');
-    const interval=setInterval(()=>{
-      if(!isPinLocked()){
-        msg.classList.remove('show');
-        pinFailCount=0;
-        clearInterval(interval);
-      }else{showLockout();}
-    },1000);
-  }
-}
-
 function checkPin(){
-  if(isPinLocked()){showLockout();return;}
-  const tryPin=pinEntry;
-
-  document.getElementById('pinScreen').style.display='none';
-  document.getElementById('loadingScreen').style.display='flex';
-
-  fetch(API_URL,{headers:{'X-Master-Key':CONFIG.API_KEY}})
-    .then(r=>{
-      if(!r.ok)throw new Error('auth_fail');
-      return r.json();
-    })
-    .then(d=>{
-      const realPin=(d.record&&d.record.adminPin)?d.record.adminPin:CONFIG.DEFAULT_PIN;
-      if(tryPin===realPin){
-        pinFailCount=0;
-        initApp(realPin===CONFIG.DEFAULT_PIN&&!d.record.adminPin?tryPin:null);
-      }else{
-        document.getElementById('loadingScreen').style.display='none';
-        document.getElementById('pinScreen').style.display='flex';
-        onPinFail();
-      }
-    })
-    .catch(()=>{
-      if(tryPin===CONFIG.DEFAULT_PIN){
-        pinFailCount=0;
-        initApp(null);
-      }else{
-        document.getElementById('loadingScreen').style.display='none';
-        document.getElementById('pinScreen').style.display='flex';
-        onPinFail();
-        showToast('❌ تعذر الاتصال، تحقق من الإنترنت');
-      }
-    });
-}
-
-async function changePin(){
-  const oldVal=document.getElementById('oldPin').value;
-  const nw=document.getElementById('newPin').value;
-  if(!/^\d{4}$/.test(nw)){showToast('⚠️ الرمز الجديد يجب أن يكون 4 أرقام');return;}
-  // re-fetch للتأكد من الرمز الحالي الفعلي من الـ Server
-  showToast('⏳ جاري التحقق...');
-  try{
-    const r=await fetch(API_URL,{headers:{'X-Master-Key':CONFIG.API_KEY}});
-    const d=await r.json();
-    const currentPin=(d.record&&d.record.adminPin)?d.record.adminPin:CONFIG.DEFAULT_PIN;
-    if(oldVal!==currentPin){showToast('❌ الرمز الحالي خاطئ');return;}
-    data=d.record;
-    if(!data.bookings)data.bookings=[];
-    if(!data.waitlist)data.waitlist=[];
-    if(!data.disabledDays)data.disabledDays=[];
-    if(!data.archivedBookings)data.archivedBookings=[];
-    data.adminPin=nw;
-    await saveData();
-    document.getElementById('oldPin').value='';
-    document.getElementById('newPin').value='';
-    showToast('✅ تم تغيير الرمز على كل الأجهزة');
-  }catch(e){
-    showToast('❌ فشل التغيير، تحقق من الاتصال');
+  if(pinEntry==='1998'){
+    document.getElementById('pinScreen').style.display='none';
+    document.getElementById('loadingScreen').style.display='flex';
+    initApp();
+  }else{
+    pinEntry='';updatePinDots();
+    for(let i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
+    document.getElementById('pinErr').classList.add('show');
+    setTimeout(()=>document.getElementById('pinErr').classList.remove('show'),1000);
   }
 }
 
@@ -775,9 +743,11 @@ function switchTab(tab){
 
 function switchStats(t){
   activeStatsTab=t;
-  ['week','month','services'].forEach(s=>{
-    document.getElementById('stab-'+s).classList.toggle('active',s===t);
-    document.getElementById('stats-'+s).style.display=s===t?'block':'none';
+  ['week','month','services','accounts'].forEach(s=>{
+    const btn=document.getElementById('stab-'+s);
+    if(btn) btn.classList.toggle('active',s===t);
+    const el=document.getElementById('stats-'+s);
+    if(el) el.style.display=s===t?'block':'none';
   });
   renderStats();
 }
@@ -1036,6 +1006,8 @@ function renderStats(){
       </div>`).join('')||'<div style="color:#333;font-size:13px;padding:10px">لا توجد بيانات هذا الشهر</div>';
   }
 
+  if(activeStatsTab==='accounts'){ renderAccounts(); return; }
+
   if(activeStatsTab==='services'){
     const svcCount={};const svcRev={};
     allCompleted.forEach(b=>{
@@ -1082,8 +1054,109 @@ function renderArchive(){
 }
 
 // ============================================================
-// RENDER WAITLIST
+// ACCOUNTS — نظام الحسابات
 // ============================================================
+function getMonthKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function getMonthLabel(key){
+  const [y,m]=key.split('-');
+  return `${MONTH_NAMES[parseInt(m)-1]} ${y}`;
+}
+
+function populateMonthSelects(){
+  const now=new Date();
+  const months=[];
+  for(let i=0;i<6;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push({key:getMonthKey(d),label:getMonthLabel(getMonthKey(d))});
+  }
+  ['expMonth','filterMonth'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cur=el.value;
+    el.innerHTML=months.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
+    if(cur) el.value=cur;
+  });
+}
+
+function addExpense(){
+  const name=document.getElementById('expName').value.trim();
+  const amount=parseInt(document.getElementById('expAmount').value)||0;
+  const month=document.getElementById('expMonth').value;
+  if(!name){showToast('⚠️ أدخل اسم الصرفية');return;}
+  if(!amount){showToast('⚠️ أدخل المبلغ');return;}
+  if(!data.expenses) data.expenses=[];
+  data.expenses.push({
+    id:'e'+Date.now(),
+    name,amount,month,
+    createdAt:Date.now()
+  });
+  saveData().then(()=>{
+    document.getElementById('expName').value='';
+    document.getElementById('expAmount').value='';
+    renderAccounts();
+    showToast('✅ تمت إضافة الصرفية');
+  }).catch(()=>{
+    data.expenses.pop();
+    showToast('❌ فشل الحفظ');
+  });
+}
+
+function deleteExpense(id){
+  if(!confirm('هل تريد حذف هذه الصرفية؟'))return;
+  const idx=data.expenses.findIndex(e=>e.id===id);
+  if(idx===-1)return;
+  const removed=data.expenses.splice(idx,1)[0];
+  saveData().then(()=>{
+    renderAccounts();
+    showToast('🗑️ تم حذف الصرفية');
+  }).catch(()=>{
+    data.expenses.splice(idx,0,removed);
+  });
+}
+
+function renderAccounts(){
+  if(!data.expenses) data.expenses=[];
+  populateMonthSelects();
+
+  const filterMonth=document.getElementById('filterMonth')?.value||getMonthKey(new Date());
+  const curMonth=getMonthKey(new Date());
+
+  // إيرادات هذا الشهر
+  const monthRevenue=data.bookings.filter(b=>!b.cancelled&&b.dateKey&&b.dateKey.startsWith(curMonth)).reduce((s,b)=>s+(b.price||0),0);
+
+  // صرفيات الشهر المختار
+  const monthExpenses=data.expenses.filter(e=>e.month===filterMonth);
+  const totalExpenses=monthExpenses.reduce((s,e)=>s+e.amount,0);
+
+  // صرفيات نفس شهر الإيرادات للربح
+  const sameMonthExpenses=data.expenses.filter(e=>e.month===curMonth).reduce((s,e)=>s+e.amount,0);
+  const profit=monthRevenue-sameMonthExpenses;
+
+  // ملخص
+  document.getElementById('acc-revenue').textContent=monthRevenue.toLocaleString('ar-IQ')+' د.ع';
+  document.getElementById('acc-expenses').textContent=sameMonthExpenses.toLocaleString('ar-IQ')+' د.ع';
+  const profitEl=document.getElementById('acc-profit');
+  profitEl.textContent=profit.toLocaleString('ar-IQ')+' د.ع';
+  profitEl.className='acc-val '+(profit>=0?'gold':'red');
+
+  // قائمة الصرفيات
+  const list=document.getElementById('expensesList');
+  if(!monthExpenses.length){
+    list.innerHTML=`<div style="text-align:center;padding:20px;color:#333;font-size:13px">لا توجد صرفيات لهذا الشهر</div>`;
+    return;
+  }
+  list.innerHTML=monthExpenses.sort((a,b)=>b.createdAt-a.createdAt).map(e=>`
+    <div class="exp-item">
+      <div>
+        <div class="exp-name">${e.name}</div>
+        <div class="exp-month-tag">${getMonthLabel(e.month)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="exp-amount">${e.amount.toLocaleString('ar-IQ')} د.ع</span>
+        <button class="exp-del" onclick="deleteExpense('${e.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
 function renderWaitlist(){
   const list=document.getElementById('waitlistCards');
   if(!data.waitlist||!data.waitlist.length){
@@ -1204,16 +1277,10 @@ function logout(){
 // ============================================================
 // INIT
 // ============================================================
-async function initApp(pinToSave){
+async function initApp(){
   await loadAndRender();
-  // إذا ما في رمز محفوظ في الـ DB، احفظ الرمز الحالي
-  if(pinToSave&&data&&!data.adminPin){
-    data.adminPin=pinToSave;
-    try{await saveData();}catch(e){}
-  }
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
-  // auto-refresh كل دقيقة — يتوقف في الإعدادات
   setInterval(async()=>{
     if(activeTab==='settings')return;
     await loadData();
