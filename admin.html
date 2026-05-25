@@ -460,6 +460,23 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
   <div class="tab-content" id="tab-settings">
     <div class="section" style="margin-top:16px">
 
+      <!-- أوقات العمل -->
+      <div class="setting-card">
+        <div class="setting-title">⏰ أوقات العمل</div>
+        <div class="setting-row">
+          <div class="setting-lbl">وقت البداية</div>
+          <select class="setting-inp" id="workStart"></select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-lbl">وقت النهاية</div>
+          <select class="setting-inp" id="workEnd"></select>
+        </div>
+        <button class="save-btn" onclick="saveWorkHours()">💾 حفظ أوقات العمل</button>
+        <div style="margin-top:10px;font-size:11px;color:#444;line-height:1.7;">
+          💡 إذا النهاية بعد منتصف الليل (مثلاً 6:00 ص) الأوقات تتجاوز اليوم التالي تلقائياً.
+        </div>
+      </div>
+
       <!-- تعطيل الأيام -->
       <div class="setting-card">
         <div class="setting-title">📅 تعطيل يوم</div>
@@ -531,8 +548,31 @@ function getHDRS(){ return {'Content-Type':'application/json','X-Master-Key':get
 
 const DAY_NAMES    = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTH_NAMES  = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
-const SLOT_ORDER   = ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
-const SLOT_HOURS   = {"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23};
+// كل الأوقات الممكنة
+const ALL_SLOTS = [
+  "12:00 م","1:00 م","2:00 م","3:00 م","4:00 م","5:00 م","6:00 م",
+  "7:00 م","8:00 م","9:00 م","10:00 م","11:00 م",
+  "12:00 ص","1:00 ص","2:00 ص","3:00 ص","4:00 ص","5:00 ص","6:00 ص"
+];
+const SLOT_HOURS = {
+  "12:00 م":12,"1:00 م":13,"2:00 م":14,"3:00 م":15,"4:00 م":16,
+  "5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,
+  "10:00 م":22,"11:00 م":23,
+  "12:00 ص":0,"1:00 ص":1,"2:00 ص":2,"3:00 ص":3,"4:00 ص":4,"5:00 ص":5,"6:00 ص":6
+};
+function getWorkHours(){
+  if(data && data.workHours && data.workHours.start && data.workHours.end) return data.workHours;
+  return {start:"5:00 م", end:"11:00 م"};
+}
+function getSlotOrder(){
+  const wh=getWorkHours();
+  const si=ALL_SLOTS.indexOf(wh.start);
+  const ei=ALL_SLOTS.indexOf(wh.end);
+  if(si===-1||ei===-1) return ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
+  if(ei>=si) return ALL_SLOTS.slice(si,ei+1);
+  return [...ALL_SLOTS.slice(si), ...ALL_SLOTS.slice(0,ei+1)];
+}
+const SLOT_ORDER = ALL_SLOTS;
 
 let data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[]};
 let selDateKey='all',activeTab='bookings',activeStatsTab='week';
@@ -879,7 +919,7 @@ function renderBookings(){
   }
   const sorted=[...filtered].sort((a,b)=>{
     if(a.dateKey!==b.dateKey)return (a.dateKey||'').localeCompare(b.dateKey||'');
-    return SLOT_ORDER.indexOf(a.slot)-SLOT_ORDER.indexOf(b.slot);
+    return ALL_SLOTS.indexOf(a.slot)-ALL_SLOTS.indexOf(b.slot);
   });
 
   const waIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
@@ -932,7 +972,7 @@ function renderCalendar(){
   days.forEach(d=>{
     html+=`<div class="cal-day-head">${DAY_NAMES[d.getDay()]}<br/><b>${d.getDate()}</b></div>`;
   });
-  SLOT_ORDER.forEach(slot=>{
+  getSlotOrder().forEach(slot=>{
     days.forEach(d=>{
       const key=makeDateKey(d);
       const booking=active.find(b=>b.dateKey===key&&b.slot===slot);
@@ -1023,7 +1063,7 @@ function renderStats(){
       </div>`).join('')||'<div style="color:#333;padding:10px;font-size:13px">لا توجد بيانات</div>';
     const slotCount={};
     allCompleted.forEach(b=>{slotCount[b.slot]=(slotCount[b.slot]||0)+1;});
-    const sortedSlots=SLOT_ORDER.map(s=>({slot:s,cnt:slotCount[s]||0})).sort((a,b)=>b.cnt-a.cnt);
+    const sortedSlots=getSlotOrder().map(s=>({slot:s,cnt:slotCount[s]||0})).sort((a,b)=>b.cnt-a.cnt);
     const maxSlot=Math.max(...sortedSlots.map(s=>s.cnt),1);
     document.getElementById('peakHours').innerHTML=sortedSlots.map(s=>`
       <div class="week-row">
@@ -1175,6 +1215,20 @@ function renderWaitlist(){
 function renderSettings(){
   document.getElementById('tgToken').value=getTgToken();
   document.getElementById('tgChatId').value=getTgChat();
+  // أوقات العمل
+  const wh=getWorkHours();
+  const wStart=document.getElementById('workStart');
+  const wEnd=document.getElementById('workEnd');
+  wStart.innerHTML=''; wEnd.innerHTML='';
+  ALL_SLOTS.forEach(s=>{
+    const o1=document.createElement('option');
+    o1.value=s;o1.textContent=s;if(s===wh.start)o1.selected=true;
+    wStart.appendChild(o1);
+    const o2=document.createElement('option');
+    o2.value=s;o2.textContent=s;if(s===wh.end)o2.selected=true;
+    wEnd.appendChild(o2);
+  });
+  // تعطيل الأيام
   const g=document.getElementById('disableScroll');g.innerHTML='';
   getNext7Days().forEach(d=>{
     const key=makeDateKey(d);
@@ -1185,6 +1239,16 @@ function renderSettings(){
     card.onclick=()=>toggleDay(key);
     g.appendChild(card);
   });
+}
+
+async function saveWorkHours(){
+  const start=document.getElementById('workStart').value;
+  const end=document.getElementById('workEnd').value;
+  if(!data.workHours) data.workHours={};
+  data.workHours.start=start;
+  data.workHours.end=end;
+  await saveData();
+  showToast(`✅ أوقات العمل: ${start} ← ${end}`);
 }
 
 function render(){
@@ -1224,7 +1288,8 @@ function updateManualSlots(){
   const slotSel=document.getElementById('mSlot');
   slotSel.innerHTML='<option value="">اختار الساعة</option>';
   if(!dateKey)return;
-  SLOT_ORDER.forEach(slot=>{
+  // الحجز اليدوي: كل الأوقات بدون فلتر "فات"
+  ALL_SLOTS.forEach(slot=>{
     const booked=data.bookings.some(b=>b.dateKey===dateKey&&b.slot===slot&&!b.cancelled);
     const opt=document.createElement('option');
     opt.value=slot;opt.textContent=booked?`${slot} — محجوز ❌`:slot;
