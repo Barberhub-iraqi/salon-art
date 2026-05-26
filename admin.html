@@ -1263,13 +1263,18 @@ function renderSettings(){
 }
 
 async function saveWorkHours(){
-  const start=document.getElementById('workStart').value;
-  const end=document.getElementById('workEnd').value;
-  if(!data.workHours) data.workHours={};
-  data.workHours.start=start;
-  data.workHours.end=end;
-  await saveData();
-  showToast(`✅ أوقات العمل: ${start} ← ${end}`);
+  const startEl=document.getElementById('workStart');
+  const endEl=document.getElementById('workEnd');
+  const start=startEl.options[startEl.selectedIndex].value;
+  const end=endEl.options[endEl.selectedIndex].value;
+  if(!start||!end){showToast('❌ اختار وقت البداية والنهاية');return;}
+  data.workHours={start:start,end:end};
+  try{
+    await saveData();
+    showToast('✅ تم حفظ أوقات العمل: '+start+' ← '+end);
+  }catch(e){
+    showToast('❌ فشل الحفظ: '+e.message);
+  }
 }
 
 function render(){
