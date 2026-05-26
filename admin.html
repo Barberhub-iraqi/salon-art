@@ -90,6 +90,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 .wa-btn{flex:1;background:linear-gradient(135deg,#128c3a,#1aad48);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .wa-btn:disabled{background:#0a1a0f;color:#1a4a1a;cursor:default;}
 .arrived-btn{flex:1;background:linear-gradient(135deg,#1a4a8a,#2060cc);color:#fff;border:none;border-radius:9px;padding:11px 10px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
+.done-btn{background:#0a2a0a;border:1px solid #2a5a2a;border-radius:9px;padding:11px 14px;color:#5aba5a;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .cancel-btn{background:#1a0808;border:1px solid #3a1010;border-radius:9px;padding:11px 14px;color:#e05050;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .late-action{width:100%;margin-top:8px;background:#c04040;border:none;border-radius:9px;padding:11px;color:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;}
 
@@ -297,6 +298,8 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
         <div class="sec-title">الحجوزات</div>
         <div class="section-header-btn">
           <button class="refresh-btn" onclick="showManualBooking()">➕ حجز يدوي</button>
+          <button class="refresh-btn" onclick="printToday()">🖨️ طباعة اليوم</button>
+          <button class="refresh-btn" onclick="exportBackup()">💾 نسخة احتياطية</button>
           <button class="refresh-btn" onclick="loadAndRender()">🔄 تحديث</button>
         </div>
       </div>
@@ -331,6 +334,9 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
       <input class="search-bar" id="searchBar" placeholder="🔍 ابحث باسم الزبون أو رقم الهاتف..." oninput="renderBookings()"/>
 
       <div class="date-tabs" id="dateTabs"></div>
+      <div id="bulkWaSection" style="display:none;margin-bottom:10px;">
+        <button class="wa-btn" style="width:100%;border-radius:9px;padding:11px;" onclick="sendBulkWA()">📲 إرسال رسالة جماعية لزبائن هذا اليوم</button>
+      </div>
       <div id="cardsList"></div>
     </div>
   </div>
@@ -460,6 +466,23 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
   <div class="tab-content" id="tab-settings">
     <div class="section" style="margin-top:16px">
 
+      <!-- أوقات العمل -->
+      <div class="setting-card">
+        <div class="setting-title">⏰ أوقات العمل</div>
+        <div class="setting-row">
+          <div class="setting-lbl">وقت البداية</div>
+          <select class="setting-inp" id="workStart"></select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-lbl">وقت النهاية</div>
+          <select class="setting-inp" id="workEnd"></select>
+        </div>
+        <button class="save-btn" onclick="saveWorkHours()">💾 حفظ أوقات العمل</button>
+        <div style="margin-top:10px;font-size:11px;color:#444;line-height:1.7;">
+          💡 إذا النهاية بعد منتصف الليل (مثلاً 6:00 ص) الأوقات تتجاوز اليوم التالي تلقائياً.
+        </div>
+      </div>
+
       <!-- تعطيل الأيام -->
       <div class="setting-card">
         <div class="setting-title">📅 تعطيل يوم</div>
@@ -509,23 +532,11 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 <div class="toast" id="toast"></div>
 
 <script type="module">
-// ============================================================
-// FIREBASE CONFIG
-// ============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyATJ5h3IKeINor1bGJeNnGI2mgoyMtETFQ",
-  authDomain:        "salon-art-4adea.firebaseapp.com",
-  projectId:         "salon-art-4adea",
-  storageBucket:     "salon-art-4adea.firebasestorage.app",
-  messagingSenderId: "186276133082",
-  appId:             "1:186276133082:web:004c4e532e2862a67b8de3"
-};
-const _fbApp  = initializeApp(FIREBASE_CONFIG);
-const _db     = getFirestore(_fbApp);
-const DOC_REF = doc(_db, "salon", "data");
+const _app=initializeApp({apiKey:"AIzaSyATJ5h3IKeINor1bGJeNnGI2mgoyMtETFQ",authDomain:"salon-art-4adea.firebaseapp.com",projectId:"salon-art-4adea",storageBucket:"salon-art-4adea.firebasestorage.app",messagingSenderId:"186276133082",appId:"1:186276133082:web:004c4e532e2862a67b8de3"});
+const _db=getFirestore(_app);
+const DOC_REF=doc(_db,"salon","data");
 // ============================================================
 
 const CONFIG = {
@@ -534,14 +545,36 @@ const CONFIG = {
   NTFY_TOPIC: 'salonart-mom18',
   DEFAULT_PIN:'1234',
 };
-
 function getTgToken(){ return localStorage.getItem('salon_tg_token')||CONFIG.TG_TOKEN; }
 function getTgChat(){  return localStorage.getItem('salon_tg_chat')||CONFIG.TG_CHAT; }
 
 const DAY_NAMES    = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTH_NAMES  = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
-const SLOT_ORDER   = ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
-const SLOT_HOURS   = {"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23};
+// كل الأوقات الممكنة
+const ALL_SLOTS = [
+  "12:00 م","1:00 م","2:00 م","3:00 م","4:00 م","5:00 م","6:00 م",
+  "7:00 م","8:00 م","9:00 م","10:00 م","11:00 م",
+  "12:00 ص","1:00 ص","2:00 ص","3:00 ص","4:00 ص","5:00 ص","6:00 ص"
+];
+const SLOT_HOURS = {
+  "12:00 م":12,"1:00 م":13,"2:00 م":14,"3:00 م":15,"4:00 م":16,
+  "5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,
+  "10:00 م":22,"11:00 م":23,
+  "12:00 ص":0,"1:00 ص":1,"2:00 ص":2,"3:00 ص":3,"4:00 ص":4,"5:00 ص":5,"6:00 ص":6
+};
+function getWorkHours(){
+  if(data && data.workHours && data.workHours.start && data.workHours.end) return data.workHours;
+  return {start:"5:00 م", end:"11:00 م"};
+}
+function getSlotOrder(){
+  const wh=getWorkHours();
+  const si=ALL_SLOTS.indexOf(wh.start);
+  const ei=ALL_SLOTS.indexOf(wh.end);
+  if(si===-1||ei===-1) return ["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];
+  if(ei>=si) return ALL_SLOTS.slice(si,ei+1);
+  return [...ALL_SLOTS.slice(si), ...ALL_SLOTS.slice(0,ei+1)];
+}
+const SLOT_ORDER = ALL_SLOTS;
 
 let data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[]};
 let selDateKey='all',activeTab='bookings',activeStatsTab='week';
@@ -661,16 +694,7 @@ function getNext7Days(){
   for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+i);days.push(d);}
   return days;
 }
-function todayKey(){
-  const now=new Date();
-  // ساعات 12 ليل - 6 صبح تُحسب على يوم الأمس
-  if(now.getHours()<6){
-    const yesterday=new Date(now);
-    yesterday.setDate(yesterday.getDate()-1);
-    return makeDateKey(yesterday);
-  }
-  return makeDateKey(now);
-}
+function todayKey(){return makeDateKey(new Date());}
 
 // FIX: Normalize phone for comparison
 function normalizePhone(p){
@@ -688,15 +712,17 @@ async function loadData(){
         waitlist:         typeof raw.waitlist==='string'         ? JSON.parse(raw.waitlist)         : (raw.waitlist||[]),
         disabledDays:     typeof raw.disabledDays==='string'     ? JSON.parse(raw.disabledDays)     : (raw.disabledDays||[]),
         archivedBookings: typeof raw.archivedBookings==='string' ? JSON.parse(raw.archivedBookings) : (raw.archivedBookings||[]),
+        workHours:        raw.workHours||{start:"5:00 م",end:"11:00 م"},
       };
     }else{
-      data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[]};
+      data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[],workHours:{start:"5:00 م",end:"11:00 م"}};
     }
+    cleanupOldBookings();
     lastSyncTime=new Date();
     updateSyncBar(true);
   }catch(e){
-    console.error('Firebase loadData error:',e);
-    if(!data){data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[]};}
+    console.error('loadData error:',e);
+    if(!data)data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[],workHours:{start:"5:00 م",end:"11:00 م"}};
     updateSyncBar(false);
     showToast('❌ خطأ في تحميل البيانات');
   }
@@ -715,6 +741,7 @@ async function saveData(){
       waitlist:         JSON.stringify(data.waitlist||[]),
       disabledDays:     JSON.stringify(data.disabledDays||[]),
       archivedBookings: JSON.stringify(data.archivedBookings||[]),
+      workHours:        data.workHours||{start:"5:00 م",end:"11:00 م"},
     });
     lastSyncTime=new Date();
     updateSyncBar(true);
@@ -908,7 +935,7 @@ function renderBookings(){
   }
   const sorted=[...filtered].sort((a,b)=>{
     if(a.dateKey!==b.dateKey)return (a.dateKey||'').localeCompare(b.dateKey||'');
-    return SLOT_ORDER.indexOf(a.slot)-SLOT_ORDER.indexOf(b.slot);
+    return ALL_SLOTS.indexOf(a.slot)-ALL_SLOTS.indexOf(b.slot);
   });
 
   const waIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
@@ -942,8 +969,12 @@ function renderBookings(){
         <button class="wa-btn" onclick="remind('${b.id}')" ${b.reminded?'disabled':''}>
           ${waIcon} ${b.reminded?'تم التذكير':'أرسل تذكير'}
         </button>
-        <button class="arrived-btn" onclick="markArrived('${b.id}')">✅ وصل</button>
+        <button class="done-btn" onclick="markDone('${b.id}')">✅ تم الحلاقة</button>
         <button class="cancel-btn" onclick="cancelBooking('${b.id}')">إلغاء</button>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <input id="note_${b.id}" placeholder="ملاحظة: شعر قصير، زبون دائم..." value="${b.note||''}" style="flex:1;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:7px 10px;font-family:'Tajawal',sans-serif;font-size:12px;color:#ccc;outline:none;"/>
+        <button onclick="saveNote('${b.id}')" style="background:#c9a84c22;border:1px solid #c9a84c44;border-radius:8px;padding:7px 12px;color:#c9a84c;font-family:'Tajawal',sans-serif;font-size:11px;cursor:pointer;">💾</button>
       </div>
       ${late?`<button class="late-action" onclick="cancelLate('${b.id}')">⛔ إلغاء بسبب التأخر (${mins} دقيقة)</button>`:''}
     </div>`;
@@ -961,7 +992,7 @@ function renderCalendar(){
   days.forEach(d=>{
     html+=`<div class="cal-day-head">${DAY_NAMES[d.getDay()]}<br/><b>${d.getDate()}</b></div>`;
   });
-  SLOT_ORDER.forEach(slot=>{
+  getSlotOrder().forEach(slot=>{
     days.forEach(d=>{
       const key=makeDateKey(d);
       const booking=active.find(b=>b.dateKey===key&&b.slot===slot);
@@ -1052,7 +1083,7 @@ function renderStats(){
       </div>`).join('')||'<div style="color:#333;padding:10px;font-size:13px">لا توجد بيانات</div>';
     const slotCount={};
     allCompleted.forEach(b=>{slotCount[b.slot]=(slotCount[b.slot]||0)+1;});
-    const sortedSlots=SLOT_ORDER.map(s=>({slot:s,cnt:slotCount[s]||0})).sort((a,b)=>b.cnt-a.cnt);
+    const sortedSlots=getSlotOrder().map(s=>({slot:s,cnt:slotCount[s]||0})).sort((a,b)=>b.cnt-a.cnt);
     const maxSlot=Math.max(...sortedSlots.map(s=>s.cnt),1);
     document.getElementById('peakHours').innerHTML=sortedSlots.map(s=>`
       <div class="week-row">
@@ -1204,6 +1235,20 @@ function renderWaitlist(){
 function renderSettings(){
   document.getElementById('tgToken').value=getTgToken();
   document.getElementById('tgChatId').value=getTgChat();
+  // أوقات العمل
+  const wh=getWorkHours();
+  const wStart=document.getElementById('workStart');
+  const wEnd=document.getElementById('workEnd');
+  wStart.innerHTML=''; wEnd.innerHTML='';
+  ALL_SLOTS.forEach(s=>{
+    const o1=document.createElement('option');
+    o1.value=s;o1.textContent=s;if(s===wh.start)o1.selected=true;
+    wStart.appendChild(o1);
+    const o2=document.createElement('option');
+    o2.value=s;o2.textContent=s;if(s===wh.end)o2.selected=true;
+    wEnd.appendChild(o2);
+  });
+  // تعطيل الأيام
   const g=document.getElementById('disableScroll');g.innerHTML='';
   getNext7Days().forEach(d=>{
     const key=makeDateKey(d);
@@ -1214,6 +1259,16 @@ function renderSettings(){
     card.onclick=()=>toggleDay(key);
     g.appendChild(card);
   });
+}
+
+async function saveWorkHours(){
+  const start=document.getElementById('workStart').value;
+  const end=document.getElementById('workEnd').value;
+  if(!data.workHours) data.workHours={};
+  data.workHours.start=start;
+  data.workHours.end=end;
+  await saveData();
+  showToast(`✅ أوقات العمل: ${start} ← ${end}`);
 }
 
 function render(){
@@ -1253,7 +1308,8 @@ function updateManualSlots(){
   const slotSel=document.getElementById('mSlot');
   slotSel.innerHTML='<option value="">اختار الساعة</option>';
   if(!dateKey)return;
-  SLOT_ORDER.forEach(slot=>{
+  // الحجز اليدوي: كل الأوقات بدون فلتر "فات"
+  ALL_SLOTS.forEach(slot=>{
     const booked=data.bookings.some(b=>b.dateKey===dateKey&&b.slot===slot&&!b.cancelled);
     const opt=document.createElement('option');
     opt.value=slot;opt.textContent=booked?`${slot} — محجوز ❌`:slot;
@@ -1294,6 +1350,44 @@ async function saveManualBooking(){
 }
 
 // ============================================================
+// تم الحلاقة + ملاحظة + مسح تلقائي
+// ============================================================
+async function markDone(id){
+  const b=data.bookings.find(x=>x.id===id);if(!b)return;
+  data.bookings=data.bookings.filter(x=>x.id!==id);
+  if(!data.archivedBookings)data.archivedBookings=[];
+  data.archivedBookings.push({...b,completedAt:Date.now()});
+  await saveData();render();
+  showToast(`✅ تمت الحلاقة لـ ${b.name}`);
+}
+
+async function saveNote(id){
+  const b=data.bookings.find(x=>x.id===id);if(!b)return;
+  const inp=document.getElementById('note_'+id);
+  if(!inp)return;
+  b.note=inp.value.trim();
+  await saveData();
+  showToast('💾 تم حفظ الملاحظة');
+}
+
+function cleanupOldBookings(){
+  const today=makeDateKey(new Date());
+  const before=data.bookings.length;
+  data.bookings=data.bookings.filter(b=>{
+    if(!b.dateKey)return false;
+    // الحجوزات بعد منتصف الليل تنتمي لليوم التالي
+    const h=b.slot?SLOT_HOURS[b.slot]:17;
+    if(h!==undefined&&h<=6){
+      const nd=new Date(b.dateKey+'T00:00:00');
+      nd.setDate(nd.getDate()+1);
+      return makeDateKey(nd)>=today;
+    }
+    return b.dateKey>=today;
+  });
+  if(data.bookings.length!==before)saveData();
+}
+
+// ============================================================
 // LOGOUT
 // ============================================================
 function logout(){
@@ -1306,6 +1400,128 @@ function logout(){
 // ============================================================
 // INIT
 // ============================================================
+// ============================================================
+// إشعار صوتي
+// ============================================================
+let lastBookingCount = 0;
+function playNotifSound(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.type='sine';osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.setValueAtTime(1100,ctx.currentTime+0.1);
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.5);
+  }catch{}
+}
+function checkNewBookings(){
+  const count=data.bookings.filter(b=>!b.cancelled).length;
+  if(lastBookingCount>0&&count>lastBookingCount){
+    playNotifSound();
+    showToast(`🔔 حجز جديد! (${count-lastBookingCount} حجز جديد)`);
+  }
+  lastBookingCount=count;
+}
+
+// ============================================================
+// طباعة اليوم
+// ============================================================
+function printToday(){
+  const today=makeDateKey(new Date());
+  const todayBookings=data.bookings.filter(b=>!b.cancelled&&b.dateKey===today);
+  if(!todayBookings.length){showToast('⚠️ ما في حجوزات اليوم');return;}
+  const sorted=[...todayBookings].sort((a,b)=>ALL_SLOTS.indexOf(a.slot)-ALL_SLOTS.indexOf(b.slot));
+  const total=sorted.reduce((s,b)=>s+(Number(b.price)||0),0);
+  const win=window.open('','_blank');
+  win.document.write(`<html dir="rtl"><head><meta charset="UTF-8"/><title>حجوزات اليوم</title>
+  <style>body{font-family:Arial,sans-serif;direction:rtl;padding:20px;color:#111;}
+  h2{text-align:center;margin-bottom:16px;}
+  table{width:100%;border-collapse:collapse;}
+  th,td{border:1px solid #ddd;padding:8px 12px;text-align:right;font-size:13px;}
+  th{background:#111;color:#f9d030;}
+  .total{font-weight:bold;font-size:15px;margin-top:12px;text-align:left;}
+  </style></head><body>
+  <h2>✂️ Salon Art — حجوزات ${makeLabel(new Date())}</h2>
+  <table><tr><th>#</th><th>الاسم</th><th>الخدمة</th><th>الساعة</th><th>السعر</th><th>الهاتف</th><th>ملاحظة</th></tr>
+  ${sorted.map((b,i)=>`<tr><td>${i+1}</td><td>${b.name}</td><td>${b.service}</td><td>${b.slot}</td><td>${Number(b.price).toLocaleString()}</td><td>${b.phone}</td><td>${b.note||''}</td></tr>`).join('')}
+  </table>
+  <div class="total">💰 المجموع: ${total.toLocaleString()} د.ع | ${sorted.length} حجز</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),300);
+}
+
+// ============================================================
+// نسخة احتياطية
+// ============================================================
+function exportBackup(){
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`salon_art_backup_${makeDateKey(new Date())}.json`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('✅ تم تحميل النسخة الاحتياطية');
+}
+
+// ============================================================
+// رسالة جماعية واتساب
+// ============================================================
+function sendBulkWA(){
+  const dateKey=selDateKey==='all'?makeDateKey(new Date()):selDateKey;
+  const dayBookings=data.bookings.filter(b=>!b.cancelled&&b.dateKey===dateKey);
+  if(!dayBookings.length){showToast('⚠️ ما في زبائن لهذا اليوم');return;}
+  const msg=`السلام عليكم 👋
+
+تذكير بموعدكم في Salon Art غداً.
+⚠️ التأخر أكثر من 15 دقيقة يلغي الحجز.
+
+Salon Art ✂️`;
+  dayBookings.forEach((b,i)=>{
+    setTimeout(()=>{
+      const clean=b.phone.replace(/\D/g,'');
+      const intl=clean.startsWith('0')?'964'+clean.slice(1):clean;
+      window.open(`https://wa.me/${intl}?text=${encodeURIComponent(msg)}`,'_blank');
+    },i*800);
+  });
+  showToast(`📲 فتح ${dayBookings.length} محادثة واتساب...`);
+}
+
+// ============================================================
+// إحصائيات شهرية
+// ============================================================
+function renderMonthlyStats(){
+  const all=[...data.bookings,...(data.archivedBookings||[])];
+  const now=new Date();
+  const months={};
+  all.forEach(b=>{
+    if(!b.dateKey)return;
+    const d=new Date(b.dateKey);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const label=`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    if(!months[key])months[key]={label,count:0,revenue:0,services:{}};
+    months[key].count++;
+    months[key].revenue+=(Number(b.price)||0);
+    const svc=b.service||'أخرى';
+    months[key].services[svc]=(months[key].services[svc]||0)+1;
+  });
+  const keys=Object.keys(months).sort().reverse();
+  return keys.map(k=>{
+    const m=months[k];
+    const topSvc=Object.entries(m.services).sort((a,b)=>b[1]-a[1])[0];
+    return `<div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:14px;margin-bottom:8px;">
+      <div style="font-size:14px;font-weight:700;color:#c9a84c;margin-bottom:8px;">${m.label}</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#888;">
+        <span>📋 ${m.count} حجز</span>
+        <span>💰 ${m.revenue.toLocaleString()} د.ع</span>
+        ${topSvc?`<span>✂️ ${topSvc[0]}</span>`:''}
+      </div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;color:#333;padding:30px;">ما في بيانات بعد</div>';
+}
+
 async function initApp(){
   await loadAndRender();
   document.getElementById('loadingScreen').style.display='none';
@@ -1318,7 +1534,7 @@ async function initApp(){
 }
 
 
-// ── تصدير الدوال للـ HTML (مطلوب بسبب type="module") ──
+// ── window exports (مطلوب مع type="module") ──
 window.pinPress          = pinPress;
 window.pinDel            = pinDel;
 window.logout            = logout;
@@ -1331,7 +1547,7 @@ window.saveManualBooking = saveManualBooking;
 window.updateManualSlots = updateManualSlots;
 window.cancelBooking     = cancelBooking;
 window.cancelLate        = cancelLate;
-window.markArrived       = markArrived;
+window.markDone          = markDone;
 window.remind            = remind;
 window.notifyWait        = notifyWait;
 window.renderArchive     = renderArchive;
@@ -1341,6 +1557,11 @@ window.deleteExpense     = deleteExpense;
 window.saveTgSettings    = saveTgSettings;
 window.testTelegram      = testTelegram;
 window.changePin         = changePin;
+window.saveWorkHours     = saveWorkHours;
+window.exportBackup      = exportBackup;
+window.printToday        = printToday;
+window.sendBulkWA        = sendBulkWA;
+window.saveNote          = saveNote;
 </script>
 </body>
 </html>
