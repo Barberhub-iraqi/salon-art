@@ -260,7 +260,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:linear-gradient(1
 
 <script type="module">
 // ============================================================
-// FIREBASE CONFIG — نفس القيم اللي حطيتها في admin.html
+// FIREBASE CONFIG
 // ============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -273,17 +273,15 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "186276133082",
   appId:             "1:186276133082:web:004c4e532e2862a67b8de3"
 };
-
 const _fbApp  = initializeApp(FIREBASE_CONFIG);
 const _db     = getFirestore(_fbApp);
 const DOC_REF = doc(_db, "salon", "data");
-
 // ============================================================
+
 const CONFIG = {
   TG_BOT_TOKEN: '8713426615:AAH21qSvWdT447uRUQtLziWpqNF0TLXH0C0',
   TG_CHAT_ID:   '7706249764',
 };
-// ============================================================
 
 const SLOTS      = ["2:00 ظ","3:00 ع","4:00 ع","5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م","12:00 م","1:00 ص","2:00 ص","3:00 ص","4:00 ص","5:00 ص","6:00 ص"];
 const SLOT_HOURS = {"2:00 ظ":14,"3:00 ع":15,"4:00 ع":16,"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23,"12:00 م":0,"1:00 ص":1,"2:00 ص":2,"3:00 ص":3,"4:00 ص":4,"5:00 ص":5,"6:00 ص":6};
@@ -310,7 +308,14 @@ function makeLabel(d){return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NA
 function formatPrice(p){if(typeof p==='string'&&p.includes('-')){const[a,b]=p.split('-');return Number(a).toLocaleString('ar-IQ')+' - '+Number(b).toLocaleString('ar-IQ')+' د.ع';}return Number(p).toLocaleString('ar-IQ')+' د.ع';}
 
 function getNext7Days(){
-  const days=[];const today=new Date();today.setHours(0,0,0,0);
+  const days=[];
+  const now=new Date();
+  // إذا الساعة بين 12 ليل و6 صبح، نعتبر الوقت تابع لليوم الماضي
+  const today=new Date(now);
+  if(now.getHours()<6){
+    today.setDate(today.getDate()-1);
+  }
+  today.setHours(0,0,0,0);
   for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+i);days.push(d);}
   return days;
 }
@@ -345,18 +350,15 @@ async function loadData(){
   }catch(e){
     console.error('Firebase error:',e);
     data={bookings:[],waitlist:[],disabledDays:[]};
-    showToast('❌ خطأ في الاتصال - تحقق من الإنترنت');
-  }finally{
-    document.getElementById('loadingScreen').style.display='none';
-    document.getElementById('mainApp').style.display='block';
+    showToast('❌ خطأ في الاتصال، تحقق من الإنترنت');
   }
 }
 
 async function saveData(){
   try{
     await setDoc(DOC_REF,{
-      bookings: JSON.stringify(data.bookings||[]),
-      waitlist: JSON.stringify(data.waitlist||[]),
+      bookings:     JSON.stringify(data.bookings||[]),
+      waitlist:     JSON.stringify(data.waitlist||[]),
       disabledDays: JSON.stringify(data.disabledDays||[]),
     });
   }catch(e){
@@ -929,7 +931,9 @@ function resetForm(){
 })();
 
 (async()=>{
-  await loadData();
+  try{ await loadData(); }catch(e){ console.error(e); }
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
   renderServices();renderDays();
   document.getElementById('nameInp').addEventListener('input',updateBtn);
   document.getElementById('phoneInp').addEventListener('input',updateBtn);

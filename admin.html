@@ -510,8 +510,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 
 <script type="module">
 // ============================================================
-// FIREBASE CONFIG — عدّل هذه القيم فقط بعد إنشاء مشروع Firebase
-// راجع ملف README.txt للتعليمات
+// FIREBASE CONFIG
 // ============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -524,19 +523,17 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "186276133082",
   appId:             "1:186276133082:web:004c4e532e2862a67b8de3"
 };
-
-const _fbApp = initializeApp(FIREBASE_CONFIG);
-const _db    = getFirestore(_fbApp);
+const _fbApp  = initializeApp(FIREBASE_CONFIG);
+const _db     = getFirestore(_fbApp);
 const DOC_REF = doc(_db, "salon", "data");
-
 // ============================================================
+
 const CONFIG = {
-  TG_TOKEN:  '8713426615:AAH21qSvWdT447uRUQtLziWpqNF0TLXH0C0',
-  TG_CHAT:   '7706249764',
-  NTFY_TOPIC:'salonart-mom18',
+  TG_TOKEN:   '8713426615:AAH21qSvWdT447uRUQtLziWpqNF0TLXH0C0',
+  TG_CHAT:    '7706249764',
+  NTFY_TOPIC: 'salonart-mom18',
   DEFAULT_PIN:'1234',
 };
-// ============================================================
 
 function getTgToken(){ return localStorage.getItem('salon_tg_token')||CONFIG.TG_TOKEN; }
 function getTgChat(){  return localStorage.getItem('salon_tg_chat')||CONFIG.TG_CHAT; }
@@ -664,7 +661,16 @@ function getNext7Days(){
   for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+i);days.push(d);}
   return days;
 }
-function todayKey(){return makeDateKey(new Date());}
+function todayKey(){
+  const now=new Date();
+  // ساعات 12 ليل - 6 صبح تُحسب على يوم الأمس
+  if(now.getHours()<6){
+    const yesterday=new Date(now);
+    yesterday.setDate(yesterday.getDate()-1);
+    return makeDateKey(yesterday);
+  }
+  return makeDateKey(now);
+}
 
 // FIX: Normalize phone for comparison
 function normalizePhone(p){
@@ -1313,28 +1319,28 @@ async function initApp(){
 
 
 // ── تصدير الدوال للـ HTML (مطلوب بسبب type="module") ──
-window.pinPress         = pinPress;
-window.pinDel           = pinDel;
-window.logout           = logout;
-window.switchTab        = switchTab;
-window.switchStats      = switchStats;
-window.loadAndRender    = loadAndRender;
-window.showManualBooking= showManualBooking;
-window.hideManualBooking= hideManualBooking;
-window.saveManualBooking= saveManualBooking;
-window.updateManualSlots= updateManualSlots;
-window.cancelBooking    = cancelBooking;
-window.cancelLate       = cancelLate;
-window.markArrived      = markArrived;
-window.remind           = remind;
-window.notifyWait       = notifyWait;
-window.renderArchive    = renderArchive;
-window.renderAccounts   = renderAccounts;
-window.addExpense       = addExpense;
-window.deleteExpense    = deleteExpense;
-window.saveTgSettings   = saveTgSettings;
-window.testTelegram     = testTelegram;
-window.changePin        = changePin;
+window.pinPress          = pinPress;
+window.pinDel            = pinDel;
+window.logout            = logout;
+window.switchTab         = switchTab;
+window.switchStats       = switchStats;
+window.loadAndRender     = loadAndRender;
+window.showManualBooking = showManualBooking;
+window.hideManualBooking = hideManualBooking;
+window.saveManualBooking = saveManualBooking;
+window.updateManualSlots = updateManualSlots;
+window.cancelBooking     = cancelBooking;
+window.cancelLate        = cancelLate;
+window.markArrived       = markArrived;
+window.remind            = remind;
+window.notifyWait        = notifyWait;
+window.renderArchive     = renderArchive;
+window.renderAccounts    = renderAccounts;
+window.addExpense        = addExpense;
+window.deleteExpense     = deleteExpense;
+window.saveTgSettings    = saveTgSettings;
+window.testTelegram      = testTelegram;
+window.changePin         = changePin;
 </script>
 </body>
 </html>
