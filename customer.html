@@ -194,16 +194,18 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f7f3ee;min-heigh
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const _app = initializeApp({apiKey:"AIzaSyATJ5h3IKeINor1bGJeNnGI2mgoyMtETFQ",authDomain:"salon-art-4adea.firebaseapp.com",projectId:"salon-art-4adea",storageBucket:"salon-art-4adea.firebasestorage.app",messagingSenderId:"186276133082",appId:"1:186276133082:web:004c4e532e2862a67b8de3"});
+const _db = getFirestore(_app);
+const DOC_REF = doc(_db, "salon", "data");
+
 const CONFIG = {
-  BIN_ID:   '69f53bd4aaba8821975f4502',
-  API_KEY:  '$2a$10$xxo3kGCW6jGSoHj3200WmOpkK4wI88Bm9Ac6MBYaMAGMH0k6Ggwum',
-  TG_TOKEN: '8205449854:AAEy8543td3uSxq7L96y09B73UKn0wwdBZE',
-  TG_CHAT:  '7706249764',
+  TG_TOKEN:   '8205449854:AAEy8543td3uSxq7L96y09B73UKn0wwdBZE',
+  TG_CHAT:    '7706249764',
+  NTFY_TOPIC: 'salonart-mom18',
 };
-const API_URL    = `https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`;
-const READ_HDR   = {'X-Master-Key':CONFIG.API_KEY};
-const WRITE_HDR  = ()=>({'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY});
 
 const ALL_SLOTS  = ["12:00 م","1:00 م","2:00 م","3:00 م","4:00 م","5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م","12:00 ص","1:00 ص","2:00 ص","3:00 ص","4:00 ص","5:00 ص","6:00 ص"];
 const SLOT_HOURS = {"12:00 م":12,"1:00 م":13,"2:00 م":14,"3:00 م":15,"4:00 م":16,"5:00 م":17,"6:00 م":18,"7:00 م":19,"8:00 م":20,"9:00 م":21,"10:00 م":22,"11:00 م":23,"12:00 ص":0,"1:00 ص":1,"2:00 ص":2,"3:00 ص":3,"4:00 ص":4,"5:00 ص":5,"6:00 ص":6};
@@ -256,26 +258,45 @@ function allSlotsBooked(dk){const av=getSlots().filter(s=>!isSlotPast(dk,s));ret
 
 async function loadData(){
   try{
-    const r=await fetch(API_URL,{headers:READ_HDR});
-    if(!r.ok)throw new Error();
-    const d=await r.json();
-    data=d.record||{};
-    if(!data.bookings)data.bookings=[];
-    if(!data.waitlist)data.waitlist=[];
-    if(!data.disabledDays)data.disabledDays=[];
-    if(!data.workHours)data.workHours={start:"5:00 م",end:"11:00 م"};
-    // تحديث وصف الهيدر
+    const snap=await getDoc(DOC_REF);
+    if(snap.exists()){
+      const raw=snap.data();
+      data={
+        bookings:     typeof raw.bookings==='string'     ? JSON.parse(raw.bookings)     : (raw.bookings||[]),
+        waitlist:     typeof raw.waitlist==='string'     ? JSON.parse(raw.waitlist)     : (raw.waitlist||[]),
+        disabledDays: typeof raw.disabledDays==='string' ? JSON.parse(raw.disabledDays) : (raw.disabledDays||[]),
+        workHours:    {start: raw.workHoursStart||"5:00 م", end: raw.workHoursEnd||"11:00 م"},
+      };
+    }else{
+      data={bookings:[],waitlist:[],disabledDays:[],workHours:{start:"5:00 م",end:"11:00 م"}};
+    }
     const wh=data.workHours;
     document.getElementById('headerDesc').textContent=`من ${wh.start} حتى ${wh.end}`;
-  }catch{showToast('❌ خطأ في الاتصال، تحقق من الإنترنت');}
+  }catch(e){console.error(e);showToast('❌ خطأ في الاتصال، تحقق من الإنترنت');}
 }
 
 async function saveData(){
-  const r=await fetch(API_URL,{method:'PUT',headers:WRITE_HDR(),body:JSON.stringify(data)});
-  if(!r.ok)throw new Error('save error');
+  await setDoc(DOC_REF,{
+    bookings:         JSON.stringify(data.bookings||[]),
+    waitlist:         JSON.stringify(data.waitlist||[]),
+    disabledDays:     JSON.stringify(data.disabledDays||[]),
+    workHoursStart:   (data.workHours&&data.workHours.start)||"5:00 م",
+    workHoursEnd:     (data.workHours&&data.workHours.end)||"11:00 م",
+  });
 }
 
-// إشعار تيليغرام — مصلح
+// إشعار ntfy
+async function sendNtfy(msg){
+  try{
+    await fetch(`https://ntfy.sh/${CONFIG.NTFY_TOPIC}`,{
+      method:'POST',
+      headers:{'Title':'Salon Art — حجز جديد','Priority':'high','Tags':'scissors'},
+      body:msg
+    });
+  }catch(e){console.log('ntfy error',e);}
+}
+
+// إشعار تيليجرام
 async function sendTelegram(msg){
   try{
     await fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage`,{
@@ -371,8 +392,10 @@ async function handleBook(){
   data.bookings.push(booking);
   try{
     await saveData();
-    // إشعار تيليغرام
+    // إشعار تيليغرام + ntfy
+    const notifMsg=`🎉 حجز جديد — Salon Art\n\n👤 ${name}\n✂️ ${svc.name}\n📅 ${selDateLabel}\n⏰ ${selSlot}\n💰 ${formatPrice(svc.price)}\n📞 ${phone}`;
     sendTelegram(`🎉 <b>حجز جديد — Salon Art</b>\n\n👤 ${name}\n✂️ ${svc.name}\n📅 ${selDateLabel}\n⏰ ${selSlot}\n💰 ${formatPrice(svc.price)}\n📞 ${phone}`);
+    sendNtfy(notifMsg);
     document.getElementById('s-name').textContent=name;
     document.getElementById('s-service').textContent=svc.name;
     document.getElementById('s-date').textContent=selDateLabel;
@@ -395,6 +418,7 @@ async function handleWaitlist(){
   try{
     await saveData();
     sendTelegram(`⏳ <b>انتظار جديد</b>\n👤 ${name}\n📅 ${selDateLabel}\n📞 ${phone}`);
+    sendNtfy(`⏳ انتظار جديد\n👤 ${name}\n📅 ${selDateLabel}\n📞 ${phone}`);
     document.getElementById('w-day').textContent=selDateLabel;
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('waitlistView').classList.remove('hidden');
@@ -422,6 +446,10 @@ function resetForm(){
   renderServices();renderDays();
   document.getElementById('nameInp').addEventListener('input',updateBtn);
   document.getElementById('phoneInp').addEventListener('input',updateBtn);
+  // expose handlers for inline onclick
+  window.handleBook=handleBook;
+  window.handleWaitlist=handleWaitlist;
+  window.resetForm=resetForm;
 })();
 </script>
 </body>
