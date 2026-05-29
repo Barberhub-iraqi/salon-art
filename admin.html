@@ -578,6 +578,68 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
 
 <div class="toast" id="toast"></div>
 
+<script>
+const PIN_KEY='salon_pin';
+const LOCKOUT_KEY='salon_lockout';
+const FAIL_KEY='salon_fail_count';
+function getPin(){ return localStorage.getItem(PIN_KEY)||'1998'; }
+function setPin(p){ localStorage.setItem(PIN_KEY,p); }
+function isLockedOut(){ return Date.now()<parseInt(localStorage.getItem(LOCKOUT_KEY)||'0'); }
+function getLockoutRemaining(){ return Math.ceil((parseInt(localStorage.getItem(LOCKOUT_KEY)||'0')-Date.now())/1000); }
+
+let pinEntry='';
+function pinPress(d){
+  if(isLockedOut()){
+    const msg=document.getElementById('lockoutMsg');
+    msg.textContent='\u{1F512} \u0645\u062D\u0638\u0648\u0631. \u0627\u0646\u062A\u0638\u0631 '+getLockoutRemaining()+' \u062B\u0627\u0646\u064A\u0629.';
+    msg.classList.add('show'); return;
+  }
+  if(pinEntry.length>=4)return;
+  pinEntry+=d; updatePinDots();
+  if(pinEntry.length===4) setTimeout(checkPin,120);
+}
+function pinDel(){ pinEntry=pinEntry.slice(0,-1); updatePinDots(); }
+function updatePinDots(){
+  for(let i=0;i<4;i++){
+    document.getElementById('dot'+i).classList.toggle('filled',i<pinEntry.length);
+    document.getElementById('dot'+i).classList.remove('error');
+  }
+}
+function checkPin(){
+  if(isLockedOut()){
+    pinEntry=''; updatePinDots();
+    document.getElementById('lockoutMsg').textContent='\u{1F512} \u0627\u0646\u062A\u0638\u0631 '+getLockoutRemaining()+' \u062B\u0627\u0646\u064A\u0629.';
+    document.getElementById('lockoutMsg').classList.add('show'); return;
+  }
+  if(pinEntry===getPin()){
+    localStorage.removeItem(FAIL_KEY);
+    document.getElementById('pinScreen').style.display='none';
+    document.getElementById('loadingScreen').style.display='flex';
+    if(window._initApp) window._initApp();
+  }else{
+    pinEntry=''; updatePinDots();
+    for(let i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
+    document.getElementById('pinErr').classList.add('show');
+    setTimeout(()=>document.getElementById('pinErr').classList.remove('show'),1000);
+    let fails=parseInt(localStorage.getItem(FAIL_KEY)||'0')+1;
+    localStorage.setItem(FAIL_KEY,fails);
+    if(fails>=5){
+      localStorage.setItem(LOCKOUT_KEY,Date.now()+60000);
+      localStorage.removeItem(FAIL_KEY);
+      const msg=document.getElementById('lockoutMsg');
+      msg.textContent='\u{1F512} 5 \u0645\u062D\u0627\u0648\u0644\u0627\u062A \u062E\u0627\u0637\u0626\u0629. \u0645\u062D\u0638\u0648\u0631 60 \u062B\u0627\u0646\u064A\u0629.';
+      msg.classList.add('show');
+    }
+  }
+}
+function logout(){
+  if(!confirm('\u0647\u0644 \u062A\u0631\u064A\u062F \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062E\u0631\u0648\u062C\u061F'))return;
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('pinScreen').style.display='flex';
+  pinEntry=''; updatePinDots();
+}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -621,41 +683,23 @@ function getSlotOrder(){
   if(ei>=si) return ALL_SLOTS.slice(si,ei+1);
   return [...ALL_SLOTS.slice(si), ...ALL_SLOTS.slice(0,ei+1)];
 }
-const SLOT_ORDER = ALL_SLOTS;
+// SLOT_ORDER مُزال — استخدم getSlotOrder() في كل مكان
 
 let data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[]};
 let selDateKey='all',activeTab='bookings',activeStatsTab='week';
 let lastSyncTime=null;
 
-// ============================================================
-// FIX: PIN LOGIC — مع Lockout بعد 5 محاولات خاطئة
-// ============================================================
-let pinEntry='';
-
-function pinPress(d){
-  if(pinEntry.length>=4)return;
-  pinEntry+=d;
-  updatePinDots();
-  if(pinEntry.length===4) setTimeout(checkPin,120);
-}
-function pinDel(){ pinEntry=pinEntry.slice(0,-1);updatePinDots(); }
-function updatePinDots(){
-  for(let i=0;i<4;i++){
-    document.getElementById('dot'+i).classList.toggle('filled',i<pinEntry.length);
-    document.getElementById('dot'+i).classList.remove('error');
-  }
-}
-function checkPin(){
-  if(pinEntry==='1998'){
-    document.getElementById('pinScreen').style.display='none';
-    document.getElementById('loadingScreen').style.display='flex';
-    initApp();
-  }else{
-    pinEntry='';updatePinDots();
-    for(let i=0;i<4;i++) document.getElementById('dot'+i).classList.add('error');
-    document.getElementById('pinErr').classList.add('show');
-    setTimeout(()=>document.getElementById('pinErr').classList.remove('show'),1000);
-  }
+// changePin — تعتمد على getPin/setPin من الـ script العادي أعلاه
+function changePin(){
+  const oldPin=document.getElementById('oldPin').value.trim();
+  const newPin=document.getElementById('newPin').value.trim();
+  if(!oldPin||!newPin){showToast('⚠️ أدخل الرمز الحالي والجديد');return;}
+  if(oldPin!==window.getPin()){showToast('❌ الرمز الحالي غلط');return;}
+  if(!/^\d{4}$/.test(newPin)){showToast('⚠️ الرمز الجديد يجب أن يكون 4 أرقام');return;}
+  window.setPin(newPin);
+  document.getElementById('oldPin').value='';
+  document.getElementById('newPin').value='';
+  showToast('✅ تم تغيير الرمز بنجاح');
 }
 
 // ============================================================
@@ -1161,14 +1205,17 @@ function renderArchive(){
   if(!archived.length){
     list.innerHTML=`<div class="empty"><div class="empty-icon">🗄️</div><p>لا يوجد سجلات مكتملة بعد</p></div>`;return;
   }
-  const sorted=[...archived].sort((a,b)=>(b.arrivedAt||0)-(a.arrivedAt||0));
-  list.innerHTML=sorted.map(b=>`
-    <div class="archive-card">
-      <div class="archive-label">✅ وصل</div>
+  const sorted=[...archived].sort((a,b)=>((b.completedAt||b.arrivedAt||0))-(a.completedAt||a.arrivedAt||0));
+  list.innerHTML=sorted.map(b=>{
+    const ts=b.completedAt||b.arrivedAt;
+    const label=b.status==='done'?'✅ تمت الحلاقة':'✅ وصل';
+    return `<div class="archive-card">
+      <div class="archive-label">${label}</div>
       <div class="archive-name">${b.name} <span style="color:#555;font-size:12px;font-weight:400">— ${b.service}</span></div>
       <div class="archive-detail">📅 ${b.dateLabel||b.day||b.dateKey} • ⏰ ${b.slot} • 💰 ${formatPrice(b.price||0)}</div>
-      <div class="archive-detail" style="margin-top:4px">📞 ${b.phone||'—'} • وصل: ${b.arrivedAt?new Date(b.arrivedAt).toLocaleString('ar-IQ'):''}</div>
-    </div>`).join('');
+      <div class="archive-detail" style="margin-top:4px">📞 ${b.phone||'—'} • ${ts?new Date(ts).toLocaleString('ar-IQ'):''}</div>
+    </div>`;
+  }).join('');
 }
 
 // ============================================================
@@ -1371,8 +1418,8 @@ function updateManualSlots(){
   const slotSel=document.getElementById('mSlot');
   slotSel.innerHTML='<option value="">اختار الساعة</option>';
   if(!dateKey)return;
-  // الحجز اليدوي: كل الأوقات بدون فلتر "فات"
-  ALL_SLOTS.forEach(slot=>{
+  // الحجز اليدوي: أوقات العمل فقط بدون فلتر "فات"
+  getSlotOrder().forEach(slot=>{
     const booked=data.bookings.some(b=>b.dateKey===dateKey&&b.slot===slot&&!b.cancelled);
     const opt=document.createElement('option');
     opt.value=slot;opt.textContent=booked?`${slot} — محجوز ❌`:slot;
@@ -1417,11 +1464,20 @@ async function saveManualBooking(){
 // ============================================================
 async function markDone(id){
   const b=data.bookings.find(x=>x.id===id);if(!b)return;
+  if(!confirm(`✅ تأكيد انتهاء حلاقة ${b.name}؟`))return;
   data.bookings=data.bookings.filter(x=>x.id!==id);
   if(!data.archivedBookings)data.archivedBookings=[];
-  data.archivedBookings.push({...b,completedAt:Date.now()});
-  await saveData();render();
-  showToast(`✅ تمت الحلاقة لـ ${b.name}`);
+  const archived={...b,completedAt:Date.now(),status:'done'};
+  data.archivedBookings.push(archived);
+  try{
+    await saveData();render();
+    showToast(`✅ تمت الحلاقة لـ ${b.name}`);
+    notify('حلاقة مكتملة ✅',`✅ تمت الحلاقة\n👤 ${b.name}\n✂️ ${b.service}\n💰 ${formatPrice(b.price||0)}`);
+  }catch(e){
+    data.bookings.push(b);
+    data.archivedBookings=data.archivedBookings.filter(x=>x.id!==id);
+    showToast('❌ فشل الحفظ');
+  }
 }
 
 async function saveNote(id){
@@ -1450,15 +1506,7 @@ function cleanupOldBookings(){
   if(data.bookings.length!==before)saveData();
 }
 
-// ============================================================
-// LOGOUT
-// ============================================================
-function logout(){
-  if(!confirm('هل تريد تسجيل الخروج؟'))return;
-  document.getElementById('mainApp').style.display='none';
-  document.getElementById('pinScreen').style.display='flex';
-  pinEntry='';updatePinDots();
-}
+// logout — موجودة في الـ script العادي أعلاه
 
 // ============================================================
 // INIT
@@ -1595,12 +1643,13 @@ async function initApp(){
     render();
   },60000);
 }
+window._initApp = initApp;
 
 
 // ── window exports (مطلوب مع type="module") ──
-window.pinPress          = pinPress;
-window.pinDel            = pinDel;
-window.logout            = logout;
+// pinPress مصدّرة من الـ script العادي
+// pinDel مصدّرة من الـ script العادي
+// logout مصدّرة من الـ script العادي
 window.switchTab         = switchTab;
 window.switchStats       = switchStats;
 window.loadAndRender     = loadAndRender;
@@ -1625,6 +1674,10 @@ window.exportBackup      = exportBackup;
 window.printToday        = printToday;
 window.sendBulkWA        = sendBulkWA;
 window.saveNote          = saveNote;
+window.clearAllBookings  = clearAllBookings;
+window.markArrived       = markArrived;
+window.toggleDay         = toggleDay;
+window.renderBookings    = renderBookings;
 </script>
 </body>
 </html>
