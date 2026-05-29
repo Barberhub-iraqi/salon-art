@@ -312,7 +312,7 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
           <input id="mPhone" class="setting-inp" placeholder="رقم الهاتف (اختياري)..." maxlength="13" type="tel"/>
           <select id="mService" class="setting-inp">
             <option value="">اختار الخدمة</option>
-            <option value="حلاقة كاملة" data-price="15000">حلاقة كاملة — 15,000</option>
+            <option value="حلاقة كاملة" data-price="20000">حلاقة كاملة — 20,000</option>
             <option value="تحديد ولحية" data-price="10000">تحديد ولحية — 10,000</option>
             <option value="شسوار" data-price="5000">شسوار — 5,000</option>
             <option value="طفل" data-price="10000">طفل — 10,000</option>
@@ -471,55 +471,28 @@ body{font-family:'Tajawal',sans-serif;direction:rtl;background:#080808;color:#f0
         <div class="setting-title">⏰ أوقات العمل</div>
         <div class="setting-row">
           <div class="setting-lbl">وقت البداية</div>
-          <select class="setting-inp" id="workStart">
-          <option value="12:00 م">12:00 م</option>
-          <option value="1:00 م">1:00 م</option>
-          <option value="2:00 م">2:00 م</option>
-          <option value="3:00 م">3:00 م</option>
-          <option value="4:00 م">4:00 م</option>
-          <option value="5:00 م" selected>5:00 م</option>
-          <option value="6:00 م">6:00 م</option>
-          <option value="7:00 م">7:00 م</option>
-          <option value="8:00 م">8:00 م</option>
-          <option value="9:00 م">9:00 م</option>
-          <option value="10:00 م">10:00 م</option>
-          <option value="11:00 م">11:00 م</option>
-          <option value="12:00 ص">12:00 ص</option>
-          <option value="1:00 ص">1:00 ص</option>
-          <option value="2:00 ص">2:00 ص</option>
-          <option value="3:00 ص">3:00 ص</option>
-          <option value="4:00 ص">4:00 ص</option>
-          <option value="5:00 ص">5:00 ص</option>
-          <option value="6:00 ص">6:00 ص</option>
-          </select>
+          <select class="setting-inp" id="workStart"></select>
         </div>
         <div class="setting-row">
           <div class="setting-lbl">وقت النهاية</div>
-          <select class="setting-inp" id="workEnd">
-          <option value="12:00 م">12:00 م</option>
-          <option value="1:00 م">1:00 م</option>
-          <option value="2:00 م">2:00 م</option>
-          <option value="3:00 م">3:00 م</option>
-          <option value="4:00 م">4:00 م</option>
-          <option value="5:00 م">5:00 م</option>
-          <option value="6:00 م">6:00 م</option>
-          <option value="7:00 م">7:00 م</option>
-          <option value="8:00 م">8:00 م</option>
-          <option value="9:00 م">9:00 م</option>
-          <option value="10:00 م">10:00 م</option>
-          <option value="11:00 م" selected>11:00 م</option>
-          <option value="12:00 ص">12:00 ص</option>
-          <option value="1:00 ص">1:00 ص</option>
-          <option value="2:00 ص">2:00 ص</option>
-          <option value="3:00 ص">3:00 ص</option>
-          <option value="4:00 ص">4:00 ص</option>
-          <option value="5:00 ص">5:00 ص</option>
-          <option value="6:00 ص">6:00 ص</option>
+          <select class="setting-inp" id="workEnd"></select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-lbl">⏱️ متوسط وقت الخدمة (دقيقة) — لحساب الانتظار</div>
+          <select class="setting-inp" id="avgServiceMins">
+            <option value="15">15 دقيقة</option>
+            <option value="20">20 دقيقة</option>
+            <option value="25">25 دقيقة</option>
+            <option value="30" selected>30 دقيقة</option>
+            <option value="35">35 دقيقة</option>
+            <option value="40">40 دقيقة</option>
+            <option value="45">45 دقيقة</option>
+            <option value="60">ساعة</option>
           </select>
         </div>
-        <button class="save-btn" onclick="saveWorkHours()">💾 حفظ أوقات العمل</button>
+        <button class="save-btn" onclick="saveWorkHours()">💾 حفظ الإعدادات</button>
         <div style="margin-top:10px;font-size:11px;color:#444;line-height:1.7;">
-          💡 إذا النهاية بعد منتصف الليل (مثلاً 6:00 ص) الأوقات تتجاوز اليوم التالي تلقائياً.
+          💡 إذا النهاية بعد منتصف الليل (مثلاً 2:00 ص) الأوقات تتجاوز منتصف الليل تلقائياً.
         </div>
       </div>
 
@@ -1066,6 +1039,7 @@ function renderBookings(){
       <div class="card-info">
         <div class="info-item">📞 ${b.phone}</div>
         <div class="info-item">🕐 ${b.bookedAt}</div>
+        ${(()=>{const w=calcWaitTime(b.id);if(!w)return '';if(w.before===0)return '<div class="info-item" style="color:#4a9a4a">⚡ دوره الحين</div>';return `<div class="info-item" style="color:#c9a84c">⏳ قبله ${w.before} زبون (~${w.mins}د)</div>`;})()}
       </div>
       <div class="actions">
         <button class="wa-btn" onclick="remind('${b.id}')" ${b.reminded?'disabled':''}>
@@ -1073,6 +1047,11 @@ function renderBookings(){
         </button>
         <button class="done-btn" onclick="markDone('${b.id}')">✅ تم الحلاقة</button>
         <button class="cancel-btn" onclick="cancelBooking('${b.id}')">إلغاء</button>
+      </div>
+      <div style="margin-top:6px;">
+        <button onclick="sendWaitTime('${b.id}')" style="width:100%;background:#1a1a0a;border:1px solid #c9a84c33;border-radius:8px;padding:9px;color:#c9a84c;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
+          ⏳ أرسل وقت الانتظار لـ ${b.name}
+        </button>
       </div>
       <div style="margin-top:8px;display:flex;gap:6px;">
         <input id="note_${b.id}" placeholder="ملاحظة: شعر قصير، زبون دائم..." value="${b.note||''}" style="flex:1;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:7px 10px;font-family:'Tajawal',sans-serif;font-size:12px;color:#ccc;outline:none;"/>
@@ -1340,7 +1319,7 @@ function renderWaitlist(){
 function renderSettings(){
   document.getElementById('tgToken').value=getTgToken();
   document.getElementById('tgChatId').value=getTgChat();
-  // أوقات العمل
+  // أوقات العمل — بناء من ALL_SLOTS كاملاً
   const wh=getWorkHours();
   const wStart=document.getElementById('workStart');
   const wEnd=document.getElementById('workEnd');
@@ -1353,6 +1332,12 @@ function renderSettings(){
     o2.value=s;o2.textContent=s;if(s===wh.end)o2.selected=true;
     wEnd.appendChild(o2);
   });
+  // متوسط وقت الخدمة
+  const avgEl=document.getElementById('avgServiceMins');
+  if(avgEl){
+    const saved=localStorage.getItem('avg_service_mins')||'30';
+    avgEl.value=saved;
+  }
   // تعطيل الأيام
   const g=document.getElementById('disableScroll');g.innerHTML='';
   getNext7Days().forEach(d=>{
@@ -1373,9 +1358,12 @@ async function saveWorkHours(){
   const end=endEl.options[endEl.selectedIndex].value;
   if(!start||!end){showToast('❌ اختار وقت البداية والنهاية');return;}
   data.workHours={start:start,end:end};
+  // حفظ متوسط وقت الخدمة
+  const avgEl=document.getElementById('avgServiceMins');
+  if(avgEl) localStorage.setItem('avg_service_mins', avgEl.value);
   try{
     await saveData();
-    showToast('✅ تم حفظ أوقات العمل: '+start+' ← '+end);
+    showToast('✅ تم حفظ الإعدادات: '+start+' ← '+end);
   }catch(e){
     showToast('❌ فشل الحفظ: '+e.message);
   }
@@ -1633,6 +1621,101 @@ function renderMonthlyStats(){
   }).join('') || '<div style="text-align:center;color:#333;padding:30px;">ما في بيانات بعد</div>';
 }
 
+
+// ============================================================
+// وقت الانتظار التقديري
+// ============================================================
+function getAvgMins(){ return parseInt(localStorage.getItem('avg_service_mins')||'30'); }
+
+function calcWaitTime(bookingId) {
+  const b = data.bookings.find(x => x.id === bookingId);
+  if (!b) return null;
+  const todayKey = makeDateKey(new Date());
+  if (b.dateKey !== todayKey) return null;
+
+  // الحجوزات النشطة قبله بالترتيب في نفس اليوم
+  const todayActive = data.bookings
+    .filter(x => !x.cancelled && x.dateKey === todayKey)
+    .sort((a, z) => ALL_SLOTS.indexOf(a.slot) - ALL_SLOTS.indexOf(z.slot));
+
+  const myIdx = todayActive.findIndex(x => x.id === bookingId);
+  if (myIdx <= 0) return { before: 0, mins: 0 };
+
+  // كم زبون قبله لسه ما انتهى (ما أرشف)
+  const before = myIdx; // كل من قبله في القائمة
+  const mins = before * getAvgMins();
+  return { before, mins };
+}
+
+function sendWaitTime(id) {
+  const b = data.bookings.find(x => x.id === id);
+  if (!b) return;
+  const wait = calcWaitTime(id);
+  if (!wait) { showToast('⚠️ هذا الحجز مو اليوم'); return; }
+  const { before, mins } = wait;
+  let msg;
+  if (before === 0) {
+    msg = `السلام عليكم ${b.name} 👋
+
+✂️ *دورك الحين في Salon Art!*
+
+تفضل مباشرة 🎉
+
+Salon Art ✂️`;
+  } else {
+    msg = `السلام عليكم ${b.name} 👋
+
+⏳ *وقت انتظارك التقديري*
+
+👤 في قبلك: *${before} زبون*
+⏱️ الوقت التقديري: *~${mins} دقيقة*
+
+Salon Art ✂️`;
+  }
+  openWA(b.phone, msg);
+  showToast(`📲 تم إرسال وقت الانتظار لـ ${b.name}`);
+}
+
+// ============================================================
+// الإشعار التلقائي قبل ساعة
+// ============================================================
+const AUTO_REMINDED_KEY = 'auto_reminded_ids';
+
+function getAutoReminded() {
+  try { return JSON.parse(localStorage.getItem(AUTO_REMINDED_KEY) || '[]'); }
+  catch { return []; }
+}
+function markAutoReminded(id) {
+  const arr = getAutoReminded();
+  if (!arr.includes(id)) { arr.push(id); localStorage.setItem(AUTO_REMINDED_KEY, JSON.stringify(arr)); }
+}
+
+function checkAutoReminders() {
+  const now = new Date();
+  const todayKey = makeDateKey(now);
+  const reminded = getAutoReminded();
+
+  data.bookings
+    .filter(b => !b.cancelled && b.dateKey === todayKey && b.phone && b.phone !== '📞 هاتف')
+    .forEach(b => {
+      if (reminded.includes(b.id)) return;
+      const h = SLOT_HOURS[b.slot];
+      if (h === undefined) return;
+      const apptTime = new Date();
+      apptTime.setHours(h, 0, 0, 0);
+      const diffMins = (apptTime - now) / 60000;
+      // أرسل إذا بقي بين 50 و 70 دقيقة
+      if (diffMins >= 50 && diffMins <= 70) {
+        markAutoReminded(b.id);
+        const msg = `السلام عليكم ${b.name} 👋\n\n🔔 *تذكير تلقائي — Salon Art*\n\n⏰ موعدك بعد ساعة تقريباً: *${b.slot}*\n✂️ ${b.service}\n\n⚠️ التأخر أكثر من 15 دقيقة يلغي حجزك.\n\nنشوفك قريب! 🌟`;
+        const clean = b.phone.replace(/\D/g, '');
+        const intl = clean.startsWith('0') ? '964' + clean.slice(1) : clean;
+        window.open(`https://wa.me/${intl}?text=${encodeURIComponent(msg)}`, '_blank');
+        showToast(`🔔 إشعار تلقائي أُرسل لـ ${b.name}`);
+      }
+    });
+}
+
 async function initApp(){
   await loadAndRender();
   document.getElementById('loadingScreen').style.display='none';
@@ -1641,7 +1724,10 @@ async function initApp(){
     if(activeTab==='settings')return;
     await loadData();
     render();
+    checkAutoReminders();
   },60000);
+  // فحص فوري عند الدخول
+  checkAutoReminders();
 }
 window._initApp = initApp;
 
@@ -1674,6 +1760,7 @@ window.exportBackup      = exportBackup;
 window.printToday        = printToday;
 window.sendBulkWA        = sendBulkWA;
 window.saveNote          = saveNote;
+window.sendWaitTime      = sendWaitTime;
 window.clearAllBookings  = clearAllBookings;
 window.markArrived       = markArrived;
 window.toggleDay         = toggleDay;
