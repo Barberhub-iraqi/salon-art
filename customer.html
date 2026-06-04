@@ -112,6 +112,16 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .day-pill.sel .dp-num,.day-pill.today .dp-num{color:var(--gold);}
 .dp-month{font-size:8px;color:var(--muted);display:block;margin-top:2px;}
 
+/* PRICE RANGE */
+.price-range-wrap{margin-top:14px;background:#0F0F08;border:1px solid var(--border2);border-radius:10px;padding:14px 16px;display:none;}
+.price-range-label{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.price-slider{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:linear-gradient(to left,var(--gold),var(--gold-dim));outline:none;margin-bottom:10px;}
+.price-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--gold3),var(--gold));border:2px solid #0a0a0a;cursor:pointer;box-shadow:0 2px 8px rgba(201,168,76,0.4);}
+.price-ticks{display:flex;justify-content:space-between;}
+.price-tick{font-size:10px;color:var(--muted);cursor:pointer;}
+.price-tick.active{color:var(--gold);font-weight:900;}
+.price-selected{text-align:center;font-size:18px;font-weight:900;color:var(--gold2);margin-bottom:4px;}
+
 /* SLOTS */
 .slots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
 .slot-btn{
@@ -231,6 +241,14 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
     <div class="sec" style="margin-top:0">
       <div class="sec-label">الخدمة</div>
       <div class="svc-grid" id="svcGrid"></div>
+
+      <!-- Price Range Selector — يظهر بس لو الخدمة عندها نطاق سعر -->
+      <div class="price-range-wrap" id="priceRangeWrap">
+        <div class="price-range-label">💰 اختار السعر المناسب لك</div>
+        <div class="price-selected" id="priceSelected">0 د.ع</div>
+        <input type="range" class="price-slider" id="priceSlider" min="0" max="100" value="50" oninput="onSliderChange()"/>
+        <div class="price-ticks" id="priceTicks"></div>
+      </div>
     </div>
 
     <div class="divider"></div>
@@ -324,7 +342,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
     </svg>
 </a>
 <!-- Instagram — يمين -->
-<a href="https://instagram.com/art7.m" target="_blank" aria-label="انستقرام" class="social-fab" style="position:fixed;bottom:24px;right:20px;z-index:900;">
+<a href="https://instagram.com/art7m1" target="_blank" aria-label="انستقرام" class="social-fab" style="position:fixed;bottom:24px;right:20px;z-index:900;">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F5E199"/><stop offset="100%" stop-color="#C9A84C"/></linearGradient></defs>
       <path fill="url(#ig)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
@@ -371,7 +389,7 @@ const DAYS = ["الأحد","الاثنين","الثلاثاء","الأربعاء
 const MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 const NTFY_TOPIC='salonart-mom18';
 const DEFAULT_SVCS = [
-  {id:'svc1', name:'حلاقة كاملة', price:20000, icon:'✂️'},
+  {id:'svc1', name:'حلاقة كاملة', price:20000, minPrice:15000, maxPrice:25000, icon:'✂️'},
   {id:'svc2',name:'تحديد ولحية', price:10000, icon:'🪒'},
   {id:'svc3',name:'شسوار',        price:5000,  icon:'💧'},
   {id:'svc4',name:'طفل',          price:10000, icon:'👦'},
@@ -379,7 +397,7 @@ const DEFAULT_SVCS = [
   {id:'svc6',name:'تنظيف بشرة عادي', price:8000, icon:'🫧'},
 ];
 let SVCS = [
-  {id:'full',  name:'حلاقة كاملة', price:20000, icon:'✂️'},
+  {id:'full',  name:'حلاقة كاملة', price:20000, minPrice:15000, maxPrice:25000, icon:'✂️'},
   {id:'beard', name:'تحديد ولحية', price:10000, icon:'🪒'},
   {id:'wash',  name:'شسوار',        price:5000,  icon:'💧'},
   {id:'child', name:'طفل',          price:10000, icon:'👦'},
@@ -387,6 +405,7 @@ let SVCS = [
 
 let db={bookings:[],waitlist:[],disabledDays:[],workHours:{start:"4:00 م",end:"11:00 م"}};
 let selSvc=null,selDateKey=null,selDateLabel=null,selSlot=null,busy=false;
+let selPrice=null; // السعر المختار من الـ slider
 
 function dateKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function dateLabel(d){return`${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;}
@@ -455,9 +474,14 @@ function updateBtn(){
   if(name&&!validName(name)){ni.classList.add('err');ne.style.display='block';}else{ni.classList.remove('err');ne.style.display='none';}
   if(phone&&!validPhone(phone)){pi.classList.add('err');pe.style.display='block';}else{pi.classList.remove('err');pe.style.display='none';}
   const btn=document.getElementById('bookBtn');
-  const ok=name&&phone&&validName(name)&&validPhone(phone)&&selSvc&&selDateKey&&selSlot;
+  const s=SVCS.find(x=>x.id===selSvc);
+  // لو الخدمة تطلب range ولم يختر سعر، ما نكمّل
+  const needsPriceChoice=s&&s.minPrice&&s.maxPrice&&s.minPrice!==s.maxPrice;
+  const priceReady=!needsPriceChoice||selPrice!=null;
+  const ok=name&&phone&&validName(name)&&validPhone(phone)&&selSvc&&selDateKey&&selSlot&&priceReady;
   btn.disabled=!ok;
-  if(ok){const s=SVCS.find(x=>x.id===selSvc);btn.textContent=`احجز — ${selSlot} • ${fmtPrice(s?s.price:0)}`;}
+  if(ok){const finalPrice=selPrice||s?.price||0;btn.textContent=`احجز — ${selSlot} • ${fmtPrice(finalPrice)}`;}
+  else if(needsPriceChoice&&!selPrice&&selSvc)btn.textContent='اختار السعر المناسب لك';
   else btn.textContent='اختار الخدمة واليوم والوقت';
 }
 
@@ -466,10 +490,51 @@ function renderSvcs(){
   SVCS.forEach(s=>{
     const b=document.createElement('button');
     b.className='svc-btn'+(selSvc===s.id?' sel':'');
-    b.innerHTML=`<span class="svc-name">${s.name}</span><span class="svc-price">${fmtPrice(s.price)}</span>`;
-    b.onclick=()=>{selSvc=s.id;renderSvcs();updateBtn();};
+    const hasPriceRange=s.minPrice&&s.maxPrice&&s.minPrice!==s.maxPrice;
+    const dispPrice=selSvc===s.id&&selPrice?selPrice:s.price;
+    b.innerHTML=`<span class="svc-name">${s.name}</span><span class="svc-price">${hasPriceRange&&selSvc===s.id&&selPrice?fmtPrice(selPrice):hasPriceRange?fmtPrice(s.minPrice)+' — '+fmtPrice(s.maxPrice):fmtPrice(s.price)}</span>`;
+    b.onclick=()=>{selSvc=s.id;selPrice=null;renderSvcs();renderPriceRange();updateBtn();};
     g.appendChild(b);
   });
+}
+
+function renderPriceRange(){
+  const wrap=document.getElementById('priceRangeWrap');
+  const svc=SVCS.find(x=>x.id===selSvc);
+  if(!svc||!svc.minPrice||!svc.maxPrice||svc.minPrice===svc.maxPrice){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  // بناء قيم الـ slider — كل 5000 دينار
+  const step=5000;
+  const vals=[];
+  for(let v=svc.minPrice;v<=svc.maxPrice;v+=step)vals.push(v);
+  if(!selPrice||selPrice<svc.minPrice||selPrice>svc.maxPrice)selPrice=svc.price&&svc.price>=svc.minPrice&&svc.price<=svc.maxPrice?svc.price:svc.minPrice;
+  const slider=document.getElementById('priceSlider');
+  slider.min=0;slider.max=vals.length-1;
+  const idx=vals.indexOf(selPrice);
+  slider.value=idx>=0?idx:0;
+  if(idx<0)selPrice=vals[0];
+  document.getElementById('priceSelected').textContent=fmtPrice(selPrice);
+  const ticks=document.getElementById('priceTicks');
+  ticks.innerHTML=vals.map((v,i)=>`<span class="price-tick${selPrice===v?' active':''}" onclick="pickPrice(${v})">${(v/1000).toLocaleString('ar-IQ')}k</span>`).join('');
+  // حفظ vals على الـ slider لاستخدامها في onSliderChange
+  slider._vals=vals;
+}
+
+function onSliderChange(){
+  const slider=document.getElementById('priceSlider');
+  const vals=slider._vals;
+  if(!vals)return;
+  const idx=parseInt(slider.value);
+  selPrice=vals[idx]||vals[0];
+  document.getElementById('priceSelected').textContent=fmtPrice(selPrice);
+  document.getElementById('priceTicks').querySelectorAll('.price-tick').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  renderSvcs();updateBtn();
+}
+
+function pickPrice(v){
+  selPrice=v;
+  renderPriceRange();
+  renderSvcs();updateBtn();
 }
 
 function renderDays(){
@@ -519,18 +584,19 @@ async function doBook(){
   if(isBooked(selDateKey,selSlot)){toast('هذا الوقت انحجز للتو!');renderSlots();btn.disabled=false;updateBtn();busy=false;return;}
   if(phoneBooked(phone)){toast('هذا الرقم عنده حجز مسبق!');btn.disabled=false;updateBtn();busy=false;return;}
   const svc=SVCS.find(x=>x.id===selSvc);
-  const b={id:'ss'+Date.now(),name,phone,service:svc.name,serviceId:svc.id,price:svc.price,dateKey:selDateKey,dateLabel:selDateLabel,slot:selSlot,day:selDateLabel,createdAt:Date.now(),bookedAt:new Date().toLocaleTimeString('ar-IQ'),reminded:false,cancelled:false,note:''};
+  const finalPrice=selPrice||svc.price;
+  const b={id:'ss'+Date.now(),name,phone,service:svc.name,serviceId:svc.id,price:finalPrice,dateKey:selDateKey,dateLabel:selDateLabel,slot:selSlot,day:selDateLabel,createdAt:Date.now(),bookedAt:new Date().toLocaleTimeString('ar-IQ'),reminded:false,cancelled:false,note:''};
   db.bookings.push(b);
   try{
     await save();
     // إرسال إشعار ntfy
     try{
-      const msg=encodeURIComponent(`👤 ${name}\n✂️ ${svc.name}\n🕐 ${selSlot}\n📅 ${selDateLabel}\n📞 ${phone}`);
+      const msg=encodeURIComponent(`👤 ${name}\n✂️ ${svc.name}\n💰 ${fmtPrice(finalPrice)}\n🕐 ${selSlot}\n📅 ${selDateLabel}\n📞 ${phone}`);
       const title=encodeURIComponent('حجز جديد - Salon Art');
       fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=${title}&priority=high&tags=scissors`,{
         method:'POST',
         mode:'no-cors',
-        body:`👤 ${name}\n✂️ ${svc.name}\n🕐 ${selSlot}\n📅 ${selDateLabel}\n📞 ${phone}`
+        body:`👤 ${name}\n✂️ ${svc.name}\n💰 ${fmtPrice(finalPrice)}\n🕐 ${selSlot}\n📅 ${selDateLabel}\n📞 ${phone}`
       });
     }catch{}
     document.getElementById('s-name').textContent=name;
@@ -538,7 +604,7 @@ async function doBook(){
     document.getElementById('s-date').textContent=selDateLabel;
     document.getElementById('s-slot').textContent=selSlot;
     document.getElementById('s-phone').textContent=phone;
-    document.getElementById('s-price').textContent=fmtPrice(svc.price);
+    document.getElementById('s-price').textContent=fmtPrice(finalPrice);
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('successView').classList.remove('hidden');
   }catch{db.bookings.pop();btn.disabled=false;updateBtn();toast('فشل الحجز، حاول مرة ثانية');}
@@ -561,9 +627,10 @@ async function doWaitlist(){
 }
 
 function resetForm(){
-  selSvc=null;selDateKey=null;selDateLabel=null;selSlot=null;
+  selSvc=null;selDateKey=null;selDateLabel=null;selSlot=null;selPrice=null;
   document.getElementById('nameInp').value='';
   document.getElementById('phoneInp').value='';
+  document.getElementById('priceRangeWrap').style.display='none';
   document.getElementById('successView').classList.add('hidden');
   document.getElementById('waitView').classList.add('hidden');
   document.getElementById('formView').classList.remove('hidden');
@@ -581,7 +648,7 @@ function resetForm(){
   renderSvcs();renderDays();
   document.getElementById('nameInp').addEventListener('input',updateBtn);
   document.getElementById('phoneInp').addEventListener('input',updateBtn);
-  window.doBook=doBook;window.doWaitlist=doWaitlist;window.resetForm=resetForm;
+  window.doBook=doBook;window.doWaitlist=doWaitlist;window.resetForm=resetForm;window.onSliderChange=onSliderChange;window.pickPrice=pickPrice;
 })();
 </script>
 </body>
