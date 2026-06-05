@@ -414,7 +414,7 @@ function next7(){const r=[];const t=new Date();t.setHours(0,0,0,0);for(let i=0;i
 function normPhone(p){const c=p.replace(/\D/g,'');return c.startsWith('964')?'0'+c.slice(3):c;}
 function validPhone(p){return/^07[3-9]\d{8}$/.test(normPhone(p));}
 function validName(n){return n.trim().length>=3&&/[\u0600-\u06FFa-zA-Z]/.test(n);}
-function slots(){const wh=db.workHours||{start:"5:00 م",end:"11:00 م"};const si=ALL_SLOTS.indexOf(wh.start);const ei=ALL_SLOTS.indexOf(wh.end);if(si<0||ei<0)return["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];return ei>=si?ALL_SLOTS.slice(si,ei+1):[...ALL_SLOTS.slice(si),...ALL_SLOTS.slice(0,ei+1)];}
+function slots(){const wh=db.workHours||{start:"5:00 م",end:"11:00 م"};const si=ALL_SLOTS.indexOf(wh.start);const ei=ALL_SLOTS.indexOf(wh.end);if(si<0||ei<0)return["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];const all=ei>=si?ALL_SLOTS.slice(si,ei+1):[...ALL_SLOTS.slice(si),...ALL_SLOTS.slice(0,ei+1)];const step=Math.ceil((db.avgMins||30)/30);return all.filter((_,i)=>i%step===0);}
 function slotDateTime(dk,s){
   const h=SLOT_H[s];if(h===undefined)return null;
   const hFloor=Math.floor(h);const mins=h%1!==0?30:0;
@@ -431,16 +431,17 @@ function isPast(dk,s){
 }
 function isBooked(dk,s){
   const avgM=db.avgMins||30;
-  const steps=Math.ceil(avgM/30); // كل خدمة تأخذ كم slot (كل slot = 30 دقيقة)
+  const steps=Math.ceil(avgM/30);
   const sIdx=ALL_SLOTS.indexOf(s);
+  if(sIdx<0)return false;
   return db.bookings.some(b=>{
     if(b.dateKey!==dk||b.cancelled)return false;
     const bIdx=ALL_SLOTS.indexOf(b.slot);
-    if(bIdx<0||sIdx<0)return false;
-    // الـ slot محجوزة إذا وقعت ضمن نطاق الحجز
-    for(let i=0;i<steps;i++){
-      if(bIdx+i===sIdx)return true;
-    }
+    if(bIdx<0)return false;
+    // حجب slots ضمن وقت الحجز الموجود
+    for(let i=0;i<steps;i++){if(bIdx+i===sIdx)return true;}
+    // حجب slots لو اخترتها ستتعارض مع حجز موجود
+    for(let i=1;i<steps;i++){if(sIdx+i===bIdx)return true;}
     return false;
   });
 }
