@@ -242,13 +242,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
       <div class="sec-label">الخدمة</div>
       <div class="svc-grid" id="svcGrid"></div>
 
-      <!-- Price Range Selector — يظهر بس لو الخدمة عندها نطاق سعر -->
-      <div class="price-range-wrap" id="priceRangeWrap">
-        <div class="price-range-label">💰 اختار السعر المناسب لك</div>
-        <div class="price-selected" id="priceSelected">0 د.ع</div>
-        <input type="range" class="price-slider" id="priceSlider" min="0" max="100" value="50" oninput="onSliderChange()"/>
-        <div class="price-ticks" id="priceTicks"></div>
-      </div>
+
     </div>
 
     <div class="divider"></div>
@@ -492,11 +486,11 @@ function updateBtn(){
   const btn=document.getElementById('bookBtn');
   const s=SVCS.find(x=>x.id===selSvc);
   // لو الخدمة تطلب range ولم يختر سعر، ما نكمّل
-  const needsPriceChoice=s&&s.minPrice&&s.maxPrice&&s.minPrice!==s.maxPrice;
-  const priceReady=!needsPriceChoice||selPrice!=null;
+  const needsPriceChoice=false;
+  const priceReady=true;
   const ok=name&&phone&&validName(name)&&validPhone(phone)&&selSvc&&selDateKey&&selSlot&&priceReady;
   btn.disabled=!ok;
-  if(ok){const finalPrice=selPrice||s?.price||0;btn.textContent=`احجز — ${selSlot} • ${fmtPrice(finalPrice)}`;}
+  if(ok){const finalPrice=s?.minPrice||s?.price||0;btn.textContent=`احجز — ${selSlot} • ${fmtPrice(finalPrice)}`;}
   else if(needsPriceChoice&&!selPrice&&selSvc)btn.textContent='اختار السعر المناسب لك';
   else btn.textContent='اختار الخدمة واليوم والوقت';
 }
@@ -508,50 +502,13 @@ function renderSvcs(){
     b.className='svc-btn'+(selSvc===s.id?' sel':'');
     const hasPriceRange=s.minPrice&&s.maxPrice&&s.minPrice!==s.maxPrice;
     const dispPrice=selSvc===s.id&&selPrice?selPrice:s.price;
-    b.innerHTML=`<span class="svc-name">${s.name}</span><span class="svc-price">${hasPriceRange&&selSvc===s.id&&selPrice?fmtPrice(selPrice):hasPriceRange?fmtPrice(s.minPrice)+' — '+fmtPrice(s.maxPrice):fmtPrice(s.price)}</span>`;
-    b.onclick=()=>{selSvc=s.id;selPrice=null;renderSvcs();renderPriceRange();updateBtn();};
+    b.innerHTML=`<span class="svc-name">${s.name}</span><span class="svc-price">${hasPriceRange?fmtPrice(s.minPrice)+' — '+fmtPrice(s.maxPrice):fmtPrice(s.price)}</span>`;
+    b.onclick=()=>{selSvc=s.id;selPrice=null;renderSvcs();updateBtn();};
     g.appendChild(b);
   });
 }
 
-function renderPriceRange(){
-  const wrap=document.getElementById('priceRangeWrap');
-  const svc=SVCS.find(x=>x.id===selSvc);
-  if(!svc||!svc.minPrice||!svc.maxPrice||svc.minPrice===svc.maxPrice){wrap.style.display='none';return;}
-  wrap.style.display='block';
-  // بناء قيم الـ slider — كل 5000 دينار
-  const step=5000;
-  const vals=[];
-  for(let v=svc.minPrice;v<=svc.maxPrice;v+=step)vals.push(v);
-  if(!selPrice||selPrice<svc.minPrice||selPrice>svc.maxPrice)selPrice=svc.price&&svc.price>=svc.minPrice&&svc.price<=svc.maxPrice?svc.price:svc.minPrice;
-  const slider=document.getElementById('priceSlider');
-  slider.min=0;slider.max=vals.length-1;
-  const idx=vals.indexOf(selPrice);
-  slider.value=idx>=0?idx:0;
-  if(idx<0)selPrice=vals[0];
-  document.getElementById('priceSelected').textContent=fmtPrice(selPrice);
-  const ticks=document.getElementById('priceTicks');
-  ticks.innerHTML=vals.map((v,i)=>`<span class="price-tick${selPrice===v?' active':''}" onclick="pickPrice(${v})">${(v/1000).toLocaleString('ar-IQ')}k</span>`).join('');
-  // حفظ vals على الـ slider لاستخدامها في onSliderChange
-  slider._vals=vals;
-}
 
-function onSliderChange(){
-  const slider=document.getElementById('priceSlider');
-  const vals=slider._vals;
-  if(!vals)return;
-  const idx=parseInt(slider.value);
-  selPrice=vals[idx]||vals[0];
-  document.getElementById('priceSelected').textContent=fmtPrice(selPrice);
-  document.getElementById('priceTicks').querySelectorAll('.price-tick').forEach((el,i)=>el.classList.toggle('active',i===idx));
-  renderSvcs();updateBtn();
-}
-
-function pickPrice(v){
-  selPrice=v;
-  renderPriceRange();
-  renderSvcs();updateBtn();
-}
 
 function renderDays(){
   const g=document.getElementById('daysRow');g.innerHTML='';
@@ -600,7 +557,7 @@ async function doBook(){
   if(isBooked(selDateKey,selSlot)){toast('هذا الوقت انحجز للتو!');renderSlots();btn.disabled=false;updateBtn();busy=false;return;}
   if(phoneBooked(phone)){toast('هذا الرقم عنده حجز مسبق!');btn.disabled=false;updateBtn();busy=false;return;}
   const svc=SVCS.find(x=>x.id===selSvc);
-  const finalPrice=selPrice||svc.price;
+  const finalPrice=svc.minPrice||svc.price;
   const b={id:'ss'+Date.now(),name,phone,service:svc.name,serviceId:svc.id,price:finalPrice,dateKey:selDateKey,dateLabel:selDateLabel,slot:selSlot,day:selDateLabel,createdAt:Date.now(),bookedAt:new Date().toLocaleTimeString('ar-IQ'),reminded:false,cancelled:false,note:''};
   db.bookings.push(b);
   try{
