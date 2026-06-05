@@ -26,7 +26,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .loader{position:fixed;inset:0;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
 .loader-ring{width:50px;height:50px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loader p{margin-top:14px;font-size:12px;color:var(--muted);letter-spacing:3px;}
+.loader p{margin-top:14px;font-size:12px;color:var(--muted);letter-spacing:0.5px;}
 
 /* HEADER */
 .hero{
@@ -45,12 +45,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .brand-name{
   font-family:'Cinzel',serif;
   font-size:28px;font-weight:900;
-  letter-spacing:6px;
+  letter-spacing:2px;
   background:linear-gradient(180deg,var(--gold3) 0%,var(--gold) 60%,var(--gold-dim) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   position:relative;z-index:1;
 }
-.brand-sub{font-size:10px;letter-spacing:5px;color:var(--muted);margin-top:6px;position:relative;z-index:1;}
+.brand-sub{font-size:10px;letter-spacing:0.5px;color:var(--muted);margin-top:6px;position:relative;z-index:1;}
 .hero-line{width:60px;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:12px auto 0;position:relative;z-index:1;}
 .work-badge{display:inline-block;margin-top:12px;font-size:11px;color:var(--gold);background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:30px;padding:4px 16px;position:relative;z-index:1;}
 
@@ -58,7 +58,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .page{max-width:460px;margin:0 auto;padding:0 16px 100px;}
 .sec{margin-top:28px;}
 .sec-label{
-  font-size:9px;font-weight:700;letter-spacing:4px;
+  font-size:9px;font-weight:700;letter-spacing:0.5px;
   color:var(--gold-dim);
   display:flex;align-items:center;gap:10px;
   margin-bottom:14px;
@@ -67,7 +67,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .divider{height:1px;background:var(--border2);margin:24px 0;}
 
 /* INPUTS */
-.inp-lbl{font-size:11px;color:var(--gold-dim);font-weight:600;display:block;margin-bottom:6px;letter-spacing:1px;}
+.inp-lbl{font-size:11px;color:var(--gold-dim);font-weight:600;display:block;margin-bottom:6px;letter-spacing:0.5px;}
 .inp{
   width:100%;background:#0F0F08;
   border:1px solid var(--border2);border-radius:8px;
@@ -603,7 +603,6 @@ function resetForm(){
   selSvc=null;selDateKey=null;selDateLabel=null;selSlot=null;selPrice=null;
   document.getElementById('nameInp').value='';
   document.getElementById('phoneInp').value='';
-  document.getElementById('priceRangeWrap').style.display='none';
   document.getElementById('successView').classList.add('hidden');
   document.getElementById('waitView').classList.add('hidden');
   document.getElementById('formView').classList.remove('hidden');

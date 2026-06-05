@@ -451,7 +451,7 @@ function next7(){const r=[];const t=new Date();t.setHours(0,0,0,0);for(let i=0;i
 function todayK(){return dk(new Date());}
 function normPhone(p){const c=p.replace(/\D/g,'');return c.startsWith('964')?'0'+c.slice(3):c;}
 function wh(){return data.workHours||{start:"5:00 م",end:"11:00 م"};}
-function slots(){const w=wh();const si=ALL_SLOTS.indexOf(w.start);const ei=ALL_SLOTS.indexOf(w.end);if(si<0||ei<0)return["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];return ei>=si?ALL_SLOTS.slice(si,ei+1):[...ALL_SLOTS.slice(si),...ALL_SLOTS.slice(0,ei+1)];}
+function slots(){const w=wh();const si=ALL_SLOTS.indexOf(w.start);const ei=ALL_SLOTS.indexOf(w.end);if(si<0||ei<0)return["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];const all=ei>=si?ALL_SLOTS.slice(si,ei+1):[...ALL_SLOTS.slice(si),...ALL_SLOTS.slice(0,ei+1)];const step=Math.ceil((data.avgMins||30)/30);return all.filter((_,i)=>i%step===0);}
 function slotDateTime(dateKey,slot){
   const h=SH[slot];if(h===undefined)return null;
   const hFloor=Math.floor(h);const mins=h%1!==0?30:0;
@@ -804,8 +804,8 @@ async function saveManual(){
   const de=document.getElementById('mDay');const dateKey=de.value;const dateLabel=de.options[de.selectedIndex]?.dataset?.label||'';
   const slot=document.getElementById('mSlot').value;
   if(!name){toast('أدخل الاسم');return;}if(!svc){toast('اختار الخدمة');return;}if(!dateKey){toast('اختار اليوم');return;}if(!slot){toast('اختار الساعة');return;}
-  const b={id:'ss'+Date.now(),name,phone,service:svc,price:Number(price),dateKey,dateLabel,slot,day:dateLabel,createdAt:Date.now(),bookedAt:new Date().toLocaleTimeString('ar-IQ'),reminded:true,cancelled:false,manual:true,note:''};
-  data.bookings.push(b);try{await save();hideManual();render();toast(`✅ حُجز ${name}`);}catch{data.bookings.pop();toast('❌ فشل');}
+  const b={id:'ss'+Date.now(),name,phone,service:svc,price:Number(price),dateKey,dateLabel,slot,day:dateLabel,createdAt:Date.now(),bookedAt:new Date().toLocaleTimeString('ar-IQ'),reminded:false,cancelled:false,manual:true,note:''};
+  data.bookings.push(b);try{await save();hideManual();render();toast(`✅ حُجز ${name}`);notify('🔔 حجز يدوي — Salon Art',`👤 ${name}\n✂️ ${svc}\n🕐 ${slot}\n📅 ${dateLabel}\n📞 ${phone}`);}catch{data.bookings.pop();toast('❌ فشل');}
 }
 
 function printToday(){
