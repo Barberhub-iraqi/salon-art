@@ -403,12 +403,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
 
 <script>
 // PIN — مع تشفير hash
-const P_KEY='ss_pin_h';const L_KEY='ss_lockout';const F_KEY='ss_fails';
+const P_KEY='art_pin_h';const L_KEY='art_lockout';const F_KEY='art_fails';
 async function hashPin(p){const enc=new TextEncoder().encode(p);const buf=await crypto.subtle.digest('SHA-256',enc);return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
 async function getP(){return localStorage.getItem(P_KEY)||await hashPin('1234');}
 async function setP(v){localStorage.setItem(P_KEY,await hashPin(v));}
 // migrate plain PIN if exists
-(async()=>{const old=localStorage.getItem('ss_pin');if(old&&!localStorage.getItem(P_KEY)){await setP(old);localStorage.removeItem('ss_pin');}})();
+(async()=>{const old=localStorage.getItem('art_pin');if(old&&!localStorage.getItem(P_KEY)){await setP(old);localStorage.removeItem('art_pin');}})();
 function locked(){return Date.now()<parseInt(localStorage.getItem(L_KEY)||'0');}
 function lockLeft(){return Math.ceil((parseInt(localStorage.getItem(L_KEY)||'0')-Date.now())/1000);}
 let pe='';
@@ -478,7 +478,7 @@ function lateMin(b){
   if(!apptTime)return 0;
   return Math.max(0,Math.floor((Date.now()-apptTime)/60000)-15);
 }
-function getAvgM(){return parseInt(localStorage.getItem('ss_avg_mins')||'60');}
+function getAvgM(){return parseInt(localStorage.getItem('art_avg_mins')||'60');}
 function getSvcDuration(serviceId){const svc=(data.services||[]).find(s=>s.id===serviceId);return svc&&svc.duration?svc.duration:getAvgM();}
 function waitInfo(id){
   const b=data.bookings.find(x=>x.id===id);
@@ -725,7 +725,7 @@ function renderSettings(){
   
   const w=wh();const ws=document.getElementById('wStart');const we=document.getElementById('wEnd');ws.innerHTML='';we.innerHTML='';
   ALL_SLOTS.forEach(s=>{const o1=document.createElement('option');o1.value=s;o1.textContent=s;if(s===w.start)o1.selected=true;ws.appendChild(o1);const o2=document.createElement('option');o2.value=s;o2.textContent=s;if(s===w.end)o2.selected=true;we.appendChild(o2);});
-  const am=document.getElementById('avgMins');if(am)am.value=data.avgMins||localStorage.getItem('ss_avg_mins')||'30';
+  const am=document.getElementById('avgMins');if(am)am.value=data.avgMins||localStorage.getItem('art_avg_mins')||'30';
   const g=document.getElementById('disScroll');g.innerHTML='';
   next7().forEach(d=>{const key=dk(d);const off=(data.disabledDays||[]).includes(key);const card=document.createElement('div');card.className='dis-day'+(off?' off':'');card.innerHTML=`<span class="dd-name">${DAYS[d.getDay()]}</span><span class="dd-num">${d.getDate()}</span><span class="dd-month">${MONTHS[d.getMonth()]}</span>`;card.onclick=()=>toggleDay(key);g.appendChild(card);});
 }
@@ -764,7 +764,7 @@ function updateManualSvcSelect(){
   const svcs=data.services||[];
   sel.innerHTML='<option value="">اختار الخدمة</option>'+svcs.map(s=>`<option value="${s.name}" data-p="${s.price}">${s.name} — ${Number(s.price).toLocaleString()} د.ع</option>`).join('');
 }
-async function saveHours(){const ws=document.getElementById('wStart');const we=document.getElementById('wEnd');const st=ws.options[ws.selectedIndex].value;const en=we.options[we.selectedIndex].value;data.workHours={start:st,end:en};const am=document.getElementById('avgMins');if(am){localStorage.setItem('ss_avg_mins',am.value);data.avgMins=parseInt(am.value)||30;}try{await save();toast('✅ تم حفظ الإعدادات');}catch{toast('❌ فشل');}}
+async function saveHours(){const ws=document.getElementById('wStart');const we=document.getElementById('wEnd');const st=ws.options[ws.selectedIndex].value;const en=we.options[we.selectedIndex].value;data.workHours={start:st,end:en};const am=document.getElementById('avgMins');if(am){localStorage.setItem('art_avg_mins',am.value);data.avgMins=parseInt(am.value)||30;}try{await save();toast('✅ تم حفظ الإعدادات');}catch{toast('❌ فشل');}}
 async function toggleDay(key){if(!data.disabledDays)data.disabledDays=[];const was=data.disabledDays.includes(key);if(was)data.disabledDays=data.disabledDays.filter(d=>d!==key);else data.disabledDays.push(key);try{await save();toast(was?'✅ تم تفعيل اليوم':'🚫 تم تعطيل اليوم');renderSettings();}catch{if(was)data.disabledDays.push(key);else data.disabledDays=data.disabledDays.filter(d=>d!==key);}}
 
 async function changePIN(){
