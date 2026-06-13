@@ -348,7 +348,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
   <!-- ARCHIVE -->
   <div class="tc" id="tc-archive">
     <div class="sec" style="margin-top:14px">
-      <div class="sec-hdr"><div class="sec-lbl">الزبائن المكتملين</div><button class="sm-btn" onclick="renderArchive()">🔄</button></div>
+      <div class="sec-hdr"><div class="sec-lbl">الزبائن المكتملين</div><button class="sm-btn" onclick="arcPage=0;renderArchive()">🔄</button></div>
+      <input class="search" id="arcSrch" placeholder="🔍 ابحث في الأرشيف..." oninput="arcPage=0;renderArchive()"/>
       <div id="arcList"></div>
     </div>
   </div>
@@ -442,7 +443,8 @@ let data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[],expenses:[
   {id:'svc5',name:'تنظيف بشرة عميق',price:15000,icon:'🧴'},
   {id:'svc6',name:'تنظيف بشرة عادي',price:8000,icon:'🫧'}
 ]};
-let selDateKey='all',activeTab='bookings',activeSTab='week',lastSync=null;
+let selDateKey='all',activeTab='bookings',activeSTab='week',lastSync=null,arcPage=0;
+const ARC_PAGE_SIZE=20;
 
 function dk(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function dl(d){return`${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;}
@@ -535,17 +537,20 @@ function cleanOld(){
     if(isMidnight){const nd=new Date(b.dateKey+'T00:00:00');nd.setDate(nd.getDate()+1);return dk(nd)<t;}
     return b.dateKey<t;
   });
-  // أرشفة الحجوزات القديمة قبل حذفها
+  // أرشفة الحجوزات القديمة قبل حذفها — بس لو في شيء يتحرك
   if(toRemove.length){
     if(!data.archivedBookings)data.archivedBookings=[];
-    toRemove.forEach(b=>{if(!data.archivedBookings.find(a=>a.id===b.id))data.archivedBookings.push({...b,autoArchived:true,completedAt:b.completedAt||Date.now()});});
+    let added=false;
+    toRemove.forEach(b=>{if(!data.archivedBookings.find(a=>a.id===b.id)){data.archivedBookings.push({...b,autoArchived:true,completedAt:b.completedAt||Date.now()});added=true;}});
     data.bookings=data.bookings.filter(b=>!toRemove.find(r=>r.id===b.id));
+    return added; // أرجع true لو في تغيير فعلي
   }
+  return false;
 }
 async function loadAndRender(){await load();render();}
 function syncBar(ok){const s=document.getElementById('syncStatus');const l=document.getElementById('lastSync');if(lastSync)l.textContent='آخر تحديث: '+lastSync.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});s.style.color=ok?'var(--green)':'#EF5350';s.textContent=ok?'متزامن ✓':'خطأ';}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3200);}
-function switchTab(t){activeTab=t;const n=['bookings','stats','archive','waitlist','settings'];document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',n[i]===t));document.querySelectorAll('.tc').forEach(el=>el.classList.remove('active'));document.getElementById('tc-'+t).classList.add('active');render();}
+function switchTab(t){activeTab=t;const n=['bookings','stats','archive','waitlist','settings'];document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',n[i]===t));document.querySelectorAll('.tc').forEach(el=>el.classList.remove('active'));document.getElementById('tc-'+t).classList.add('active');if(t==='archive')arcPage=0;render();}
 function sstab(t){activeSTab=t;['week','month','svcs','acc'].forEach(s=>{const b=document.getElementById('stb-'+s);if(b)b.classList.toggle('active',s===t);const el=document.getElementById('sw-'+s);if(el)el.style.display=s===t?'block':'none';});renderStats();}
 function openWA(phone,msg){const c=phone.replace(/\D/g,'');const i=c.startsWith('0')?'964'+c.slice(1):c;window.open(`https://wa.me/${i}?text=${encodeURIComponent(msg)}`,'_blank');}
 
@@ -671,7 +676,14 @@ function renderAcc(){
 function renderArchive(){
   const arc=data.archivedBookings||[];const list=document.getElementById('arcList');
   if(!arc.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🗄️</div><p>لا يوجد سجلات بعد</p></div>`;return;}
-  list.innerHTML=[...arc].sort((a,b)=>(b.completedAt||0)-(a.completedAt||0)).map(b=>`<div class="arc-card"><div class="arc-lbl">✅ مكتمل</div><div class="arc-name">${b.name} <span style="font-size:11px;font-weight:400;color:var(--muted)">— ${b.service}</span></div><div class="arc-detail">📅 ${b.dateLabel||b.day||b.dateKey} • ⏰ ${b.slot} • 💰 ${fp(b.price||0)}</div><div class="arc-detail" style="margin-top:2px">📞 ${b.phone||'—'} • ${b.completedAt?new Date(b.completedAt).toLocaleString('ar-IQ'):''}</div></div>`).join('');
+  const q=(document.getElementById('arcSrch')?.value||'').trim().toLowerCase();
+  const filtered=q?arc.filter(b=>(b.name||'').toLowerCase().includes(q)||(b.phone||'').includes(q)||(b.service||'').toLowerCase().includes(q)):arc;
+  const sorted=[...filtered].sort((a,b)=>(b.completedAt||0)-(a.completedAt||0));
+  const total=sorted.length;const end=(arcPage+1)*ARC_PAGE_SIZE;
+  const page=sorted.slice(0,end);
+  if(!page.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج</p></div>`;return;}
+  list.innerHTML=page.map(b=>`<div class="arc-card"><div class="arc-lbl">✅ مكتمل</div><div class="arc-name">${b.name} <span style="font-size:11px;font-weight:400;color:var(--muted)">— ${b.service}</span></div><div class="arc-detail">📅 ${b.dateLabel||b.day||b.dateKey} • ⏰ ${b.slot} • 💰 ${fp(b.price||0)}</div><div class="arc-detail" style="margin-top:2px">📞 ${b.phone||'—'} • ${b.completedAt?new Date(b.completedAt).toLocaleString('ar-IQ'):''}</div></div>`).join('');
+  if(end<total){const more=document.createElement('button');more.textContent=`⬇️ عرض المزيد (${total-end} متبقي)`;more.style.cssText='width:100%;margin-top:8px;padding:11px;background:var(--card);border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-family:\'Cairo\',sans-serif;font-size:12px;font-weight:700;cursor:pointer;';more.onclick=()=>{arcPage++;renderArchive();};list.appendChild(more);}
 }
 
 function renderWaitlist(){
