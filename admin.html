@@ -188,6 +188,17 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
 .svc-price-inp{width:100%;background:var(--black);border:1px solid var(--border2);border-radius:6px;padding:7px 9px;font-family:'Cairo',sans-serif;font-size:13px;color:var(--gold);outline:none;}
 .svc-price-lbl{font-size:9px;color:var(--muted);margin-bottom:2px;}
 
+/* BLOCKED SLOTS */
+.blk-day-sel{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;}
+.blk-day-sel::-webkit-scrollbar{display:none;}
+.blk-day-pill{flex-shrink:0;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:7px 13px;color:var(--muted);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.blk-day-pill.active{background:rgba(201,168,76,0.1);border-color:var(--gold);color:var(--gold);}
+.blk-slots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+.blk-slot{background:var(--card);border:1px solid var(--border2);border-radius:7px;padding:9px 4px;font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.blk-slot:hover{border-color:rgba(239,83,80,0.4);color:#EF5350;}
+.blk-slot.blocked{background:rgba(107,32,32,0.25);border-color:rgba(239,83,80,0.5);color:#EF5350;}
+.blk-slot.booked{opacity:.4;cursor:not-allowed;}
+
 /* MISC */
 .empty{text-align:center;padding:40px 0;border:1px dashed var(--border2);border-radius:12px;}
 .empty-icon{font-size:32px;margin-bottom:10px;opacity:.3;}
@@ -385,6 +396,14 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
         <div class="stitle">📅 تعطيل / تفعيل يوم</div>
         <div class="dis-scroll" id="disScroll"></div>
       </div>
+      <!-- BLOCKED SLOTS CARD -->
+      <div class="scard" style="border-color:rgba(239,83,80,0.2)">
+        <div class="stitle" style="color:#EF9090">🚫 حجب ساعات معينة</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">اختار اليوم ثم اضغط على الساعات اللي تريد تحجبها — تظهر للزبائن كـ"محجوزة"</div>
+        <div class="blk-day-sel" id="blkDaySel"></div>
+        <div class="blk-slots-grid" id="blkSlotsGrid"><div style="color:var(--muted);font-size:11px;text-align:center;padding:10px;grid-column:span 4">اختار يوماً أولاً</div></div>
+        <div id="blkCount" style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px"></div>
+      </div>
       <div class="scard">
         <div class="stitle">🔒 تغيير رمز الدخول</div>
         <div class="srow"><div class="slbl">الرمز الحالي</div><input class="sinp" id="oldPin" type="password" maxlength="4" placeholder="الرمز الحالي"/></div>
@@ -435,7 +454,7 @@ const SH={"12:00 م":12,"12:30 م":12.5,"1:00 م":13,"1:30 م":13.5,"2:00 م":14
 const DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
-let data={bookings:[],waitlist:[],disabledDays:[],archivedBookings:[],expenses:[],workHours:{start:"5:00 م",end:"11:00 م"},services:[
+let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],workHours:{start:"5:00 م",end:"11:00 م"},services:[
   {id:'svc1',name:'حلاقة كاملة',price:20000,minPrice:15000,maxPrice:25000,icon:'✂️'},
   {id:'svc2',name:'تحديد ولحية',price:10000,icon:'🪒'},
   {id:'svc3',name:'شسوار',price:5000,icon:'💧'},
@@ -514,6 +533,7 @@ async function load(){
         bookings:typeof r.bookings==='string'?JSON.parse(r.bookings):(r.bookings||[]),
         waitlist:typeof r.waitlist==='string'?JSON.parse(r.waitlist):(r.waitlist||[]),
         disabledDays:typeof r.disabledDays==='string'?JSON.parse(r.disabledDays):(r.disabledDays||[]),
+        blockedSlots:typeof r.blockedSlots==='string'?JSON.parse(r.blockedSlots):(r.blockedSlots||{}),
         archivedBookings:typeof r.archivedBookings==='string'?JSON.parse(r.archivedBookings):(r.archivedBookings||[]),
         expenses:typeof r.expenses==='string'?JSON.parse(r.expenses):(r.expenses||[]),
         workHours:{start:r.workHoursStart||"5:00 م",end:r.workHoursEnd||"11:00 م"},
@@ -525,7 +545,7 @@ async function load(){
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
 }
 async function save(){
-  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30});
+  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30});
   lastSync=new Date();syncBar(true);
 }
 function cleanOld(){
@@ -575,11 +595,13 @@ function renderBookings(){
   list.innerHTML=sorted.map(b=>{
     const late=isLate(b);const mins=late?lateMin(b):0;
     const wi=waitInfo(b.id);
-    return`<div class="card${late?' late':''}">
+    const open=isOpenSvc(b.serviceId);
+    const cardStyle=open?'border-color:rgba(0,188,212,0.4);background:rgba(0,188,212,0.04)':'';
+    return`<div class="card${late?' late':''}" style="${cardStyle}">
       <div class="ctop">
         <div style="flex:1;min-width:0">
           <div class="date-tag">📅 ${b.dateLabel||b.day||b.dateKey}</div>
-          <div><span class="c-name">${b.name}</span>${b.reminded?'<span class="tag t-ok">✓ ذُكِّر</span>':''}${b.manual?'<span class="tag t-manual">📞 يدوي</span>':''}${late?`<span class="tag t-late">⚠️ ${mins}د</span>`:''}</div>
+          <div><span class="c-name">${b.name}</span>${b.reminded?'<span class="tag t-ok">✓ ذُكِّر</span>':''}${b.manual?'<span class="tag t-manual">📞 يدوي</span>':''}${open?'<span class="tag" style="color:#00BCD4;background:rgba(0,188,212,0.1);border:1px solid rgba(0,188,212,0.2)">💧 مفتوح</span>':''}${late?`<span class="tag t-late">⚠️ ${mins}د</span>`:''}</div>
           <div style="margin-top:4px;font-size:12px;color:var(--muted)">${b.service} — ${fp(b.price||0)}</div>
         </div>
         <div class="time-chip" style="margin-right:8px">⏰ ${b.slot}</div>
@@ -740,6 +762,7 @@ function renderSettings(){
   const am=document.getElementById('avgMins');if(am)am.value=data.avgMins||localStorage.getItem('art_avg_mins')||'30';
   const g=document.getElementById('disScroll');g.innerHTML='';
   next7().forEach(d=>{const key=dk(d);const off=(data.disabledDays||[]).includes(key);const card=document.createElement('div');card.className='dis-day'+(off?' off':'');card.innerHTML=`<span class="dd-name">${DAYS[d.getDay()]}</span><span class="dd-num">${d.getDate()}</span><span class="dd-month">${MONTHS[d.getMonth()]}</span>`;card.onclick=()=>toggleDay(key);g.appendChild(card);});
+  renderBlkDaySel();
 }
 
 function addSvc(){
@@ -795,21 +818,83 @@ function showManual(){
   document.getElementById('mSlot').innerHTML='<option value="">اختار اليوم أولاً</option>';
 }
 function hideManual(){document.getElementById('manualForm').style.display='none';['mName','mPhone'].forEach(id=>document.getElementById(id).value='');document.getElementById('mSvc').value='';document.getElementById('mDay').value='';}
+function isOpenSvc(id){const svc=(data.services||[]).find(s=>s.id===id);return !!(svc&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة')));}
 function updateMSlots(){
   const dateKey=document.getElementById('mDay').value;
   const sel=document.getElementById('mSlot');
   sel.innerHTML='<option value="">اختار الساعة</option>';
   if(!dateKey)return;
   const workSlots=slots();
+  const se=document.getElementById('mSvc');
+  const selOpt=Array.from(se.options).find(o=>o.value===se.value);
+  const svcId=selOpt?.dataset?.id||'';
+  const open=isOpenSvc(svcId);
+  const occupiedSet=new Set(data.bookings.filter(b=>b.dateKey===dateKey&&!b.cancelled).map(b=>b.slot));
+  const blocked=(data.blockedSlots||{})[dateKey]||[];
   workSlots.forEach(s=>{
-    const bkd=data.bookings.some(b=>b.dateKey===dateKey&&b.slot===s&&!b.cancelled);
     const opt=document.createElement('option');
     opt.value=s;
-    opt.textContent=bkd?`${s} — محجوز`:s;
-    if(bkd)opt.disabled=true;
+    const isOccupied=occupiedSet.has(s);
+    const isBlocked=blocked.includes(s);
+    const conflict=!open&&(isOccupied||isBlocked);
+    opt.textContent=open&&isOccupied?`${s} — مشغول (مسموح)`:isBlocked?`${s} — محجوب`:conflict?`${s} — محجوز`:s;
+    if(conflict||isBlocked)opt.disabled=true;
     sel.appendChild(opt);
   });
 }
+
+// ── Blocked Slots ──
+let blkSelDay=null;
+function renderBlkDaySel(){
+  const g=document.getElementById('blkDaySel');if(!g)return;
+  g.innerHTML='';
+  next7().forEach(d=>{
+    const key=dk(d);
+    const btn=document.createElement('button');
+    btn.className='blk-day-pill'+(blkSelDay===key?' active':'');
+    const cnt=((data.blockedSlots||{})[key]||[]).length;
+    btn.textContent=`${DAYS[d.getDay()]} ${d.getDate()}${cnt?` (${cnt}🚫)`:''}`;
+    btn.onclick=()=>{blkSelDay=key;renderBlkDaySel();renderBlkSlots();};
+    g.appendChild(btn);
+  });
+  renderBlkSlots();
+}
+function renderBlkSlots(){
+  const g=document.getElementById('blkSlotsGrid');if(!g)return;
+  if(!blkSelDay){g.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px;grid-column:span 4">اختار يوماً أولاً</div>';return;}
+  const workSlots=slots();
+  const blocked=(data.blockedSlots||{})[blkSelDay]||[];
+  const bookedSet=new Set(data.bookings.filter(b=>b.dateKey===blkSelDay&&!b.cancelled).map(b=>b.slot));
+  g.innerHTML='';
+  workSlots.forEach(s=>{
+    const isBlocked=blocked.includes(s);
+    const isBooked=bookedSet.has(s);
+    const btn=document.createElement('button');
+    btn.className='blk-slot'+(isBlocked?' blocked':'')+(isBooked?' booked':'');
+    btn.textContent=s+(isBooked?'\n📅':'');
+    btn.title=isBooked?'هذا الوقت فيه حجز':'';
+    if(!isBooked){btn.onclick=()=>toggleBlkSlot(blkSelDay,s);}
+    else{btn.disabled=true;}
+    g.appendChild(btn);
+  });
+  const cnt=blocked.length;
+  const countEl=document.getElementById('blkCount');
+  if(countEl)countEl.textContent=cnt?`🚫 ${cnt} ساعة محجوبة — اضغط مرة ثانية لإلغاء الحجب`:'✅ كل الساعات متاحة في هذا اليوم';
+}
+async function toggleBlkSlot(dateKey,slot){
+  if(!data.blockedSlots)data.blockedSlots={};
+  if(!data.blockedSlots[dateKey])data.blockedSlots[dateKey]=[];
+  const arr=data.blockedSlots[dateKey];
+  const idx=arr.indexOf(slot);
+  if(idx>=0)arr.splice(idx,1);else arr.push(slot);
+  if(!arr.length)delete data.blockedSlots[dateKey];
+  try{await save();renderBlkDaySel();toast(idx>=0?`✅ فُتح وقت ${slot}`:`🚫 حُجب وقت ${slot}`);}
+  catch{if(idx>=0)arr.splice(idx,0,slot);else arr.pop();toast('❌ فشل');}
+}
+window.toggleBlkSlot=toggleBlkSlot;
+window.renderBlkDaySel=renderBlkDaySel;
+window.renderBlkSlots=renderBlkSlots;
+
 async function saveManual(){
   const name=document.getElementById('mName').value.trim();const phone=document.getElementById('mPhone').value.trim()||'هاتف';
   const se=document.getElementById('mSvc');const svc=se.value;const price=se.options[se.selectedIndex]?.dataset?.p||0;

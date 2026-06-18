@@ -402,7 +402,7 @@ let SVCS = [
   {id:'child', name:'طفل',          price:10000, icon:'👦'},
 ];
 
-let db={bookings:[],waitlist:[],disabledDays:[],workHours:{start:"4:00 م",end:"11:00 م"}};
+let db={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},workHours:{start:"4:00 م",end:"11:00 م"}};
 let selSvc=null,selDateKey=null,selDateLabel=null,selSlot=null,busy=false;
 let selPrice=null; // السعر المختار من الـ slider
 
@@ -428,18 +428,22 @@ function isPast(dk,s){
   if(!apptTime)return false;
   return new Date()>=apptTime;
 }
+function isShiswarSvc(id){const svc=SVCS.find(s=>s.id===id);return !!(svc&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة')));}
 function isBooked(dk,s){
+  // تحقق من الساعات المحجوبة من الأدمن
+  const blocked=(db.blockedSlots||{})[dk]||[];
+  if(blocked.includes(s))return true;
   const avgM=db.avgMins||30;
   const steps=Math.ceil(avgM/30);
   const sIdx=ALL_SLOTS.indexOf(s);
   if(sIdx<0)return false;
   return db.bookings.some(b=>{
     if(b.dateKey!==dk||b.cancelled)return false;
+    // الشسوار وتنظيف البشرة: مفتوح — ما يحجب الوقت على غيره
+    if(isShiswarSvc(b.serviceId))return false;
     const bIdx=ALL_SLOTS.indexOf(b.slot);
     if(bIdx<0)return false;
-    // حجب slots ضمن وقت الحجز الموجود
     for(let i=0;i<steps;i++){if(bIdx+i===sIdx)return true;}
-    // حجب slots لو اخترتها ستتعارض مع حجز موجود
     for(let i=1;i<steps;i++){if(sIdx+i===bIdx)return true;}
     return false;
   });
@@ -456,6 +460,7 @@ async function load(){
         bookings:typeof r.bookings==='string'?JSON.parse(r.bookings):(r.bookings||[]),
         waitlist:typeof r.waitlist==='string'?JSON.parse(r.waitlist):(r.waitlist||[]),
         disabledDays:typeof r.disabledDays==='string'?JSON.parse(r.disabledDays):(r.disabledDays||[]),
+        blockedSlots:typeof r.blockedSlots==='string'?JSON.parse(r.blockedSlots):(r.blockedSlots||{}),
         workHours:{start:r.workHoursStart||"5:00 م",end:r.workHoursEnd||"11:00 م"},
         avgMins:r.avgMins||30,
       };
