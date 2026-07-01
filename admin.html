@@ -487,6 +487,24 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
     </div>
     <div class="srow"><div class="slbl">اسم المنتج</div><input class="sinp" id="pm-name" placeholder="مثال: شمع شعر..."/></div>
     <div class="srow"><div class="slbl">السعر (د.ع)</div><input class="sinp" id="pm-price" type="number" min="0" placeholder="مثال: 15000"/></div>
+    <div class="srow">
+      <div class="slbl">حالة التوفر</div>
+      <select class="sinp" id="pm-status" style="cursor:pointer" onchange="onPmStatusChange()">
+        <option value="available">✅ متوفر</option>
+        <option value="soon">⏳ يتوفر قريباً</option>
+        <option value="out">❌ نفذت الكمية</option>
+      </select>
+    </div>
+    <div class="srow" id="pm-qty-row">
+      <div class="slbl">عدد القطع المتبقية</div>
+      <input class="sinp" id="pm-qty" type="number" min="0" placeholder="مثلاً 10"/>
+    </div>
+    <div class="srow" id="pm-preorder-row" style="display:none">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px;color:var(--muted)">
+        <input type="checkbox" id="pm-preorder" style="width:16px;height:16px;accent-color:var(--gold)"/>
+        فعّل "حجز مسبق" لهذا المنتج (يتواصل الزبون معك على واتساب)
+      </label>
+    </div>
     <div class="srow"><div class="slbl">الوصف</div><textarea class="stxt" id="pm-desc" placeholder="وصف مختصر عن المنتج..."></textarea></div>
     <button class="save-btn" onclick="saveProductModal()">💾 حفظ المنتج</button>
   </div>
@@ -911,17 +929,30 @@ async function renderStore(){
 }
 function renderProductCards(){
   if(!productsList.length)return`<div class="empty"><div class="empty-icon">🛍️</div><p>لا يوجد منتجات بعد</p></div>`;
-  return productsList.map(p=>`<div class="product-mgr-card">
+  return productsList.map(p=>{
+    const status=p.status||'available';
+    const statusLbl=status==='soon'?'⏳ يتوفر قريباً':status==='out'?'❌ نفذت الكمية':'✅ متوفر';
+    const statusColor=status==='soon'?'#C9A84C':status==='out'?'#EF5350':'#4CAF50';
+    const qtyLbl=(status==='available'&&p.qty!==undefined&&p.qty!==null&&p.qty!=='')?`<div style="font-size:10.5px;color:var(--muted);margin-top:1px">متبقي: ${p.qty} قطعة</div>`:'';
+    return`<div class="product-mgr-card">
     <div class="product-mgr-thumb">${p.photo?`<img src="${p.photo}" alt="${escHtmlA(p.name)}"/>`:`<span style="font-size:20px">🛍️</span>`}</div>
     <div class="product-mgr-info">
       <div class="product-mgr-name">${escHtmlA(p.name)}</div>
       <div class="product-mgr-price">${fmtPriceA(p.price)}</div>
+      <div style="font-size:10.5px;font-weight:700;color:${statusColor};margin-top:2px">${statusLbl}</div>
+      ${qtyLbl}
     </div>
     <div class="product-mgr-actions">
       <button class="mgr-edit-btn" onclick="openProductModal('${p.id}')">✏️</button>
       <button class="mgr-del-btn" onclick="deleteProduct('${p.id}')">🗑️</button>
     </div>
-  </div>`).join('');
+  </div>`;
+  }).join('');
+}
+function onPmStatusChange(){
+  const st=document.getElementById('pm-status').value;
+  document.getElementById('pm-qty-row').style.display=st==='available'?'block':'none';
+  document.getElementById('pm-preorder-row').style.display=st==='available'?'none':'block';
 }
 function openProductModal(productId=null){
   editingProductId=productId;productPhotoBase64=null;
@@ -930,6 +961,10 @@ function openProductModal(productId=null){
   document.getElementById('pm-name').value=p?.name||'';
   document.getElementById('pm-price').value=p?.price||'';
   document.getElementById('pm-desc').value=p?.description||'';
+  document.getElementById('pm-status').value=p?.status||'available';
+  document.getElementById('pm-qty').value=(p?.qty!==undefined&&p?.qty!==null)?p.qty:'';
+  document.getElementById('pm-preorder').checked=!!p?.preorder;
+  onPmStatusChange();
   const preview=document.getElementById('pm-photo-preview');
   const txt=document.getElementById('pm-photo-text');
   if(p?.photo){preview.src=p.photo;preview.style.display='block';txt.textContent='اضغط لتغيير الصورة';}
@@ -963,15 +998,19 @@ async function saveProductModal(){
   const name=document.getElementById('pm-name').value.trim();
   const price=parseInt(document.getElementById('pm-price').value)||0;
   const description=document.getElementById('pm-desc').value.trim();
+  const status=document.getElementById('pm-status').value;
+  const qtyRaw=document.getElementById('pm-qty').value;
+  const qty=qtyRaw===''?null:Math.max(0,parseInt(qtyRaw)||0);
+  const preorder=document.getElementById('pm-preorder').checked;
   if(!name){toast('أدخل اسم المنتج');return;}
   if(editingProductId){
     const p=productsList.find(x=>x.id===editingProductId);
     if(p){
-      p.name=name;p.price=price;p.description=description;
+      p.name=name;p.price=price;p.description=description;p.status=status;p.qty=qty;p.preorder=preorder;
       if(productPhotoBase64)p.photo=productPhotoBase64;
     }
   }else{
-    productsList.push({id:'prod'+Date.now(),name,price,description,photo:productPhotoBase64||'',active:true});
+    productsList.push({id:'prod'+Date.now(),name,price,description,photo:productPhotoBase64||'',active:true,status,qty,preorder});
   }
   const sizeKB=Math.round(new Blob([JSON.stringify({products:productsList})]).size/1024);
   if(sizeKB>900){toast(`❌ حجم البيانات كبير جداً (${sizeKB}KB) — اختر صورة أصغر أو احذف منتج`);return;}
@@ -992,6 +1031,7 @@ async function deleteProduct(productId){
   }catch{toast('❌ فشل الحذف');}
 }
 window.openProductModal=openProductModal;
+window.onPmStatusChange=onPmStatusChange;
 window.closeProductModalAdmin=closeProductModalAdmin;
 window.onProductPhotoChange=onProductPhotoChange;
 window.saveProductModal=saveProductModal;

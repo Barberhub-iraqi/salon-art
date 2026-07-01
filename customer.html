@@ -206,7 +206,11 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .product-info{padding:10px 11px 12px;}
 .product-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px;}
 .product-price{font-size:13px;color:var(--gold);font-weight:900;margin-top:6px;}
+.product-qty{font-size:10.5px;color:var(--muted);margin-top:3px;}
 .shop-empty{text-align:center;padding:30px 20px;color:var(--muted);font-size:12px;}
+.product-badge{position:absolute;top:8px;right:8px;padding:4px 9px;border-radius:20px;font-size:9.5px;font-weight:900;z-index:2;backdrop-filter:blur(4px);}
+.badge-soon{background:rgba(201,168,76,0.9);color:#0A0A08;}
+.badge-out{background:rgba(107,32,32,0.88);color:#fff;}
 
 /* product detail modal */
 .product-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:1000;}
@@ -227,6 +231,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .product-modal-body{padding:20px 22px 26px;}
 .product-modal-name{font-size:18px;font-weight:900;color:var(--text);margin-bottom:8px;}
 .product-modal-price{font-size:17px;color:var(--gold);font-weight:900;margin-bottom:14px;}
+.product-modal-status{font-size:12.5px;font-weight:700;margin-bottom:10px;}
+.preorder-btn{width:100%;margin-top:16px;padding:13px;background:linear-gradient(135deg,var(--gold-dim),var(--gold));color:var(--black);border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:13.5px;font-weight:900;cursor:pointer;}
 .product-modal-desc{font-size:13px;color:var(--muted);line-height:1.9;white-space:pre-wrap;}
 </style>
 </head>
@@ -417,7 +423,9 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
     <div class="product-modal-body">
       <div class="product-modal-name" id="productModalName"></div>
       <div class="product-modal-price" id="productModalPrice"></div>
+      <div class="product-modal-status" id="productModalStatus"></div>
       <div class="product-modal-desc" id="productModalDesc"></div>
+      <button class="preorder-btn" id="productPreorderBtn" style="display:none" onclick="preorderProduct()">📩 احجز مسبقاً على واتساب</button>
     </div>
   </div>
 </div>
@@ -759,6 +767,7 @@ async function loadProducts(){
   }catch{productsList=[];}
   renderShop();
 }
+const SHOP_WA='9647710761823';
 function renderShop(){
   const section=document.getElementById('shopSection');
   const grid=document.getElementById('shopGrid');
@@ -766,25 +775,47 @@ function renderShop(){
   if(!productsList.length){section.style.display='none';return;}
   section.style.display='block';
   grid.innerHTML=productsList.map((p,i)=>{
+    const status=p.status||'available';
     const img=p.photo?`<img src="${p.photo}" alt="${escHtml(p.name)}"/>`:`<div class="product-img-placeholder">🛍️</div>`;
+    const badge=status==='soon'?'<span class="product-badge badge-soon">⏳ قريباً</span>':status==='out'?'<span class="product-badge badge-out">❌ نفذت</span>':'';
+    const qtyLbl=(status==='available'&&p.qty!==undefined&&p.qty!==null&&p.qty!=='')?`<div class="product-qty">متبقي: ${p.qty} قطعة</div>`:'';
     return`<div class="product-card" onclick="window._openProduct(${i})">
-      <div class="product-img-wrap">${img}</div>
+      <div class="product-img-wrap">${badge}${img}</div>
       <div class="product-info">
         <div class="product-name">${escHtml(p.name)}</div>
         <div class="product-price">${fmtPrice(p.price||0)}</div>
+        ${qtyLbl}
       </div>
     </div>`;
   }).join('');
 }
+let _currentProductIdx=null;
 window._openProduct=function(i){
   const p=productsList[i];if(!p)return;
+  _currentProductIdx=i;
+  const status=p.status||'available';
   document.getElementById('productModalImg').src=p.photo||'';
   document.getElementById('productModalImgWrap').style.display=p.photo?'block':'none';
   document.getElementById('productModalName').textContent=p.name||'';
   document.getElementById('productModalPrice').textContent=fmtPrice(p.price||0);
   document.getElementById('productModalDesc').textContent=p.description||'';
+  const statusEl=document.getElementById('productModalStatus');
+  const preorderBtn=document.getElementById('productPreorderBtn');
+  if(status==='soon'){statusEl.textContent='⏳ يتوفر قريباً';statusEl.style.color='var(--gold)';}
+  else if(status==='out'){statusEl.textContent='❌ نفذت الكمية حالياً';statusEl.style.color='#EF5350';}
+  else{
+    statusEl.textContent=(p.qty!==undefined&&p.qty!==null&&p.qty!=='')?`✅ متوفر — متبقي ${p.qty} قطعة`:'✅ متوفر';
+    statusEl.style.color='#4CAF50';
+  }
+  preorderBtn.style.display=(status!=='available'&&p.preorder)?'block':'none';
   document.getElementById('productModalOverlay').style.display='flex';
 };
+function preorderProduct(){
+  const p=productsList[_currentProductIdx];if(!p)return;
+  const msg=encodeURIComponent(`السلام عليكم 👋\nأريد أحجز مسبقاً هذا المنتج:\n🛍️ ${p.name}\n💰 ${fmtPrice(p.price||0)}`);
+  window.open(`https://wa.me/${SHOP_WA}?text=${msg}`,'_blank');
+}
+window.preorderProduct=preorderProduct;
 function closeProductModal(){document.getElementById('productModalOverlay').style.display='none';}
 window.closeProductModal=closeProductModal;
 function openImgLightbox(){
