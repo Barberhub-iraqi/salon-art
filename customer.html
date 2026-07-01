@@ -231,7 +231,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
       <div class="inp-wrap">
         <label class="inp-lbl">الاسم</label>
         <input class="inp" id="nameInp" placeholder="اكتب اسمك..." maxlength="30"/>
-        <div class="err-msg" id="nameErr">الاسم يجب أن يكون 3 أحرف على الأقل</div>
+        <div class="err-msg" id="nameErr">اكتب اسمك الثنائي فقط (مثال: أحمد علي)</div>
+        <div class="err-msg" id="nameBadErr" style="display:none">احترم نفسك واكتب اسمك عدل لا بنعال</div>
       </div>
       <div class="inp-wrap">
         <label class="inp-lbl">رقم الواتساب</label>
@@ -411,7 +412,61 @@ function fmtPrice(p){return Number(p).toLocaleString('ar-IQ')+' د.ع';}
 function next7(){const r=[];const t=new Date();t.setHours(0,0,0,0);for(let i=0;i<7;i++){const d=new Date(t);d.setDate(t.getDate()+i);r.push(d);}return r;}
 function normPhone(p){const c=p.replace(/\D/g,'');return c.startsWith('964')?'0'+c.slice(3):c;}
 function validPhone(p){return/^07[3-9]\d{8}$/.test(normPhone(p));}
-function validName(n){return n.trim().length>=3&&/[\u0600-\u06FFa-zA-Z]/.test(n);}
+// يطبّع النص عشان يمسك أي محاولة تحايل (مسافات بين الحروف، تشكيل، تكرار حروف، أرقام بدل حروف...)
+function normalizeAr(s){
+  return s
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,'') // تشكيل
+    .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
+    .replace(/ـ/g,'') // تطويل
+    .replace(/0/g,'و').replace(/3/g,'ع').replace(/7/g,'ح').replace(/9/g,'ق')
+    .replace(/[^\u0600-\u06FFa-z]/g,'') // شيل كل شي غير حروف (مسافات، نقاط، ارقام متبقية...)
+    .replace(/(.)\1{2,}/g,'$1$1'); // اختصر تكرار الحرف اكثر من مرتين
+}
+// روت قصيرة (2-3 حروف): فحص مباشر بس، بدون تقريبي — عشان ما تمسك اسماء حقيقية غلط
+const BAD_SHORT=['نيك','كسم','زبي','طيز','عرص','خرا','خره','عره','فشخ','كص','احا'];
+// روت أطول: فحص مباشر + تقريبي (يمسك حرف زايد/محذوف/مبدّل وحد بس، زي "نياجك" بدل "نياك")
+const BAD_LONG=[
+  'نياك','نياج','منيك','منيوك','متناك','كسمك','كسخت','كسامك','قحبه','قحبتك','عاهره',
+  'شرموط','شرموطه','خول','خوله','لوطي','زبك','طيزك','معرص','قواد','قوادك',
+  'ابن الكلب','كلب ابن','حيوان ابن','تاج راسك','زامل','زاملك','فشخك','كصمك','العريض'
+];
+// مسافة التحرير (Levenshtein) لمسك التحايل بإضافة/حذف/تبديل حرف وحد
+function editDist(a,b){
+  const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
+  for(let j=0;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){
+    d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);
+  }
+  return d[m][n];
+}
+function containsBadWord(n){
+  const norm=normalizeAr(n).replace(/\s/g,'');
+  for(const w of BAD_SHORT){
+    const rn=normalizeAr(w).replace(/\s/g,'');
+    if(rn&&norm.includes(rn))return true;
+  }
+  for(const w of BAD_LONG){
+    const rn=normalizeAr(w).replace(/\s/g,'');
+    if(!rn)continue;
+    if(norm.includes(rn))return true;
+    for(let len=rn.length;len<=rn.length+1;len++){
+      for(let i=0;i<=norm.length-len;i++){
+        if(editDist(norm.substr(i,len),rn)<=1)return true;
+      }
+    }
+  }
+  return false;
+}
+function validName(n){
+  const t=n.trim().replace(/\s+/g,' ');
+  const words=t.split(' ').filter(Boolean);
+  // لازم اسم ثنائي بالضبط (الاسم + اسم الأب)، كل مقطع حروف بس وبطول معقول
+  if(words.length!==2)return false;
+  if(words.some(w=>w.length<2||w.length>15||!/^[\u0600-\u06FFa-zA-Z]+$/.test(w)))return false;
+  if(containsBadWord(t))return false;
+  return true;
+}
 function slots(){const wh=db.workHours||{start:"5:00 م",end:"11:00 م"};const si=ALL_SLOTS.indexOf(wh.start);const ei=ALL_SLOTS.indexOf(wh.end);if(si<0||ei<0)return["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];const all=ei>=si?ALL_SLOTS.slice(si,ei+1):[...ALL_SLOTS.slice(si),...ALL_SLOTS.slice(0,ei+1)];const step=Math.ceil((db.avgMins||30)/30);return all.filter((_,i)=>i%step===0);}
 function slotDateTime(dk,s){
   const h=SLOT_H[s];if(h===undefined)return null;
@@ -492,9 +547,11 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 function updateBtn(){
   const name=document.getElementById('nameInp').value.trim();
   const phone=document.getElementById('phoneInp').value.trim();
-  const ne=document.getElementById('nameErr'),pe=document.getElementById('phoneErr');
+  const ne=document.getElementById('nameErr'),pe=document.getElementById('phoneErr'),nbe=document.getElementById('nameBadErr');
   const ni=document.getElementById('nameInp'),pi=document.getElementById('phoneInp');
-  if(name&&!validName(name)){ni.classList.add('err');ne.style.display='block';}else{ni.classList.remove('err');ne.style.display='none';}
+  if(name&&containsBadWord(name)){ni.classList.add('err');ne.style.display='none';nbe.style.display='block';}
+  else if(name&&!validName(name)){ni.classList.add('err');ne.style.display='block';nbe.style.display='none';}
+  else{ni.classList.remove('err');ne.style.display='none';nbe.style.display='none';}
   if(phone&&!validPhone(phone)){pi.classList.add('err');pe.style.display='block';}else{pi.classList.remove('err');pe.style.display='none';}
   const btn=document.getElementById('bookBtn');
   const s=SVCS.find(x=>x.id===selSvc);
@@ -560,7 +617,8 @@ async function doBook(){
   if(busy)return;
   const name=document.getElementById('nameInp').value.trim();
   const phone=document.getElementById('phoneInp').value.trim();
-  if(!validName(name)){toast('الاسم يجب 3 أحرف على الأقل');return;}
+  if(containsBadWord(name)){toast('احترم نفسك واكتب اسمك عدل لا بنعال');return;}
+  if(!validName(name)){toast('اكتب اسمك الثنائي فقط (مثال: أحمد علي)');return;}
   if(!validPhone(phone)){toast('رقم الهاتف غير صحيح');return;}
   if(!selSvc||!selDateKey||!selSlot)return;
   if(phoneBooked(phone)){toast('هذا الرقم عنده حجز مسبق!');return;}
@@ -600,7 +658,7 @@ async function doBook(){
 async function doWaitlist(){
   const name=document.getElementById('nameInp').value.trim();
   const phone=document.getElementById('phoneInp').value.trim();
-  if(!validName(name)){toast('أدخل اسمك');return;}
+  if(!validName(name)){toast('اكتب اسمك الثنائي فقط (مثال: أحمد علي)');return;}
   if(!validPhone(phone)){toast('رقم الهاتف غير صحيح');return;}
   if(!selDateKey){toast('اختار اليوم أولاً');return;}
   db.waitlist.push({id:'w'+Date.now(),name,phone,day:selDateLabel,dateKey:selDateKey,createdAt:Date.now()});
