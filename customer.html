@@ -190,6 +190,44 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--black);padding:11px 26px;border-radius:50px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;z-index:999;white-space:nowrap;display:none;box-shadow:0 4px 20px rgba(201,168,76,0.4);}
 .hidden{display:none!important;}
+
+/* SHOP */
+.shop-section{margin-top:36px;padding-top:28px;border-top:1px solid var(--border2);}
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.product-card{
+  background:#0F0F08;border:1px solid var(--border2);border-radius:14px;overflow:hidden;
+  cursor:pointer;transition:all .22s;display:flex;flex-direction:column;
+}
+.product-card:hover{border-color:rgba(201,168,76,0.4);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.product-img-wrap{width:100%;aspect-ratio:1/1;background:var(--dark);position:relative;overflow:hidden;}
+.product-img-wrap img{width:100%;height:100%;object-fit:contain;display:block;transition:transform .3s;}
+.product-card:hover .product-img-wrap img{transform:scale(1.06);}
+.product-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--gold-dim);opacity:.5;}
+.product-info{padding:10px 11px 12px;}
+.product-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px;}
+.product-price{font-size:13px;color:var(--gold);font-weight:900;margin-top:6px;}
+.shop-empty{text-align:center;padding:30px 20px;color:var(--muted);font-size:12px;}
+
+/* product detail modal */
+.product-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:1000;}
+.product-modal{
+  background:#13130C;border:1px solid var(--border2);border-radius:20px 20px 0 0;
+  width:100%;max-width:460px;max-height:88vh;overflow-y:auto;
+  box-shadow:0 -10px 50px rgba(0,0,0,.7);animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.product-modal-img{width:100%;aspect-ratio:4/3;background:var(--dark);overflow:hidden;position:relative;}
+.product-modal-img img{width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in;}
+
+/* full-screen image lightbox */
+.img-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;z-index:1100;padding:20px;}
+.img-lightbox img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
+.img-lightbox-close{position:absolute;top:18px;left:18px;width:38px;height:38px;border-radius:50%;background:rgba(20,20,14,0.8);border:1px solid rgba(201,168,76,0.35);color:var(--gold3);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;}
+.product-modal-close{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:50%;background:rgba(10,10,8,0.7);border:1px solid rgba(201,168,76,0.3);color:var(--gold3);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;backdrop-filter:blur(4px);}
+.product-modal-body{padding:20px 22px 26px;}
+.product-modal-name{font-size:18px;font-weight:900;color:var(--text);margin-bottom:8px;}
+.product-modal-price{font-size:17px;color:var(--gold);font-weight:900;margin-bottom:14px;}
+.product-modal-desc{font-size:13px;color:var(--muted);line-height:1.9;white-space:pre-wrap;}
 </style>
 </head>
 <body>
@@ -273,6 +311,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
     </div>
     <div id="waitBtnWrap" style="display:none">
       <button class="wait-btn" onclick="doWaitlist()">+ انضم لقائمة الانتظار</button>
+    </div>
+
+    <!-- SHOP -->
+    <div class="shop-section" id="shopSection" style="display:none">
+      <div class="sec-label">🛍️ متجرنا</div>
+      <div class="shop-grid" id="shopGrid"></div>
     </div>
   </div>
 </div>
@@ -364,6 +408,26 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 }
 </style>
 
+<div class="product-modal-overlay" id="productModalOverlay" onclick="if(event.target===this)closeProductModal()">
+  <div class="product-modal">
+    <div class="product-modal-img" id="productModalImgWrap">
+      <button class="product-modal-close" onclick="closeProductModal()">✕</button>
+      <img id="productModalImg" src="" alt="" onclick="openImgLightbox()"/>
+    </div>
+    <div class="product-modal-body">
+      <div class="product-modal-name" id="productModalName"></div>
+      <div class="product-modal-price" id="productModalPrice"></div>
+      <div class="product-modal-desc" id="productModalDesc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE LIGHTBOX -->
+<div class="img-lightbox" id="imgLightbox" onclick="closeImgLightbox()">
+  <button class="img-lightbox-close" onclick="closeImgLightbox()">✕</button>
+  <img id="imgLightboxImg" src="" alt=""/>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -381,6 +445,7 @@ const _app = initializeApp({
 });
 const _db = getFirestore(_app);
 const DB = doc(_db, "salon-art", "data");
+const storeRef = doc(_db, "salon-art", "store");
 
 const ALL_SLOTS = ["12:00 م","12:30 م","1:00 م","1:30 م","2:00 م","2:30 م","3:00 م","3:30 م","4:00 م","4:30 م","5:00 م","5:30 م","6:00 م","6:30 م","7:00 م","7:30 م","8:00 م","8:30 م","9:00 م","9:30 م","10:00 م","10:30 م","11:00 م","11:30 م","12:00 ص","12:30 ص","1:00 ص","1:30 ص","2:00 ص","2:30 ص","3:00 ص","3:30 ص","4:00 ص","4:30 ص","5:00 ص","5:30 ص","6:00 ص","6:30 ص","7:00 ص","7:30 ص","8:00 ص","8:30 ص","9:00 ص","9:30 ص","10:00 ص","10:30 ص","11:00 ص","11:30 ص"];
 const SLOT_H = {"12:00 م":12,"12:30 م":12.5,"1:00 م":13,"1:30 م":13.5,"2:00 م":14,"2:30 م":14.5,"3:00 م":15,"3:30 م":15.5,"4:00 م":16,"4:30 م":16.5,"5:00 م":17,"5:30 م":17.5,"6:00 م":18,"6:30 م":18.5,"7:00 م":19,"7:30 م":19.5,"8:00 م":20,"8:30 م":20.5,"9:00 م":21,"9:30 م":21.5,"10:00 م":22,"10:30 م":22.5,"11:00 م":23,"11:30 م":23.5,"12:00 ص":0,"12:30 ص":0.5,"1:00 ص":1,"1:30 ص":1.5,"2:00 ص":2,"2:30 ص":2.5,"3:00 ص":3,"3:30 ص":3.5,"4:00 ص":4,"4:30 ص":4.5,"5:00 ص":5,"5:30 ص":5.5,"6:00 ص":6,"6:30 ص":6.5,"7:00 ص":7,"7:30 ص":7.5,"8:00 ص":8,"8:30 ص":8.5,"9:00 ص":9,"9:30 ص":9.5,"10:00 ص":10,"10:30 ص":10.5,"11:00 ص":11,"11:30 ص":11.5};
@@ -684,11 +749,60 @@ function resetForm(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ── المتجر ──
+let productsList=[];
+function escHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function loadProducts(){
+  try{
+    const snap=await getDoc(storeRef);
+    productsList=(snap.exists()&&Array.isArray(snap.data().products))?snap.data().products.filter(p=>p.active!==false):[];
+  }catch{productsList=[];}
+  renderShop();
+}
+function renderShop(){
+  const section=document.getElementById('shopSection');
+  const grid=document.getElementById('shopGrid');
+  if(!section||!grid)return;
+  if(!productsList.length){section.style.display='none';return;}
+  section.style.display='block';
+  grid.innerHTML=productsList.map((p,i)=>{
+    const img=p.photo?`<img src="${p.photo}" alt="${escHtml(p.name)}"/>`:`<div class="product-img-placeholder">🛍️</div>`;
+    return`<div class="product-card" onclick="window._openProduct(${i})">
+      <div class="product-img-wrap">${img}</div>
+      <div class="product-info">
+        <div class="product-name">${escHtml(p.name)}</div>
+        <div class="product-price">${fmtPrice(p.price||0)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window._openProduct=function(i){
+  const p=productsList[i];if(!p)return;
+  document.getElementById('productModalImg').src=p.photo||'';
+  document.getElementById('productModalImgWrap').style.display=p.photo?'block':'none';
+  document.getElementById('productModalName').textContent=p.name||'';
+  document.getElementById('productModalPrice').textContent=fmtPrice(p.price||0);
+  document.getElementById('productModalDesc').textContent=p.description||'';
+  document.getElementById('productModalOverlay').style.display='flex';
+};
+function closeProductModal(){document.getElementById('productModalOverlay').style.display='none';}
+window.closeProductModal=closeProductModal;
+function openImgLightbox(){
+  const src=document.getElementById('productModalImg').src;
+  if(!src)return;
+  document.getElementById('imgLightboxImg').src=src;
+  document.getElementById('imgLightbox').style.display='flex';
+}
+window.openImgLightbox=openImgLightbox;
+function closeImgLightbox(){document.getElementById('imgLightbox').style.display='none';}
+window.closeImgLightbox=closeImgLightbox;
+
 (async()=>{
   try{await load();}catch(e){console.error('Firebase error:',e);}
   document.getElementById('loader').style.display='none';
   document.getElementById('app').style.display='block';
   renderSvcs();renderDays();
+  loadProducts();
   document.getElementById('nameInp').addEventListener('input',updateBtn);
   document.getElementById('phoneInp').addEventListener('input',updateBtn);
   window.doBook=doBook;window.doWaitlist=doWaitlist;window.resetForm=resetForm;window.onSliderChange=onSliderChange;window.pickPrice=pickPrice;
