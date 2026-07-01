@@ -778,6 +778,13 @@ function renderSettings(){
           </select>
         </div>
       </div>
+      <div style="margin-top:6px">
+        <div class="svc-price-lbl">نوع الخدمة</div>
+        <select class="svc-price-inp" id="styp-${s.id}" style="cursor:pointer">
+          <option value="normal" ${(s.type||'normal')==='normal'?'selected':''}>عادية (تحجز وقت)</option>
+          <option value="special" ${isOpenSvc(s.id)?'selected':''}>خاصة (تحجز أي وقت حتى لو محجوز)</option>
+        </select>
+      </div>
     </div>
   `).join('')+'<button onclick="addSvc()" style="width:100%;padding:10px;margin-top:4px;background:rgba(201,168,76,0.07);border:1px dashed rgba(201,168,76,0.3);border-radius:8px;color:var(--gold);font-family:\'Cairo\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">➕ إضافة خدمة جديدة</button>';
   
@@ -800,7 +807,7 @@ function renderSettings(){
 
 function addSvc(){
   const newId='svc'+Date.now();
-  data.services.push({id:newId,name:'خدمة جديدة',price:10000,icon:'✂️',duration:60});
+  data.services.push({id:newId,name:'خدمة جديدة',price:10000,icon:'✂️',duration:60,type:'normal'});
   renderSettings();toast('➕ تمت الإضافة — عدّل الاسم والسعر ثم احفظ');
 }
 function delSvc(id){
@@ -816,9 +823,11 @@ async function saveServices(){
     const di=document.getElementById('sd-'+s.id);
     const mini=document.getElementById('smin-'+s.id);
     const maxi=document.getElementById('smax-'+s.id);
+    const ti=document.getElementById('styp-'+s.id);
     if(ni)s.name=ni.value.trim()||s.name;
     if(pi)s.price=parseInt(pi.value)||s.price;
     if(di)s.duration=parseInt(di.value)||60;
+    if(ti)s.type=ti.value;
     const minV=mini?parseInt(mini.value)||0:0;
     const maxV=maxi?parseInt(maxi.value)||0:0;
     if(minV&&maxV&&minV<maxV){s.minPrice=minV;s.maxPrice=maxV;}
@@ -831,7 +840,7 @@ async function saveServices(){
 function updateManualSvcSelect(){
   const sel=document.getElementById('mSvc');if(!sel)return;
   const svcs=data.services||[];
-  sel.innerHTML='<option value="">اختار الخدمة</option>'+svcs.map(s=>`<option value="${s.name}" data-p="${s.price}">${s.name} — ${Number(s.price).toLocaleString()} د.ع</option>`).join('');
+  sel.innerHTML='<option value="">اختار الخدمة</option>'+svcs.map(s=>`<option value="${s.name}" data-id="${s.id}" data-p="${s.price}">${s.name} — ${Number(s.price).toLocaleString()} د.ع</option>`).join('');
 }
 async function saveHours(){const ws=document.getElementById('wStart');const we=document.getElementById('wEnd');const st=ws.options[ws.selectedIndex].value;const en=we.options[we.selectedIndex].value;data.workHours={start:st,end:en};const am=document.getElementById('avgMins');if(am){localStorage.setItem('art_avg_mins',am.value);data.avgMins=parseInt(am.value)||30;}try{await save();toast('✅ تم حفظ الإعدادات');}catch{toast('❌ فشل');}}
 async function toggleDay(key){if(!data.disabledDays)data.disabledDays=[];const was=data.disabledDays.includes(key);if(was)data.disabledDays=data.disabledDays.filter(d=>d!==key);else data.disabledDays.push(key);try{await save();toast(was?'✅ تم تفعيل اليوم':'🚫 تم تعطيل اليوم');renderSettings();}catch{if(was)data.disabledDays.push(key);else data.disabledDays=data.disabledDays.filter(d=>d!==key);}}
@@ -852,7 +861,7 @@ function showManual(){
   document.getElementById('mSlot').innerHTML='<option value="">اختار اليوم أولاً</option>';
 }
 function hideManual(){document.getElementById('manualForm').style.display='none';['mName','mPhone'].forEach(id=>document.getElementById(id).value='');document.getElementById('mSvc').value='';document.getElementById('mDay').value='';}
-function isOpenSvc(id){const svc=(data.services||[]).find(s=>s.id===id);return !!(svc&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة')));}
+function isOpenSvc(id){const svc=(data.services||[]).find(s=>s.id===id);return !!(svc&&(svc.type==='special'||(!svc.type&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة')))));}
 function updateMSlots(){
   const dateKey=document.getElementById('mDay').value;
   const sel=document.getElementById('mSlot');
@@ -931,11 +940,17 @@ window.renderBlkSlots=renderBlkSlots;
 
 async function saveManual(){
   const name=document.getElementById('mName').value.trim();const phone=document.getElementById('mPhone').value.trim()||'هاتف';
-  const se=document.getElementById('mSvc');const svc=se.value;const price=se.options[se.selectedIndex]?.dataset?.p||0;
+  const se=document.getElementById('mSvc');const svc=se.value;const price=se.options[se.selectedIndex]?.dataset?.p||0;const svcId=se.options[se.selectedIndex]?.dataset?.id||'';
   const de=document.getElementById('mDay');const dateKey=de.value;const dateLabel=de.options[de.selectedIndex]?.dataset?.label||'';
   const slot=document.getElementById('mSlot').value;
   if(!name){toast('أدخل الاسم');return;}if(!svc){toast('اختار الخدمة');return;}if(!dateKey){toast('اختار اليوم');return;}if(!slot){toast('اختار الساعة');return;}
-  const b={id:'ss'+Date.now(),name,phone,service:svc,price:Number(price),dateKey,dateLabel,slot,day:dateLabel,createdAt:Date.now(),bookedAt:new Date().toLocaleTimeString('ar-IQ'),reminded:false,cancelled:false,manual:true,note:''};
+  // ── تحقق من التضارب قبل الحفظ (الخدمة الخاصة تتجاوز هذا الفحص) ──
+  const open=isOpenSvc(svcId);
+  const blocked=((data.blockedSlots||{})[dateKey]||[]).includes(slot);
+  const occupied=data.bookings.some(b=>!b.cancelled&&b.dateKey===dateKey&&b.slot===slot);
+  if(blocked){toast('⚠️ هذا الوقت محجوب — اختار وقت ثاني');return;}
+  if(!open&&occupied){toast('⚠️ هذا الوقت محجوز — اختار وقت ثاني');return;}
+  const b={id:'ss'+Date.now(),name,phone,service:svc,serviceId:svcId,price:Number(price),dateKey,dateLabel,slot,day:dateLabel,createdAt:Date.now(),bookedAt:new Date().toLocaleTimeString('ar-IQ'),reminded:false,cancelled:false,manual:true,note:''};
   data.bookings.push(b);try{await save();hideManual();render();toast(`✅ حُجز ${name}`);notify('🔔 حجز يدوي — Salon Art',`👤 ${name}\n✂️ ${svc}\n🕐 ${slot}\n📅 ${dateLabel}\n📞 ${phone}`);}catch{data.bookings.pop();toast('❌ فشل');}
 }
 

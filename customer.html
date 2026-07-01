@@ -310,7 +310,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
       </div>
       <div class="price-row"><span>السعر</span><strong id="s-price"></strong></div>
       <div class="warn-box">
-        🔔 سيتواصل معك الصالون للتأكيد على واتساب<br/>
+        🔔 تأكد من حجزك قبل الموعد بوقت كافي<br/>
         ⚠️ التأخر أكثر من <strong style="color:var(--gold)">15 دقيقة</strong> يلغي حجزك
       </div>
       <button class="new-btn" onclick="resetForm()">➕ حجز موعد آخر</button>
@@ -482,7 +482,7 @@ function isPast(dk,s){
   if(!apptTime)return false;
   return new Date()>=apptTime;
 }
-function isShiswarSvc(id){const svc=SVCS.find(s=>s.id===id);return !!(svc&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة')));}
+function isShiswarSvc(id){const svc=SVCS.find(s=>s.id===id);return !!(svc&&(svc.type==='special'||(!svc.type&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة'))))); }
 function isBooked(dk,s,forSvcId){
   // تحقق من الساعات المحجوبة من الأدمن
   const blocked=(db.blockedSlots||{})[dk]||[];
