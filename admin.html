@@ -637,7 +637,7 @@ async function load(){
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
 }
 async function save(){
-  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30});
+  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30},{merge:true});
   lastSync=new Date();syncBar(true);
 }
 function cleanOld(){
