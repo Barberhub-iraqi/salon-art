@@ -193,6 +193,9 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 
 /* SHOP */
 .shop-section{margin-top:36px;padding-top:28px;border-top:1px solid var(--border2);}
+.shop-title{font-family:'Cinzel',serif;font-size:22px;font-weight:900;letter-spacing:.5px;display:flex;align-items:center;gap:10px;margin-bottom:16px;background:linear-gradient(180deg,var(--gold3) 0%,var(--gold) 60%,var(--gold-dim) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.shop-title-icon{font-size:30px;-webkit-text-fill-color:initial;filter:drop-shadow(0 2px 6px rgba(201,168,76,0.35));}
+.shop-note{font-size:11px;color:var(--muted);background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);border-radius:8px;padding:8px 12px;margin-bottom:14px;display:inline-block;}
 .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .product-card{
   background:#0F0F08;border:1px solid var(--border2);border-radius:14px;overflow:hidden;
@@ -211,6 +214,30 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .product-badge{position:absolute;top:8px;right:8px;padding:4px 9px;border-radius:20px;font-size:9.5px;font-weight:900;z-index:2;backdrop-filter:blur(4px);}
 .badge-soon{background:rgba(201,168,76,0.9);color:#0A0A08;}
 .badge-out{background:rgba(107,32,32,0.88);color:#fff;}
+.badge-featured{position:absolute;top:8px;left:8px;background:linear-gradient(135deg,var(--gold-dim),var(--gold));color:#0A0A08;padding:4px 9px;border-radius:20px;font-size:9.5px;font-weight:900;z-index:2;}
+.badge-discount{position:absolute;bottom:8px;right:8px;background:rgba(139,32,32,0.92);color:#fff;padding:3px 8px;border-radius:20px;font-size:9.5px;font-weight:900;z-index:2;}
+.product-price-row{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.product-old-price{font-size:11px;color:var(--muted);text-decoration:line-through;}
+.product-qty.low-stock{color:#EF5350;font-weight:700;}
+
+/* SHOP FILTERS */
+.shop-filters{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;}
+.shop-filters::-webkit-scrollbar{display:none;}
+.shop-filter-pill{flex-shrink:0;background:#0F0F08;border:1px solid var(--border2);border-radius:30px;padding:7px 14px;font-size:11.5px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.shop-filter-pill:hover{border-color:rgba(201,168,76,0.3);}
+.shop-filter-pill.sel{background:rgba(201,168,76,0.1);border-color:var(--gold);color:var(--gold);font-weight:700;}
+
+/* UPSELL */
+.upsell-box{margin-top:14px;background:#0F0F08;border:1px solid var(--border2);border-radius:14px;padding:16px;text-align:right;}
+.upsell-title{font-size:12.5px;font-weight:700;color:var(--gold);margin-bottom:12px;}
+.upsell-items{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;}
+.upsell-items::-webkit-scrollbar{display:none;}
+.upsell-card{flex-shrink:0;width:120px;background:var(--dark);border:1px solid var(--border2);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s;}
+.upsell-card:hover{border-color:rgba(201,168,76,0.4);}
+.upsell-card img,.upsell-card .upsell-ph{width:100%;height:90px;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold-dim);}
+.upsell-info{padding:7px 8px 9px;}
+.upsell-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:28px;}
+.upsell-price{font-size:11px;color:var(--gold);font-weight:900;margin-top:4px;}
 
 /* product detail modal */
 .product-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:1000;}
@@ -277,7 +304,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
     <div class="divider"></div>
 
     <div class="sec" style="margin-top:0">
-      <div class="sec-label">الخدمة</div>
+      <div class="sec-label">اختر الخدمة</div>
       <div class="svc-grid" id="svcGrid"></div>
 
 
@@ -310,7 +337,9 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 
     <!-- SHOP -->
     <div class="shop-section" id="shopSection" style="display:none">
-      <div class="sec-label">🛍️ متجرنا</div>
+      <div class="shop-title"><span class="shop-title-icon">🛍️</span> متجرنا</div>
+      <div class="shop-note">📍 المنتجات متوفرة داخل الصالون فقط — ماكو توصيل</div>
+      <div class="shop-filters" id="shopFilters" style="display:none"></div>
       <div class="shop-grid" id="shopGrid"></div>
     </div>
   </div>
@@ -348,6 +377,10 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
         <div class="d-row"><span>الهاتف</span><strong id="s-phone"></strong></div>
       </div>
       <div class="price-row"><span>السعر</span><strong id="s-price"></strong></div>
+      <div class="upsell-box" id="upsellBox" style="display:none">
+        <div class="upsell-title">🛍️ زيّن حجزك بمنتج من متجرنا؟</div>
+        <div class="upsell-items" id="upsellItems"></div>
+      </div>
       <div class="warn-box">
         🔔 تأكد من حجزك قبل الموعد بوقت كافي<br/>
         ⚠️ التأخر أكثر من <strong style="color:var(--gold)">15 دقيقة</strong> يلغي حجزك
@@ -711,6 +744,7 @@ async function doBook(){
     document.getElementById('s-slot').textContent=selSlot;
     document.getElementById('s-phone').textContent=phone;
     document.getElementById('s-price').textContent=fmtPrice(finalPrice);
+    renderUpsell({name,date:selDateLabel,slot:selSlot});
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('successView').classList.remove('hidden');
   }catch{db.bookings.pop();btn.disabled=false;updateBtn();toast('فشل الحجز، حاول مرة ثانية');}
@@ -738,6 +772,7 @@ function resetForm(){
   document.getElementById('phoneInp').value='';
   document.getElementById('successView').classList.add('hidden');
   document.getElementById('waitView').classList.add('hidden');
+  document.getElementById('upsellBox').style.display='none';
   document.getElementById('formView').classList.remove('hidden');
   document.getElementById('slotsWrap').style.display='none';
   document.getElementById('bookBtnWrap').style.display='block';
@@ -757,22 +792,43 @@ async function loadProducts(){
   renderShop();
 }
 const SHOP_WA='9647710761823';
+let activeShopFilter='all';
+function getShopCategories(){return[...new Set(productsList.map(p=>p.category).filter(Boolean))];}
+function renderShopFilters(){
+  const wrap=document.getElementById('shopFilters');if(!wrap)return;
+  const cats=getShopCategories();
+  if(cats.length<2){wrap.style.display='none';wrap.innerHTML='';return;}
+  if(!cats.includes(activeShopFilter)&&activeShopFilter!=='all')activeShopFilter='all';
+  wrap.style.display='flex';
+  wrap.innerHTML=['all',...cats].map(c=>`<div class="shop-filter-pill ${activeShopFilter===c?'sel':''}" onclick="window._filterShop('${escHtml(c).replace(/'/g,"\\'")}')">${c==='all'?'الكل':escHtml(c)}</div>`).join('');
+}
+window._filterShop=function(c){activeShopFilter=c;renderShop();};
 function renderShop(){
   const section=document.getElementById('shopSection');
   const grid=document.getElementById('shopGrid');
   if(!section||!grid)return;
   if(!productsList.length){section.style.display='none';return;}
   section.style.display='block';
-  grid.innerHTML=productsList.map((p,i)=>{
+  renderShopFilters();
+  const filtered=activeShopFilter==='all'?productsList:productsList.filter(p=>p.category===activeShopFilter);
+  if(!filtered.length){grid.innerHTML='<div class="shop-empty">ماكو منتجات بهذا التصنيف</div>';return;}
+  grid.innerHTML=filtered.map((p)=>{
+    const i=productsList.indexOf(p);
     const status=p.status||'available';
     const img=p.photo?`<img src="${p.photo}" alt="${escHtml(p.name)}"/>`:`<div class="product-img-placeholder">🛍️</div>`;
-    const badge=status==='soon'?'<span class="product-badge badge-soon">⏳ قريباً</span>':status==='out'?'<span class="product-badge badge-out">❌ نفذت</span>':'';
-    const qtyLbl=(status==='available'&&p.qty!==undefined&&p.qty!==null&&p.qty!=='')?`<div class="product-qty">متبقي: ${p.qty} قطعة</div>`:'';
+    const statusBadge=status==='soon'?'<span class="product-badge badge-soon">⏳ قريباً</span>':status==='out'?'<span class="product-badge badge-out">❌ نفذت</span>':'';
+    const featuredBadge=(p.featured&&status==='available')?'<span class="badge-featured">🔥 الأكثر مبيعاً</span>':'';
+    const hasDiscount=p.oldPrice&&Number(p.oldPrice)>Number(p.price||0);
+    const discountPct=hasDiscount?Math.round((1-(p.price||0)/p.oldPrice)*100):0;
+    const discountBadge=(hasDiscount&&status==='available')?`<span class="badge-discount">-${discountPct}%</span>`:'';
+    const isLow=(status==='available'&&p.qty!==undefined&&p.qty!==null&&p.qty!==''&&Number(p.qty)<=2);
+    const qtyLbl=(status==='available'&&p.qty!==undefined&&p.qty!==null&&p.qty!=='')?`<div class="product-qty${isLow?' low-stock':''}">${isLow?'🔥 آخر '+p.qty+' قطع!':'متبقي: '+p.qty+' قطعة'}</div>`:'';
+    const priceRow=hasDiscount?`<div class="product-price-row"><span class="product-price">${fmtPrice(p.price||0)}</span><span class="product-old-price">${fmtPrice(p.oldPrice)}</span></div>`:`<div class="product-price">${fmtPrice(p.price||0)}</div>`;
     return`<div class="product-card" onclick="window._openProduct(${i})">
-      <div class="product-img-wrap">${badge}${img}</div>
+      <div class="product-img-wrap">${statusBadge}${featuredBadge}${discountBadge}${img}</div>
       <div class="product-info">
         <div class="product-name">${escHtml(p.name)}</div>
-        <div class="product-price">${fmtPrice(p.price||0)}</div>
+        ${priceRow}
         ${qtyLbl}
       </div>
     </div>`;
@@ -786,7 +842,8 @@ window._openProduct=function(i){
   document.getElementById('productModalImg').src=p.photo||'';
   document.getElementById('productModalImgWrap').style.display=p.photo?'block':'none';
   document.getElementById('productModalName').textContent=p.name||'';
-  document.getElementById('productModalPrice').textContent=fmtPrice(p.price||0);
+  const hasDiscount=p.oldPrice&&Number(p.oldPrice)>Number(p.price||0);
+  document.getElementById('productModalPrice').innerHTML=hasDiscount?`${fmtPrice(p.price||0)} <span style="font-size:13px;color:var(--muted);text-decoration:line-through;margin-right:6px;">${fmtPrice(p.oldPrice)}</span>`:fmtPrice(p.price||0);
   document.getElementById('productModalDesc').textContent=p.description||'';
   const statusEl=document.getElementById('productModalStatus');
   const preorderBtn=document.getElementById('productPreorderBtn');
@@ -805,6 +862,26 @@ function preorderProduct(){
   window.open(`https://wa.me/${SHOP_WA}?text=${msg}`,'_blank');
 }
 window.preorderProduct=preorderProduct;
+function renderUpsell(info){
+  const box=document.getElementById('upsellBox');
+  const itemsEl=document.getElementById('upsellItems');
+  if(!box||!itemsEl)return;
+  const avail=productsList.filter(p=>(p.status||'available')==='available');
+  const picks=[...avail.filter(p=>p.featured),...avail.filter(p=>!p.featured)].slice(0,4);
+  if(!picks.length){box.style.display='none';return;}
+  box.style.display='block';
+  itemsEl.innerHTML=picks.map(p=>{
+    const img=p.photo?`<img src="${p.photo}" alt="${escHtml(p.name)}"/>`:`<div class="upsell-ph">🛍️</div>`;
+    const msg=encodeURIComponent(`السلام عليكم 👋\nأكو حجز باسم ${info.name} يوم ${info.date} الساعة ${info.slot}\nأريد أضيف هذا المنتج لطلبي:\n🛍️ ${p.name}\n💰 ${fmtPrice(p.price||0)}`);
+    return`<a class="upsell-card" href="https://wa.me/${SHOP_WA}?text=${msg}" target="_blank">
+      <div>${img}</div>
+      <div class="upsell-info">
+        <div class="upsell-name">${escHtml(p.name)}</div>
+        <div class="upsell-price">${fmtPrice(p.price||0)}</div>
+      </div>
+    </a>`;
+  }).join('');
+}
 function closeProductModal(){document.getElementById('productModalOverlay').style.display='none';}
 window.closeProductModal=closeProductModal;
 function openImgLightbox(){
