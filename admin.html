@@ -338,7 +338,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
         <div style="display:flex;flex-direction:column;gap:7px;">
           <input id="mName" class="sinp" placeholder="اسم الزبون..."/>
           <input id="mPhone" class="sinp" placeholder="رقم الهاتف..." type="tel"/>
-          <select id="mSvc" class="sinp"><option value="">اختار الخدمة</option></select>
+          <select id="mSvc" class="sinp" onchange="onMSvcChange()"><option value="">اختار الخدمة</option></select>
+          <input id="mPrice" class="sinp" type="number" min="0" step="1000" placeholder="السعر"/>
           <select id="mDay" class="sinp" onchange="updateMSlots()"><option value="">اختار اليوم</option></select>
           <select id="mSlot" class="sinp"><option value="">اختار الساعة</option></select>
           <div style="display:flex;gap:7px;margin-top:3px;">
@@ -385,25 +386,14 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
             <select id="sumM" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()"></select>
           </div>
           <div class="acc-row"><span class="acc-lbl">💰 الواردات (حجوزات + دخل يدوي)</span><span class="acc-val gr" id="acc-r">0</span></div>
-          <div class="acc-row"><span class="acc-lbl">📤 الصرفيات (صرفيات + إيجار)</span><span class="acc-val rd" id="acc-e">0</span></div>
-          <div class="acc-row"><span class="acc-lbl">🏠 منها الإيجار التراكمي</span><span class="acc-val rd" id="acc-rent">0</span></div>
+          <div class="acc-row"><span class="acc-lbl">📤 الصرفيات (صرفيات + ثوابت)</span><span class="acc-val rd" id="acc-e">0</span></div>
           <div class="acc-row"><span class="acc-lbl">📌 منها الثوابت الشهرية</span><span class="acc-val rd" id="acc-fixed">0</span></div>
           <div class="acc-row" style="margin:-4px;padding:10px;background:rgba(201,168,76,0.04);border-radius:6px;margin-top:6px;"><span class="acc-lbl">✨ صافي الربح</span><span class="acc-val gd" id="acc-p">0</span></div>
         </div>
 
         <div class="wcard">
-          <div class="wcard-title">🏠 إعداد الإيجار الشهري</div>
-          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">مبلغ ثابت يُخصم من إجمالي الوارد لحساب صافي الربح — ما يتجمع يومياً. بما إنك تدفعه مقدماً، ينحسب تلقائياً على حساب الشهر السابق له.</div>
-          <div style="display:flex;gap:7px;margin-bottom:7px">
-            <input id="rentMonthly" class="sinp" type="number" min="0" placeholder="قيمة الإيجار الشهري" value="${data.rentMonthly||500000}"/>
-            <input id="rentDay" class="sinp" style="max-width:90px" type="number" min="1" max="31" placeholder="يوم الدفع" value="${data.rentDay||5}"/>
-            <button class="save-btn" style="width:auto;padding:9px 16px" onclick="saveRentMonthly()">💾</button>
-          </div>
-        </div>
-
-        <div class="wcard">
           <div class="wcard-title">📌 الثوابت الشهرية</div>
-          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">مصاريف متكررة كل شهر بنفس مبلغ ثابت (مثل: اشتراك نت، مسواك، اشتراكات...) — تنحسب تلقائياً بكل شهر من غير ما تضيفها يدوياً، وتقدر تحدد يوم دفع كل وحدة لتنظيمها.</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">مصاريف متكررة كل شهر (مثل: الإيجار، اشتراك النت، مسواك، اشتراكات...) — ضيفها هنا مرة وحدة، وكل شهر أول ما تدفعها اضغط زر "تم الدفع لهذا الشهر" حتى تنحسب بحساباتك.</div>
           <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
             <input id="fixedN" class="sinp" placeholder="اسم المصروف الثابت (مثال: اشتراك النت)..." maxlength="40"/>
             <div style="display:flex;gap:7px">
@@ -717,8 +707,8 @@ const SH={"12:00 م":12,"12:30 م":12.5,"1:00 م":13,"1:30 م":13.5,"2:00 م":14
 const DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
-let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],incomes:[],debts:[],monthlyHistory:[],lastRolloverMonth:null,rentMonthly:500000,rentDay:5,fixedExpenses:[],workHours:{start:"5:00 م",end:"11:00 م"},services:[
-  {id:'svc1',name:'حلاقة كاملة',price:20000,minPrice:15000,maxPrice:25000,icon:'✂️'},
+let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],incomes:[],debts:[],monthlyHistory:[],lastRolloverMonth:null,fixedExpenses:[],workHours:{start:"5:00 م",end:"11:00 م"},services:[
+  {id:'svc1',name:'حلاقة كاملة',price:20000,minPrice:5000,maxPrice:50000,icon:'✂️'},
   {id:'svc2',name:'تحديد ولحية',price:10000,icon:'🪒'},
   {id:'svc3',name:'شسوار',price:5000,icon:'💧'},
   {id:'svc4',name:'طفل',price:10000,icon:'👦'},
@@ -804,8 +794,6 @@ async function load(){
         debts:typeof r.debts==='string'?JSON.parse(r.debts):(r.debts||[]),
         monthlyHistory:typeof r.monthlyHistory==='string'?JSON.parse(r.monthlyHistory):(r.monthlyHistory||[]),
         lastRolloverMonth:r.lastRolloverMonth||null,
-        rentMonthly:r.rentMonthly||500000,
-        rentDay:r.rentDay||5,
         fixedExpenses:typeof r.fixedExpenses==='string'?JSON.parse(r.fixedExpenses):(r.fixedExpenses||[]),
         workHours:{start:r.workHoursStart||"5:00 م",end:r.workHoursEnd||"11:00 م"},
         avgMins:r.avgMins||30,
@@ -818,7 +806,7 @@ async function load(){
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
 }
 async function save(){
-  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,rentMonthly:data.rentMonthly||500000,rentDay:data.rentDay||5,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30},{merge:true});
+  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30},{merge:true});
   lastSync=new Date();syncBar(true);
 }
 function cleanOld(){
@@ -981,19 +969,9 @@ function setDebtType(t){
 }
 window.setDebtType=setDebtType;
 
-// ─── الإيجار الشهري الثابت ───
-function monthRent(mk){
-  const now=new Date();const[y,m]=mk.split('-').map(Number);
-  const target=new Date(y,m-1,1);
-  if(target>now)return 0; // شهر مستقبلي — بلا إيجار لسا
-  return Number(data.rentMonthly)||0;
-}
-// ─── الثوابت الشهرية (مصاريف متكررة: مسواك، نت، اشتراكات...) ───
+// ─── الثوابت الشهرية (مصاريف متكررة: إيجار، نت، اشتراكات...) — تنحسب فقط أول ما تنضغط "تم الدفع" لهذا الشهر ───
 function monthFixedTotal(mk){
-  const now=new Date();const[y,m]=mk.split('-').map(Number);
-  const target=new Date(y,m-1,1);
-  if(target>now)return 0; // شهر مستقبلي — بلا ثوابت لسا
-  return(data.fixedExpenses||[]).reduce((s,f)=>s+(Number(f.amount)||0),0);
+  return(data.fixedExpenses||[]).reduce((s,f)=>s+((f.paidMonths||[]).includes(mk)?(Number(f.amount)||0):0),0);
 }
 // ─── إغلاق الشهر تلقائياً (يبقي بس الوارد وصافي الربح) ───
 function computeMonthSummary(mk){
@@ -1001,9 +979,8 @@ function computeMonthSummary(mk){
   const bookRev=allB.filter(b=>!b.cancelled&&b.dateKey&&b.dateKey.startsWith(mk)).reduce((s,b)=>s+(b.price||0),0);
   const incRev=(data.incomes||[]).filter(e=>e.month===mk).reduce((s,e)=>s+e.amount,0);
   const revenue=bookRev+incRev;
-  const rent=monthRent(nextMonthKey(mk));
   const fixed=monthFixedTotal(mk);
-  const expenses=(data.expenses||[]).filter(e=>e.month===mk).reduce((s,e)=>s+e.amount,0)+rent+fixed;
+  const expenses=(data.expenses||[]).filter(e=>e.month===mk).reduce((s,e)=>s+e.amount,0)+fixed;
   return{revenue,expenses,profit:revenue-expenses};
 }
 function purgeMonth(mk){
@@ -1042,13 +1019,6 @@ async function closeMonthNow(){
   catch{toast('❌ فشل الحفظ');}
 }
 window.closeMonthNow=closeMonthNow;
-function saveRentMonthly(){
-  const v=parseInt(document.getElementById('rentMonthly').value)||0;
-  const d=Math.min(31,Math.max(1,parseInt(document.getElementById('rentDay').value)||5));
-  const old=data.rentMonthly;const oldD=data.rentDay;data.rentMonthly=v;data.rentDay=d;
-  save().then(()=>{renderAcc();toast('✅ تم حفظ الإيجار الشهري');}).catch(()=>{data.rentMonthly=old;data.rentDay=oldD;toast('❌ فشل');});
-}
-window.saveRentMonthly=saveRentMonthly;
 
 // ─── الثوابت الشهرية (مصاريف متكررة تلقائية) ───
 function addFixed(){
@@ -1056,21 +1026,40 @@ function addFixed(){
   const dRaw=document.getElementById('fixedD').value;const d=dRaw?Math.min(31,Math.max(1,parseInt(dRaw)||1)):null;
   if(!n){toast('أدخل اسم المصروف الثابت');return;}if(!a){toast('أدخل المبلغ');return;}
   if(!data.fixedExpenses)data.fixedExpenses=[];
-  data.fixedExpenses.push({id:'fx'+Date.now(),name:n,amount:a,day:d,createdAt:Date.now()});
-  save().then(()=>{document.getElementById('fixedN').value='';document.getElementById('fixedA').value='';document.getElementById('fixedD').value='';renderAcc();toast('✅ تمت الإضافة — راح تنحسب تلقائياً كل شهر');}).catch(()=>{data.fixedExpenses.pop();toast('❌ فشل');});
+  data.fixedExpenses.push({id:'fx'+Date.now(),name:n,amount:a,day:d,paidMonths:[],createdAt:Date.now()});
+  save().then(()=>{document.getElementById('fixedN').value='';document.getElementById('fixedA').value='';document.getElementById('fixedD').value='';renderAcc();toast('✅ تمت الإضافة');}).catch(()=>{data.fixedExpenses.pop();toast('❌ فشل');});
 }
 function delFixed(id){
-  if(!confirm('حذف هذا المصروف الثابت؟ راح يوقف احتسابه تلقائياً من الشهر الحالي.'))return;
+  if(!confirm('حذف هذا المصروف الثابت؟'))return;
   const idx=data.fixedExpenses.findIndex(f=>f.id===id);if(idx<0)return;
   const rm=data.fixedExpenses.splice(idx,1)[0];
   save().then(()=>renderAcc()).catch(()=>{data.fixedExpenses.splice(idx,0,rm);});
 }
-window.addFixed=addFixed;window.delFixed=delFixed;
+function toggleFixedPaid(id){
+  const f=data.fixedExpenses.find(x=>x.id===id);if(!f)return;
+  const cm=monthKey(new Date());
+  if(!f.paidMonths)f.paidMonths=[];
+  if(!f.paymentLog)f.paymentLog={};
+  const i=f.paidMonths.indexOf(cm);
+  const wasPaid=i>-1;
+  const oldTs=f.paymentLog[cm];
+  if(wasPaid){f.paidMonths.splice(i,1);delete f.paymentLog[cm];}
+  else{f.paidMonths.push(cm);f.paymentLog[cm]=Date.now();}
+  save().then(()=>{renderAcc();toast(wasPaid?'↩️ تم التراجع':'✅ تم تسجيل الدفع لهذا الشهر');}).catch(()=>{if(wasPaid){f.paidMonths.push(cm);f.paymentLog[cm]=oldTs;}else{f.paidMonths.splice(f.paidMonths.indexOf(cm),1);delete f.paymentLog[cm];}});
+}
+window.addFixed=addFixed;window.delFixed=delFixed;window.toggleFixedPaid=toggleFixedPaid;
 function renderFixedList(){
   const el=document.getElementById('fixedList');if(!el)return;
   const list=data.fixedExpenses||[];
   if(!list.length){el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد ثوابت مضافة بعد</div>`;return;}
-  el.innerHTML=list.slice().sort((a,b)=>(a.day||99)-(b.day||99)).map(f=>`<div class="exp-item"><div><div class="exp-name">📌 ${escHtmlA(f.name)}</div><div class="exp-sub">${f.day?'يستحق يوم '+f.day+' من كل شهر':'يتكرر كل شهر تلقائياً'}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delFixed('${f.id}')">🗑️</button></div></div>`).join('');
+  const cm=monthKey(new Date());
+  el.innerHTML=list.slice().sort((a,b)=>(a.day||99)-(b.day||99)).map(f=>{
+    const isPaid=(f.paidMonths||[]).includes(cm);
+    const paidTs=f.paymentLog&&f.paymentLog[cm];
+    const subLine=f.day?'يستحق يوم '+f.day+' من كل شهر':'مصروف ثابت شهري';
+    const paidLine=isPaid&&paidTs?` — ✅ دُفع ${dl(new Date(paidTs))}`:'';
+    return`<div class="exp-item"><div><div class="exp-name">📌 ${escHtmlA(f.name)}</div><div class="exp-sub">${subLine}${paidLine}</div></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span><button class="save-btn" style="width:auto;padding:6px 10px;font-size:10.5px;${isPaid?'':'opacity:.55'}" onclick="window.toggleFixedPaid('${f.id}')">${isPaid?'✅ مدفوع لهذا الشهر':'⬜ تم الدفع لهذا الشهر'}</button><button class="exp-del" onclick="window.delFixed('${f.id}')">🗑️</button></div></div>`;
+  }).join('');
 }
 
 // ─── تصفير الحسابات بالكامل والبدء من اليوم ───
@@ -1124,43 +1113,39 @@ function renderAcc(){
   renderFixedList();
   popMonthSels();
   const sm=document.getElementById('sumM')?.value||monthKey(new Date());
-  const rentEl=document.getElementById('rentMonthly');if(rentEl&&document.activeElement!==rentEl)rentEl.value=data.rentMonthly||500000;
-  const rentDayEl=document.getElementById('rentDay');if(rentDayEl&&document.activeElement!==rentDayEl)rentDayEl.value=data.rentDay||5;
 
   const allBookings=[...data.bookings,...(data.archivedBookings||[])];
   const bookRev=allBookings.filter(b=>!b.cancelled&&b.dateKey&&b.dateKey.startsWith(sm)).reduce((s,b)=>s+(b.price||0),0);
   const incRev=data.incomes.filter(e=>e.month===sm).reduce((s,e)=>s+e.amount,0);
   const mRev=bookRev+incRev;
 
-  const rent=monthRent(nextMonthKey(sm));
   const fixed=monthFixedTotal(sm);
   const mExpManual=data.expenses.filter(e=>e.month===sm).reduce((s,e)=>s+e.amount,0);
-  const mExp=mExpManual+rent+fixed;
+  const mExp=mExpManual+fixed;
   const profit=mRev-mExp;
 
   document.getElementById('acc-r').textContent=mRev.toLocaleString('ar-IQ')+' د.ع';
   document.getElementById('acc-e').textContent=mExp.toLocaleString('ar-IQ')+' د.ع';
-  document.getElementById('acc-rent').textContent=rent.toLocaleString('ar-IQ')+' د.ع';
   const accFixedEl=document.getElementById('acc-fixed');if(accFixedEl)accFixedEl.textContent=fixed.toLocaleString('ar-IQ')+' د.ع';
   const pel=document.getElementById('acc-p');pel.textContent=profit.toLocaleString('ar-IQ')+' د.ع';pel.className='acc-val '+(profit>=0?'gd':'rd');
 
   // الصرفيات
   const fm=document.getElementById('fltM')?.value||monthKey(new Date());
   const fExp=data.expenses.filter(e=>e.month===fm);
-  const expRent=monthRent(nextMonthKey(fm));
   const expList=document.getElementById('expList');
-  const rentDay=data.rentDay||5;
-  const rentRow=expRent>0?`<div class="rent-auto"><div><div class="exp-name">🏠 الإيجار الشهري (تلقائي — دفعة مقدمة ليوم ${rentDay} من ${monthLabel(nextMonthKey(fm))})</div><div class="exp-sub">مبلغ ثابت، محتسب على ${monthLabel(fm)}</div></div><span class="exp-amt">${expRent.toLocaleString()} د.ع</span></div>`:'';
-  const fixedRows=(data.fixedExpenses||[]).length&&monthFixedTotal(fm)>0?(data.fixedExpenses||[]).map(f=>`<div class="rent-auto"><div><div class="exp-name">📌 ${escHtmlA(f.name)} (تلقائي${f.day?' — يوم '+f.day:''} — ${monthLabel(fm)})</div><div class="exp-sub">مصروف ثابت شهري</div></div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`).join(''):'';
-  const expRows=fExp.sort((a,b)=>b.createdAt-a.createdAt).map(e=>`<div class="exp-item"><div><div class="exp-name">${e.name}</div><div class="exp-sub">${monthLabel(e.month)}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="exp-amt">${e.amount.toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delExp('${e.id}')">🗑️</button></div></div>`).join('');
-  expList.innerHTML=rentRow+fixedRows+(expRows||`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد صرفيات إضافية</div>`);
+  const fixedRows=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(fm)).map(f=>{
+    const ts=f.paymentLog&&f.paymentLog[fm];
+    return`<div class="rent-auto"><div><div class="exp-name">📌 ${escHtmlA(f.name)} (مدفوع)</div><div class="exp-sub">${ts?dl(new Date(ts)):monthLabel(fm)}</div></div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`;
+  }).join('');
+  const expRows=fExp.sort((a,b)=>b.createdAt-a.createdAt).map(e=>`<div class="exp-item"><div><div class="exp-name">${e.name}</div><div class="exp-sub">${e.createdAt?dl(new Date(e.createdAt))+' — ':''}${monthLabel(e.month)}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="exp-amt">${e.amount.toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delExp('${e.id}')">🗑️</button></div></div>`).join('');
+  expList.innerHTML=fixedRows+(expRows||(fixedRows?'':`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد صرفيات إضافية</div>`));
 
   // الدخل اليدوي
   const fim=document.getElementById('fltIM')?.value||monthKey(new Date());
   const fInc=data.incomes.filter(e=>e.month===fim);
   const incList=document.getElementById('incList');
   if(!fInc.length){incList.innerHTML=`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا يوجد دخل يدوي</div>`;}
-  else{incList.innerHTML=fInc.sort((a,b)=>b.createdAt-a.createdAt).map(e=>`<div class="exp-item"><div><div class="exp-name">${e.name}</div><div class="exp-sub">${monthLabel(e.month)}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="exp-amt gr">+${e.amount.toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delInc('${e.id}')">🗑️</button></div></div>`).join('');}
+  else{incList.innerHTML=fInc.sort((a,b)=>b.createdAt-a.createdAt).map(e=>`<div class="exp-item"><div><div class="exp-name">${e.name}</div><div class="exp-sub">${e.createdAt?dl(new Date(e.createdAt))+' — ':''}${monthLabel(e.month)}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="exp-amt gr">+${e.amount.toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delInc('${e.id}')">🗑️</button></div></div>`).join('');}
 
   // الديون
   const unpaidLena=data.debts.filter(d=>d.type==='lena'&&!d.paid).reduce((s,d)=>s+d.amount,0);
@@ -1173,7 +1158,7 @@ function renderAcc(){
   else{debtList.innerHTML=sortedDebts.map(d=>`<div class="debt-item${d.paid?' paid':''}">
       <div>
         <div class="debt-name">${d.person} ${d.paid?'<span style="font-size:9px;color:var(--muted)">(مسدد)</span>':''}</div>
-        <div class="debt-sub">${d.type==='lena'?'💚 دين لنا':'❤️ دين علينا'}${d.note?' — '+d.note:''}</div>
+        <div class="debt-sub">${d.type==='lena'?'💚 دين لنا':'❤️ دين علينا'}${d.note?' — '+d.note:''}${d.createdAt?' — '+dl(new Date(d.createdAt)):''}</div>
       </div>
       <div class="debt-actions">
         <span class="debt-amt ${d.type}">${d.amount.toLocaleString()} د.ع</span>
@@ -1456,7 +1441,7 @@ window.deleteProduct=deleteProduct;
 function updateManualSvcSelect(){
   const sel=document.getElementById('mSvc');if(!sel)return;
   const svcs=data.services||[];
-  sel.innerHTML='<option value="">اختار الخدمة</option>'+svcs.map(s=>`<option value="${s.name}" data-id="${s.id}" data-p="${s.price}">${s.name} — ${Number(s.price).toLocaleString()} د.ع</option>`).join('');
+  sel.innerHTML='<option value="">اختار الخدمة</option>'+svcs.map(s=>`<option value="${s.name}" data-id="${s.id}" data-p="${s.price}" data-min="${s.minPrice||''}" data-max="${s.maxPrice||''}">${s.name} — ${Number(s.price).toLocaleString()} د.ع</option>`).join('');
 }
 async function saveHours(){const ws=document.getElementById('wStart');const we=document.getElementById('wEnd');const st=ws.options[ws.selectedIndex].value;const en=we.options[we.selectedIndex].value;data.workHours={start:st,end:en};const am=document.getElementById('avgMins');if(am){localStorage.setItem('art_avg_mins',am.value);data.avgMins=parseInt(am.value)||30;}try{await save();toast('✅ تم حفظ الإعدادات');}catch{toast('❌ فشل');}}
 async function toggleDay(key){if(!data.disabledDays)data.disabledDays=[];const was=data.disabledDays.includes(key);if(was)data.disabledDays=data.disabledDays.filter(d=>d!==key);else data.disabledDays.push(key);try{await save();toast(was?'✅ تم تفعيل اليوم':'🚫 تم تعطيل اليوم');renderSettings();}catch{if(was)data.disabledDays.push(key);else data.disabledDays=data.disabledDays.filter(d=>d!==key);}}
@@ -1475,8 +1460,21 @@ function showManual(){
   const ds=document.getElementById('mDay');ds.innerHTML='<option value="">اختار اليوم</option>';
   next7().forEach(d=>{const key=dk(d);const label=dl(d);const opt=document.createElement('option');opt.value=key;opt.textContent=label;opt.dataset.label=label;ds.appendChild(opt);});
   document.getElementById('mSlot').innerHTML='<option value="">اختار اليوم أولاً</option>';
+  const pr=document.getElementById('mPrice');if(pr){pr.value='';pr.placeholder='السعر';}
 }
-function hideManual(){document.getElementById('manualForm').style.display='none';['mName','mPhone'].forEach(id=>document.getElementById(id).value='');document.getElementById('mSvc').value='';document.getElementById('mDay').value='';}
+function hideManual(){document.getElementById('manualForm').style.display='none';['mName','mPhone','mPrice'].forEach(id=>document.getElementById(id).value='');document.getElementById('mSvc').value='';document.getElementById('mDay').value='';}
+function onMSvcChange(){
+  const se=document.getElementById('mSvc');
+  const opt=se.options[se.selectedIndex];
+  const priceInp=document.getElementById('mPrice');
+  if(priceInp&&opt){
+    const p=opt.dataset.p||'';const min=opt.dataset.min||'';const max=opt.dataset.max||'';
+    priceInp.value=p;
+    priceInp.placeholder=(min&&max)?`أي مبلغ — عادة بين ${Number(min).toLocaleString()} و ${Number(max).toLocaleString()}`:'السعر';
+  }
+  updateMSlots();
+}
+window.onMSvcChange=onMSvcChange;
 function isOpenSvc(id){const svc=(data.services||[]).find(s=>s.id===id);return !!(svc&&(svc.type==='special'||(!svc.type&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة')))));}
 function updateMSlots(){
   const dateKey=document.getElementById('mDay').value;
@@ -1556,7 +1554,10 @@ window.renderBlkSlots=renderBlkSlots;
 
 async function saveManual(){
   const name=document.getElementById('mName').value.trim();const phone=document.getElementById('mPhone').value.trim()||'هاتف';
-  const se=document.getElementById('mSvc');const svc=se.value;const price=se.options[se.selectedIndex]?.dataset?.p||0;const svcId=se.options[se.selectedIndex]?.dataset?.id||'';
+  const se=document.getElementById('mSvc');const svc=se.value;const svcId=se.options[se.selectedIndex]?.dataset?.id||'';
+  const priceInp=document.getElementById('mPrice');
+  const priceRaw=priceInp&&priceInp.value!==''?priceInp.value:(se.options[se.selectedIndex]?.dataset?.p||0);
+  const price=parseInt(priceRaw)||0;
   const de=document.getElementById('mDay');const dateKey=de.value;const dateLabel=de.options[de.selectedIndex]?.dataset?.label||'';
   const slot=document.getElementById('mSlot').value;
   if(!name){toast('أدخل الاسم');return;}if(!svc){toast('اختار الخدمة');return;}if(!dateKey){toast('اختار اليوم');return;}if(!slot){toast('اختار الساعة');return;}
