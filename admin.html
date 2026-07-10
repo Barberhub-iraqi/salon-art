@@ -975,7 +975,8 @@ function monthFixedTotal(mk){
 }
 // ─── إغلاق الشهر تلقائياً (يبقي بس الوارد وصافي الربح) ───
 function computeMonthSummary(mk){
-  const allB=[...data.bookings,...(data.archivedBookings||[])];
+  // فقط الحجوزات المكتملة (اللي انضغط عليها "تم") تدخل بالوارد — الحجوزات الجاية/المنتظرة ما تنحسب لين تخلص
+  const allB=(data.archivedBookings||[]);
   const bookRev=allB.filter(b=>!b.cancelled&&b.dateKey&&b.dateKey.startsWith(mk)).reduce((s,b)=>s+(b.price||0),0);
   const incRev=(data.incomes||[]).filter(e=>e.month===mk).reduce((s,e)=>s+e.amount,0);
   const revenue=bookRev+incRev;
@@ -1114,7 +1115,8 @@ function renderAcc(){
   popMonthSels();
   const sm=document.getElementById('sumM')?.value||monthKey(new Date());
 
-  const allBookings=[...data.bookings,...(data.archivedBookings||[])];
+  // فقط الحجوزات المكتملة (اللي انضغط عليها "تم") تدخل بالوارد — الحجوزات الجاية/المنتظرة ما تنحسب لين تخلص
+  const allBookings=(data.archivedBookings||[]);
   const bookRev=allBookings.filter(b=>!b.cancelled&&b.dateKey&&b.dateKey.startsWith(sm)).reduce((s,b)=>s+(b.price||0),0);
   const incRev=data.incomes.filter(e=>e.month===sm).reduce((s,e)=>s+e.amount,0);
   const mRev=bookRev+incRev;
