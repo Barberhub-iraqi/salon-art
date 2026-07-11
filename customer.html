@@ -113,6 +113,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 .inp.err{border-color:#8B2020;}
 .err-msg{font-size:11px;color:#C0392B;margin-top:4px;display:none;}
 .inp-wrap{margin-bottom:12px;}
+.recognized-box{display:none;align-items:center;justify-content:space-between;gap:10px;background:#0F0F08;border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-bottom:4px;}
+.recognized-hi{font-size:13.5px;color:var(--text);}
+.recognized-hi b{color:var(--gold);}
+.recognized-sub{font-size:10.5px;color:var(--muted);margin-top:3px;}
+.recognized-change{font-size:11px;color:var(--gold-dim);background:none;border:1px solid var(--border2);border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap;}
+.recognized-change:hover{border-color:var(--gold);color:var(--gold);}
 
 /* SERVICES */
 .svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -329,7 +335,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
 <!-- FORM -->
 <div id="formView">
   <div class="page">
-    <div class="sec">
+    <div class="sec" id="infoSec">
       <div class="sec-label">بياناتك</div>
       <div class="inp-wrap">
         <label class="inp-lbl">الاسم</label>
@@ -341,6 +347,16 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
         <label class="inp-lbl">رقم الواتساب</label>
         <input class="inp" id="phoneInp" placeholder="07XXXXXXXXX" maxlength="13" type="tel"/>
         <div class="err-msg" id="phoneErr">أدخل رقم عراقي صحيح</div>
+      </div>
+    </div>
+
+    <div class="sec" id="recognizedBox" style="display:none">
+      <div class="recognized-box" style="display:flex">
+        <div>
+          <div class="recognized-hi">👋 مرحباً <b id="recognizedName"></b></div>
+          <div class="recognized-sub">اختار الخدمة واليوم والوقت وحجزك جاهز</div>
+        </div>
+        <button type="button" class="recognized-change" onclick="showManualForm()">مو انت؟ تغيير</button>
       </div>
     </div>
 
@@ -682,6 +698,38 @@ async function save(){
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3000);}
 
+// تذكر بيانات الزبون بهاذا الجهاز حتى ما يعيد كتابتها بكل حجز
+const CUSTOMER_KEY='salonart_customer';
+function getSavedCustomer(){
+  try{const v=JSON.parse(localStorage.getItem(CUSTOMER_KEY)||'null');
+    if(v&&v.name&&v.phone)return v;
+  }catch{}
+  return null;
+}
+function saveCustomer(name,phone){
+  try{localStorage.setItem(CUSTOMER_KEY,JSON.stringify({name,phone}));}catch{}
+}
+function forgetCustomer(){
+  try{localStorage.removeItem(CUSTOMER_KEY);}catch{}
+}
+function applyRecognizedCustomer(c){
+  document.getElementById('nameInp').value=c.name;
+  document.getElementById('phoneInp').value=c.phone;
+  document.getElementById('recognizedName').textContent=c.name;
+  document.getElementById('infoSec').style.display='none';
+  document.getElementById('recognizedBox').style.display='block';
+  updateBtn();
+}
+function showManualForm(){
+  forgetCustomer();
+  document.getElementById('nameInp').value='';
+  document.getElementById('phoneInp').value='';
+  document.getElementById('infoSec').style.display='block';
+  document.getElementById('recognizedBox').style.display='none';
+  updateBtn();
+}
+window.showManualForm=showManualForm;
+
 function updateBtn(){
   const name=document.getElementById('nameInp').value.trim();
   const phone=document.getElementById('phoneInp').value.trim();
@@ -788,6 +836,7 @@ async function doBook(){
     document.getElementById('s-phone').textContent=phone;
     document.getElementById('s-price').textContent=fmtPrice(finalPrice);
     renderUpsell({name,date:selDateLabel,slot:selSlot});
+    saveCustomer(name,phone);
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('successView').classList.remove('hidden');
   }catch{db.bookings.pop();btn.disabled=false;updateBtn();toast('فشل الحجز، حاول مرة ثانية');}
@@ -803,6 +852,7 @@ async function doWaitlist(){
   db.waitlist.push({id:'w'+Date.now(),name,phone,day:selDateLabel,dateKey:selDateKey,createdAt:Date.now()});
   try{
     await save();
+    saveCustomer(name,phone);
     document.getElementById('w-day').textContent=selDateLabel;
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('waitView').classList.remove('hidden');
@@ -811,8 +861,12 @@ async function doWaitlist(){
 
 function resetForm(){
   selSvc=null;selDateKey=null;selDateLabel=null;selSlot=null;selPrice=null;
-  document.getElementById('nameInp').value='';
-  document.getElementById('phoneInp').value='';
+  const savedCustomer=getSavedCustomer();
+  if(savedCustomer){applyRecognizedCustomer(savedCustomer);}
+  else{
+    document.getElementById('nameInp').value='';
+    document.getElementById('phoneInp').value='';
+  }
   document.getElementById('successView').classList.add('hidden');
   document.getElementById('waitView').classList.add('hidden');
   document.getElementById('upsellBox').style.display='none';
@@ -955,6 +1009,8 @@ window.hideSplash=hideSplash;
   loadProducts();
   document.getElementById('nameInp').addEventListener('input',updateBtn);
   document.getElementById('phoneInp').addEventListener('input',updateBtn);
+  const savedCustomer=getSavedCustomer();
+  if(savedCustomer)applyRecognizedCustomer(savedCustomer);
   window.doBook=doBook;window.doWaitlist=doWaitlist;window.resetForm=resetForm;window.onSliderChange=onSliderChange;window.pickPrice=pickPrice;
 })();
 </script>
