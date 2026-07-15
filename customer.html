@@ -426,8 +426,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
           <text x="100" y="116" text-anchor="middle" font-family="serif" font-size="44" font-weight="900" fill="url(#g1)">S</text>
         </svg>
       </div>
-      <div class="success-title">تم الحجز ✓</div>
-      <div class="success-sub">شكراً لاختيارك Salon Art</div>
+      <div class="success-title" id="successTitleEl">تم الحجز ✓</div>
+      <div class="success-sub" id="successSubEl">شكراً لاختيارك Salon Art</div>
       <div class="detail-box">
         <div class="d-row"><span>الاسم</span><strong id="s-name"></strong></div>
         <div class="d-row"><span>الخدمة</span><strong id="s-svc"></strong></div>
@@ -440,7 +440,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
         <div class="upsell-title">🛍️ زيّن حجزك بمنتج من متجرنا؟</div>
         <div class="upsell-items" id="upsellItems"></div>
       </div>
-      <div class="warn-box">
+      <div class="warn-box" id="successWarnEl">
         🔔 تأكد من حجزك قبل الموعد بوقت كافي<br/>
         ⚠️ التأخر أكثر من <strong style="color:var(--gold)">15 دقيقة</strong> يلغي حجزك
       </div>
@@ -556,7 +556,13 @@ let SVCS = [
   {id:'child', name:'طفل',          price:10000, icon:'👦'},
 ];
 
-let db={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},workHours:{start:"4:00 م",end:"11:00 م"}};
+let db={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},customHours:{},workHours:{start:"4:00 م",end:"11:00 م"}};
+let MSG_TPL={
+  successTitle:'تم الحجز ✓',
+  successSub:'شكراً لاختيارك Salon Art',
+  successWarn:'🔔 تأكد من حجزك قبل الموعد بوقت كافي\n⚠️ التأخر أكثر من 15 دقيقة يلغي حجزك'
+};
+function fillTpl(tpl,vars){return String(tpl||'').replace(/\{(\w+)\}/g,(m,k)=>vars[k]!==undefined?vars[k]:m);}
 let selSvc=null,selDateKey=null,selDateLabel=null,selSlot=null,busy=false;
 let selPrice=null; // السعر المختار من الـ slider
 
@@ -574,17 +580,21 @@ function normalizeAr(s){
     .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
     .replace(/ـ/g,'') // تطويل
     .replace(/0/g,'و').replace(/3/g,'ع').replace(/7/g,'ح').replace(/9/g,'ق')
-    .replace(/[^\u0600-\u06FFa-z]/g,'') // شيل كل شي غير حروف (مسافات، نقاط، ارقام متبقية...)
+    .replace(/[^\u0600-\u06FFa-z\s]/g,'') // شيل كل شي غير حروف ومسافات
     .replace(/(.)\1{2,}/g,'$1$1'); // اختصر تكرار الحرف اكثر من مرتين
 }
-// روت قصيرة (2-3 حروف): فحص مباشر بس، بدون تقريبي — عشان ما تمسك اسماء حقيقية غلط
-const BAD_SHORT=['نيك','كسم','زبي','طيز','عرص','خرا','خره','عره','فشخ','كص','احا'];
-// روت أطول: فحص مباشر + تقريبي (يمسك حرف زايد/محذوف/مبدّل وحد بس، زي "نياجك" بدل "نياك")
-const BAD_LONG=[
-  'نياك','نياج','منيك','منيوك','متناك','كسمك','كسخت','كسامك','قحبه','قحبتك','عاهره',
-  'شرموط','شرموطه','خول','خوله','لوطي','زبك','طيزك','معرص','قواد','قوادك',
-  'ابن الكلب','كلب ابن','حيوان ابن','تاج راسك','زامل','زاملك','فشخك','كصمك','العريض'
+// روت قصيرة (2-4 حروف): فحص مباشر بس داخل نفس الكلمة، بدون تقريبي — عشان ما تمسك اسماء حقيقية غلط
+// (فحص "تقريبي" على روت قصير يمسك اسماء بريئة بالغلط، زي ما صار مع "حسين ماجد")
+const BAD_EXACT=[
+  'نيك','كسم','زبي','طيز','عرص','خرا','خره','عره','فشخ','كص','احا',
+  'نياك','نياج','منيك','كسمك','كسخت','قحبه','خول','خوله','لوطي',
+  'زبك','طيزك','معرص','قواد','كواد','كومبي','زامل','فشخك','كصمك',
+  'عير','عيره','عيور','عيوره'
 ];
+// روت أطول (5+ حروف): فحص مباشر + تقريبي (يمسك حرف زايد/محذوف/مبدّل وحد بس)، وبرضو داخل نفس الكلمة بس
+const BAD_FUZZY=['منيوك','متناك','كسامك','قحبتك','عاهره','شرموط','شرموطه','قوادك','كوادك','زاملك','العريض'];
+// عبارات من كلمتين — تنفحص على مستوى الاسم كامل (مباشر بس، بدون تقريبي، لتفادي تطابقات عرضية بين الكلمات)
+const BAD_PHRASES=['ابن الكلب','كلب ابن','حيوان ابن','تاج راسك','اي سي','ابو العيوره','بو العيوره','ابو عيره','ابو العير'];
 // مسافة التحرير (Levenshtein) لمسك التحايل بإضافة/حذف/تبديل حرف وحد
 function editDist(a,b){
   const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
@@ -594,13 +604,14 @@ function editDist(a,b){
   }
   return d[m][n];
 }
-function containsBadWord(n){
-  const norm=normalizeAr(n).replace(/\s/g,'');
-  for(const w of BAD_SHORT){
+function wordHasBadRoot(word){
+  const norm=normalizeAr(word).replace(/\s/g,'');
+  if(!norm)return false;
+  for(const w of BAD_EXACT){
     const rn=normalizeAr(w).replace(/\s/g,'');
     if(rn&&norm.includes(rn))return true;
   }
-  for(const w of BAD_LONG){
+  for(const w of BAD_FUZZY){
     const rn=normalizeAr(w).replace(/\s/g,'');
     if(!rn)continue;
     if(norm.includes(rn))return true;
@@ -609,6 +620,18 @@ function containsBadWord(n){
         if(editDist(norm.substr(i,len),rn)<=1)return true;
       }
     }
+  }
+  return false;
+}
+function containsBadWord(n){
+  // فحص كل كلمة براسها (يمنع تطابقات وهمية بين نهاية كلمة وبداية الثانية)
+  const words=String(n||'').trim().split(/\s+/).filter(Boolean);
+  if(words.some(wordHasBadRoot))return true;
+  // فحص العبارات المكونة من كلمتين على مستوى الاسم كامل — مباشر بس
+  const normFull=normalizeAr(words.join(' ')).replace(/\s+/g,' ').trim();
+  for(const p of BAD_PHRASES){
+    const rp=normalizeAr(p).replace(/\s+/g,' ').trim();
+    if(rp&&normFull.includes(rp))return true;
   }
   return false;
 }
@@ -621,7 +644,7 @@ function validName(n){
   if(containsBadWord(t))return false;
   return true;
 }
-function slots(){const wh=db.workHours||{start:"5:00 م",end:"11:00 م"};const si=ALL_SLOTS.indexOf(wh.start);const ei=ALL_SLOTS.indexOf(wh.end);if(si<0||ei<0)return["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];const all=ei>=si?ALL_SLOTS.slice(si,ei+1):[...ALL_SLOTS.slice(si),...ALL_SLOTS.slice(0,ei+1)];const step=Math.ceil((db.avgMins||30)/30);return all.filter((_,i)=>i%step===0);}
+function slots(dateKey){const custom=dateKey&&db.customHours&&db.customHours[dateKey];const wh=custom||db.workHours||{start:"5:00 م",end:"11:00 م"};const si=ALL_SLOTS.indexOf(wh.start);const ei=ALL_SLOTS.indexOf(wh.end);if(si<0||ei<0)return["5:00 م","6:00 م","7:00 م","8:00 م","9:00 م","10:00 م","11:00 م"];const all=ei>=si?ALL_SLOTS.slice(si,ei+1):[...ALL_SLOTS.slice(si),...ALL_SLOTS.slice(0,ei+1)];const step=Math.ceil((db.avgMins||30)/30);return all.filter((_,i)=>i%step===0);}
 function slotDateTime(dk,s){
   const h=SLOT_H[s];if(h===undefined)return null;
   const hFloor=Math.floor(h);const mins=h%1!==0?30:0;
@@ -659,7 +682,7 @@ function isBooked(dk,s,forSvcId){
   });
 }
 function phoneBooked(p){const np=normPhone(p);return db.bookings.some(b=>!b.cancelled&&normPhone(b.phone||'')===np);}
-function allBooked(dk,forSvcId){const av=slots().filter(s=>!isPast(dk,s));return av.length===0||av.every(s=>isBooked(dk,s,forSvcId));}
+function allBooked(dk,forSvcId){const av=slots(dk).filter(s=>!isPast(dk,s));return av.length===0||av.every(s=>isBooked(dk,s,forSvcId));}
 
 async function load(){
   try{
@@ -671,12 +694,17 @@ async function load(){
         waitlist:typeof r.waitlist==='string'?JSON.parse(r.waitlist):(r.waitlist||[]),
         disabledDays:typeof r.disabledDays==='string'?JSON.parse(r.disabledDays):(r.disabledDays||[]),
         blockedSlots:typeof r.blockedSlots==='string'?JSON.parse(r.blockedSlots):(r.blockedSlots||{}),
+        customHours:typeof r.customHours==='string'?JSON.parse(r.customHours):(r.customHours||{}),
         workHours:{start:r.workHoursStart||"5:00 م",end:r.workHoursEnd||"11:00 م"},
         avgMins:r.avgMins||30,
       };
       if(r.services){
         const loaded=typeof r.services==='string'?JSON.parse(r.services):r.services;
         if(Array.isArray(loaded)&&loaded.length>0)SVCS=loaded;
+      }
+      if(r.msgTemplates){
+        const loadedT=typeof r.msgTemplates==='string'?JSON.parse(r.msgTemplates):r.msgTemplates;
+        MSG_TPL={...MSG_TPL,...loadedT};
       }
       if(r.heroPhoto){
         document.documentElement.style.setProperty('--hero-img',`url('${r.heroPhoto}')`);
@@ -789,7 +817,7 @@ function renderSlots(){
   document.getElementById('allBkdBox').style.display=full?'block':'none';
   document.getElementById('waitBtnWrap').style.display=full?'block':'none';
   document.getElementById('bookBtnWrap').style.display=full?'none':'block';
-  slots().forEach(s=>{
+  slots(selDateKey).forEach(s=>{
     const bkd=isBooked(selDateKey,s,selSvc),past=isPast(selDateKey,s);
     const b=document.createElement('button');
     b.className='slot-btn'+(bkd?' bkd':'')+(past&&!bkd?' past':'')+(selSlot===s?' sel':'');
@@ -835,6 +863,10 @@ async function doBook(){
     document.getElementById('s-slot').textContent=selSlot;
     document.getElementById('s-phone').textContent=phone;
     document.getElementById('s-price').textContent=fmtPrice(finalPrice);
+    const tplVars={name,service:svc.name,date:selDateLabel,time:selSlot,price:fmtPrice(finalPrice)};
+    document.getElementById('successTitleEl').textContent=fillTpl(MSG_TPL.successTitle,tplVars);
+    document.getElementById('successSubEl').textContent=fillTpl(MSG_TPL.successSub,tplVars);
+    document.getElementById('successWarnEl').innerHTML=fillTpl(MSG_TPL.successWarn,tplVars).replace(/\n/g,'<br/>');
     renderUpsell({name,date:selDateLabel,slot:selSlot});
     saveCustomer(name,phone);
     document.getElementById('formView').classList.add('hidden');
