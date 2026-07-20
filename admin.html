@@ -140,10 +140,16 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
 .acc-lbl{font-size:12px;color:var(--muted);}
 .acc-val{font-size:15px;font-weight:900;}
 .acc-val.gr{color:#66BB6A;}.acc-val.rd{color:#EF5350;}.acc-val.gd{color:var(--gold2);font-size:18px;}
+.hist-block{border-bottom:1px solid var(--border2);}
+.hist-block:last-child{border-bottom:none;}
+.hist-block .acc-row{border-bottom:none;}
+.hist-detail{background:var(--black);border-radius:8px;padding:8px 10px;margin:0 0 9px;}
+.hist-sec-lbl{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--gold-dim);margin:6px 0 3px;}
+.hist-sec-lbl:first-child{margin-top:0;}
 .exp-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border2);}
 .exp-item:last-child{border:none;}
-.exp-name{font-size:12px;color:var(--muted);}
-.exp-sub{font-size:9px;color:var(--border2);margin-top:1px;}
+.exp-name{font-size:12px;color:var(--text);}
+.exp-sub{font-size:9px;color:#8a8270;margin-top:1px;}
 .exp-amt{font-size:13px;font-weight:700;color:#EF5350;}
 .exp-del{background:none;border:none;color:rgba(107,32,32,0.4);cursor:pointer;font-size:14px;padding:0 3px;}
 .exp-del:hover{color:#EF5350;}
@@ -173,7 +179,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
 .arc-card{background:rgba(7,7,5,0.7);border:1px solid var(--border2);border-radius:9px;padding:11px 13px;margin-bottom:7px;opacity:.75;}
 .arc-lbl{font-size:9px;color:#66BB6A;letter-spacing:2px;margin-bottom:3px;}
 .arc-name{font-size:13px;font-weight:700;color:var(--muted);}
-.arc-detail{font-size:10px;color:var(--border2);margin-top:3px;}
+.arc-detail{font-size:10px;color:#8a8270;margin-top:3px;}
 
 /* WAITLIST */
 .wait-card{background:var(--card);border:1px solid rgba(201,168,76,0.1);border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
@@ -405,18 +411,6 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
           <div id="fixedList"></div>
         </div>
 
-        <div class="wcard" style="border-color:rgba(107,32,32,0.2)">
-          <div class="wcard-title">🔒 إغلاق الشهر</div>
-          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">بآخر كل شهر (أو أي وقت تحب) اضغط الزر — ينحفظ إجمالي الوارد وصافي الربح بالسجل، وتنمسح تفاصيل الأرشيف والصرفيات والدخل اليدوي لهذا الشهر تلقائياً. هذا يصير تلقائي أيضاً أول ما يبدي شهر جديد.</div>
-          <button class="del-btn" style="width:100%" onclick="closeMonthNow()">🔒 إغلاق الشهر الحالي الآن</button>
-        </div>
-
-        <div class="wcard" style="border-color:rgba(107,32,32,0.3)">
-          <div class="wcard-title">🗑️ تصفير كامل</div>
-          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">يمسح كل شي بالحسابات (الأرشيف، الصرفيات، الدخل اليدوي، الديون، سجل الأشهر) وتبدي من الصفر من اليوم. الحجوزات الجاية ما تتأثر. يتحمّل باكب تلقائي قبل الحذف.</div>
-          <button class="del-btn" style="width:100%" onclick="resetAccounting()">🗑️ تصفير الحسابات والبدء من اليوم</button>
-        </div>
-
         <div class="wcard">
           <div class="wcard-title">📊 سجل الأشهر المغلقة</div>
           <div id="histList"></div>
@@ -489,6 +483,18 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
             <div class="wcard-title">📋 قائمة الديون</div>
             <div id="debtList"></div>
           </div>
+        </div>
+
+        <div class="wcard" style="border-color:rgba(107,32,32,0.2)">
+          <div class="wcard-title">🔒 إغلاق الشهر</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">بآخر كل شهر (أو أي وقت تحب) اضغط الزر — ينحفظ إجمالي الوارد وصافي الربح بالسجل، وتنمسح تفاصيل الأرشيف والصرفيات والدخل اليدوي لهذا الشهر تلقائياً. هذا يصير تلقائي أيضاً أول ما يبدي شهر جديد.</div>
+          <button class="del-btn" style="width:100%" onclick="closeMonthNow()">🔒 إغلاق الشهر الحالي الآن</button>
+        </div>
+
+        <div class="wcard" style="border-color:rgba(107,32,32,0.3)">
+          <div class="wcard-title">🗑️ تصفير كامل</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">يمسح كل شي بالحسابات (الأرشيف، الصرفيات، الدخل اليدوي، الديون، سجل الأشهر) وتبدي من الصفر من اليوم. الحجوزات الجاية ما تتأثر. يتحمّل باكب تلقائي قبل الحذف.</div>
+          <button class="del-btn" style="width:100%" onclick="resetAccounting()">🗑️ تصفير الحسابات والبدء من اليوم</button>
         </div>
       </div>
     </div>
@@ -855,7 +861,6 @@ async function load(){
         msgTemplates:{...DEFAULT_MSG_TPL,...(typeof r.msgTemplates==='string'?JSON.parse(r.msgTemplates):(r.msgTemplates||{}))}
       };
     }
-    cleanOld();
     if(rolloverIfNeeded()){save().catch(()=>{});}
     lastSync=new Date();syncBar(true);
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
@@ -1047,7 +1052,10 @@ function purgeMonth(mk){
 function closeMonthToHistory(mk){
   if(!data.monthlyHistory)data.monthlyHistory=[];
   const sum=computeMonthSummary(mk);
-  const entry={month:mk,label:monthLabel(mk),revenue:sum.revenue,expenses:sum.expenses,profit:sum.profit,closedAt:Date.now()};
+  const expDetail=(data.expenses||[]).filter(e=>e.month===mk).map(e=>({name:e.name,amount:e.amount,createdAt:e.createdAt}));
+  const incDetail=(data.incomes||[]).filter(e=>e.month===mk).map(e=>({name:e.name,amount:e.amount,createdAt:e.createdAt}));
+  const fixedDetail=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(mk)).map(f=>({name:f.name,amount:f.amount}));
+  const entry={month:mk,label:monthLabel(mk),revenue:sum.revenue,expenses:sum.expenses,profit:sum.profit,closedAt:Date.now(),expDetail,incDetail,fixedDetail};
   const idx=data.monthlyHistory.findIndex(h=>h.month===mk);
   if(idx>=0)data.monthlyHistory[idx]=entry;else data.monthlyHistory.push(entry);
   data.monthlyHistory.sort((a,b)=>b.month.localeCompare(a.month));
@@ -1069,7 +1077,7 @@ function rolloverIfNeeded(){
 }
 async function closeMonthNow(){
   const cm=monthKey(new Date());
-  if(!confirm(`سيتم إغلاق شهر ${monthLabel(cm)} الآن — يبقى بس إجمالي الوارد وصافي الربح، وتنمسح كل تفاصيله (الأرشيف، الصرفيات، الدخل اليدوي). متأكد؟`))return;
+  if(!confirm(`سيتم إغلاق شهر ${monthLabel(cm)} الآن — تنحفظ كل تفاصيله (الصرفيات، الدخل اليدوي) بسجل خاص باسم الشهر، وتتفرغ صفحة الحسابات الحالية للشهر الجديد. متأكد؟`))return;
   closeMonthToHistory(cm);
   try{await save();renderAcc();renderArchive();toast('✅ تم إغلاق الشهر وأرشفته');}
   catch{toast('❌ فشل الحفظ');}
@@ -1164,6 +1172,25 @@ function delDebt(id){if(!confirm('حذف؟'))return;const idx=data.debts.findInd
 function toggleDebtPaid(id){const d=data.debts.find(e=>e.id===id);if(!d)return;const old=d.paid;d.paid=!d.paid;save().then(()=>renderAcc()).catch(()=>{d.paid=old;});}
 window.addDebt=addDebt;window.delDebt=delDebt;window.toggleDebtPaid=toggleDebtPaid;
 
+let expandedHistMonths=new Set();
+function toggleHistMonth(mk){if(expandedHistMonths.has(mk))expandedHistMonths.delete(mk);else expandedHistMonths.add(mk);renderAcc();}
+window.toggleHistMonth=toggleHistMonth;
+function renderHistDetail(h){
+  const exp=h.expDetail||[],inc=h.incDetail||[],fixed=h.fixedDetail||[];
+  if(!exp.length&&!inc.length&&!fixed.length)return`<div class="hist-detail"><div style="text-align:center;padding:10px;color:var(--muted);font-size:11px">لا توجد صرفيات أو دخل يدوي مسجل لهذا الشهر</div></div>`;
+  let html='<div class="hist-detail">';
+  if(fixed.length||exp.length){
+    html+='<div class="hist-sec-lbl">💸 الصرفيات</div>';
+    fixed.forEach(f=>{html+=`<div class="exp-item"><div class="exp-name">📌 ${escHtmlA(f.name)}</div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`;});
+    exp.forEach(e=>{html+=`<div class="exp-item"><div class="exp-name">${escHtmlA(e.name)}</div><span class="exp-amt">${Number(e.amount||0).toLocaleString()} د.ع</span></div>`;});
+  }
+  if(inc.length){
+    html+='<div class="hist-sec-lbl">💵 الدخل اليدوي</div>';
+    inc.forEach(e=>{html+=`<div class="exp-item"><div class="exp-name">${escHtmlA(e.name)}</div><span class="exp-amt gr">+${Number(e.amount||0).toLocaleString()} د.ع</span></div>`;});
+  }
+  html+='</div>';
+  return html;
+}
 function renderAcc(){
   if(!data.expenses)data.expenses=[];if(!data.incomes)data.incomes=[];if(!data.debts)data.debts=[];if(!data.fixedExpenses)data.fixedExpenses=[];
   renderFixedList();
@@ -1228,7 +1255,10 @@ function renderAcc(){
   const histList=document.getElementById('histList');
   const hist=data.monthlyHistory||[];
   if(!hist.length){histList.innerHTML=`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد أشهر مغلقة بعد</div>`;}
-  else{histList.innerHTML=hist.map(h=>`<div class="acc-row"><span class="acc-lbl">${h.label}</span><span style="display:flex;gap:10px;align-items:center"><span class="acc-val gr" style="font-size:12px">${h.revenue.toLocaleString('ar-IQ')}</span><span class="acc-val ${h.profit>=0?'gd':'rd'}" style="font-size:12px">${h.profit.toLocaleString('ar-IQ')}</span></span></div>`).join('');}
+  else{histList.innerHTML=hist.map(h=>{
+    const isOpen=expandedHistMonths.has(h.month);
+    return`<div class="hist-block"><div class="acc-row" style="cursor:pointer" onclick="toggleHistMonth('${h.month}')"><span class="acc-lbl">${isOpen?'▾':'▸'} ${h.label}</span><span style="display:flex;gap:10px;align-items:center"><span class="acc-val gr" style="font-size:12px">${h.revenue.toLocaleString('ar-IQ')}</span><span class="acc-val ${h.profit>=0?'gd':'rd'}" style="font-size:12px">${h.profit.toLocaleString('ar-IQ')}</span></span></div>${isOpen?renderHistDetail(h):''}</div>`;
+  }).join('');}
 }
 
 function renderArchive(){
