@@ -941,7 +941,13 @@ function renderShop(){
   renderShopFilters();
   const filtered=activeShopFilter==='all'?productsList:productsList.filter(p=>p.category===activeShopFilter);
   if(!filtered.length){grid.innerHTML='<div class="shop-empty">ماكو منتجات بهذا التصنيف</div>';return;}
-  grid.innerHTML=filtered.map((p)=>{
+  const statusOrder={available:0,soon:1,out:2};
+  const sortedFiltered=[...filtered].sort((a,b)=>{
+    const sa=statusOrder[a.status||'available']??0;
+    const sb=statusOrder[b.status||'available']??0;
+    return sa-sb;
+  });
+  grid.innerHTML=sortedFiltered.map((p)=>{
     const i=productsList.indexOf(p);
     const status=p.status||'available';
     const img=p.photo?`<img src="${p.photo}" alt="${escHtml(p.name)}"/>`:`<div class="product-img-placeholder">🛍️</div>`;
