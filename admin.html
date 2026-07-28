@@ -367,14 +367,21 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
   <div class="tc" id="tc-stats">
     <div class="wkly">
       <div class="stabs">
-        <button class="stab active" onclick="sstab('week')" id="stb-week">أسبوعي</button>
+        <button class="stab active" onclick="sstab('week')" id="stb-week">يومي</button>
         <button class="stab" onclick="sstab('month')" id="stb-month">شهري</button>
         <button class="stab" onclick="sstab('svcs')" id="stb-svcs">الخدمات</button>
         <button class="stab" onclick="sstab('acc')" id="stb-acc">💰 الحسابات</button>
+        <button class="stab" onclick="sstab('own')" id="stb-own">👑 ملكيتي</button>
       </div>
       <div id="sw-week">
-        <div class="wcard"><div class="wcard-title">الحجوزات (7 أيام)</div><div id="weekRows"></div></div>
-        <div class="rev-box"><span>إيرادات الأسبوع</span><strong id="weekRev">0 د.ع</strong></div>
+        <div class="wcard">
+          <div class="wcard-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>الدخل اليومي</span>
+            <span id="cycleRangeLbl" style="font-size:9px;color:var(--muted);font-weight:400"></span>
+          </div>
+          <div id="weekRows"></div>
+        </div>
+        <div class="rev-box"><span>إجمالي دخل الدورة (من 5 إلى 5)</span><strong id="weekRev">0 د.ع</strong></div>
       </div>
       <div id="sw-month" style="display:none">
         <div class="wcard"><div class="wcard-title">هذا الشهر</div><div id="monthRows"></div></div>
@@ -392,8 +399,9 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
             <select id="sumM" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()"></select>
           </div>
           <div class="acc-row"><span class="acc-lbl">💰 الواردات (حجوزات + دخل يدوي)</span><span class="acc-val gr" id="acc-r">0</span></div>
-          <div class="acc-row"><span class="acc-lbl">📤 الصرفيات (صرفيات + ثوابت)</span><span class="acc-val rd" id="acc-e">0</span></div>
-          <div class="acc-row"><span class="acc-lbl">📌 منها الثوابت الشهرية</span><span class="acc-val rd" id="acc-fixed">0</span></div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--gold-dim);margin:10px 0 2px">📤 الصرفيات — تفصيل حسب النوع</div>
+          <div id="accExpBreakdown"></div>
+          <div class="acc-row" style="border-top:1px solid var(--border2);margin-top:2px;padding-top:8px;"><span class="acc-lbl">📤 إجمالي الصرفيات</span><span class="acc-val rd" id="acc-e">0</span></div>
           <div class="acc-row" style="margin:-4px;padding:10px;background:rgba(201,168,76,0.04);border-radius:6px;margin-top:6px;"><span class="acc-lbl">✨ صافي الربح</span><span class="acc-val gd" id="acc-p">0</span></div>
         </div>
 
@@ -402,6 +410,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
           <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">مصاريف متكررة كل شهر (مثل: الإيجار، اشتراك النت، مسواك، اشتراكات...) — ضيفها هنا مرة وحدة، وكل شهر أول ما تدفعها اضغط زر "تم الدفع لهذا الشهر" حتى تنحسب بحساباتك.</div>
           <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
             <input id="fixedN" class="sinp" placeholder="اسم المصروف الثابت (مثال: اشتراك النت)..." maxlength="40"/>
+            <select id="fixedCat" class="sinp">
+              <option value="shop">🏪 محل</option>
+              <option value="mom">👩 امي</option>
+              <option value="salman">🧑 اخو سلمان</option>
+              <option value="me">👤 صرفيتي</option>
+            </select>
             <div style="display:flex;gap:7px">
               <input id="fixedA" class="sinp" placeholder="المبلغ الشهري..." type="number" min="0"/>
               <input id="fixedD" class="sinp" style="max-width:90px" type="number" min="1" max="31" placeholder="يوم الدفع"/>
@@ -428,14 +442,36 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
             <div style="display:flex;flex-direction:column;gap:7px">
               <input id="expN" class="sinp" placeholder="اسم الصرفية..." maxlength="40"/>
               <input id="expA" class="sinp" placeholder="المبلغ..." type="number" min="0"/>
+              <select id="expCat" class="sinp">
+                <option value="shop">🏪 محل</option>
+                <option value="mom">👩 امي</option>
+                <option value="salman">🧑 اخو سلمان</option>
+                <option value="me">👤 صرفيتي</option>
+              </select>
               <select id="expM" class="sinp"></select>
               <button class="save-btn" onclick="addExp()">➕ إضافة</button>
             </div>
           </div>
           <div class="wcard">
             <div class="wcard-title" style="display:flex;justify-content:space-between;align-items:center;">
+              <span>📊 توزيع الصرفيات حسب النوع</span>
+              <select id="fltMCat" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()"></select>
+            </div>
+            <div id="expCatBreak" class="mini-stats" style="padding:0;grid-template-columns:repeat(4,1fr);"></div>
+          </div>
+          <div class="wcard">
+            <div class="wcard-title" style="display:flex;justify-content:space-between;align-items:center;">
               <span>📋 الصرفيات</span>
-              <select id="fltM" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()"></select>
+              <div style="display:flex;gap:6px">
+                <select id="fltCat" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()">
+                  <option value="all">الكل</option>
+                  <option value="shop">🏪 محل</option>
+                  <option value="mom">👩 امي</option>
+                  <option value="salman">🧑 اخو سلمان</option>
+                  <option value="me">👤 صرفيتي</option>
+                </select>
+                <select id="fltM" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()"></select>
+              </div>
             </div>
             <div id="expList"></div>
           </div>
@@ -490,11 +526,28 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
           <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">بآخر كل شهر (أو أي وقت تحب) اضغط الزر — ينحفظ إجمالي الوارد وصافي الربح بالسجل، وتنمسح تفاصيل الأرشيف والصرفيات والدخل اليدوي لهذا الشهر تلقائياً. هذا يصير تلقائي أيضاً أول ما يبدي شهر جديد.</div>
           <button class="del-btn" style="width:100%" onclick="closeMonthNow()">🔒 إغلاق الشهر الحالي الآن</button>
         </div>
-
-        <div class="wcard" style="border-color:rgba(107,32,32,0.3)">
-          <div class="wcard-title">🗑️ تصفير كامل</div>
-          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">يمسح كل شي بالحسابات (الأرشيف، الصرفيات، الدخل اليدوي، الديون، سجل الأشهر) وتبدي من الصفر من اليوم. الحجوزات الجاية ما تتأثر. يتحمّل باكب تلقائي قبل الحذف.</div>
-          <button class="del-btn" style="width:100%" onclick="resetAccounting()">🗑️ تصفير الحسابات والبدء من اليوم</button>
+      </div>
+      <div id="sw-own" style="display:none">
+        <div class="wcard" style="border-color:rgba(201,168,76,0.15)">
+          <div class="wcard-title">👑 صافي ملكيتي</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.7">هذا القسم منفصل تماماً عن باقي الحسابات — بس تضيف مبالغ يدوي (زيادة أو سحب) وهو يحسبلك الصافي. ما إله علاقة بالصرفيات ولا الإيرادات ولا الحجوزات.</div>
+          <div class="rev-box"><span>الصافي الحالي</span><strong id="ownNet">0 د.ع</strong></div>
+        </div>
+        <div class="wcard">
+          <div class="wcard-title">➕ إضافة مبلغ</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div class="seg">
+              <button type="button" id="ownTypeAdd" class="active lena" onclick="setOwnType('add')">➕ زيادة</button>
+              <button type="button" id="ownTypeSub" onclick="setOwnType('sub')">➖ سحب</button>
+            </div>
+            <input id="ownN" class="sinp" placeholder="ملاحظة (اختياري)..." maxlength="40"/>
+            <input id="ownA" class="sinp" placeholder="المبلغ..." type="number" min="0"/>
+            <button class="save-btn" onclick="addOwn()">➕ إضافة</button>
+          </div>
+        </div>
+        <div class="wcard">
+          <div class="wcard-title">📋 السجل</div>
+          <div id="ownList"></div>
         </div>
       </div>
     </div>
@@ -756,7 +809,7 @@ const SH={"12:00 م":12,"12:30 م":12.5,"1:00 م":13,"1:30 م":13.5,"2:00 م":14
 const DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
-let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],incomes:[],debts:[],monthlyHistory:[],lastRolloverMonth:null,fixedExpenses:[],workHours:{start:"5:00 م",end:"11:00 م"},customHours:{},services:[
+let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],incomes:[],debts:[],monthlyHistory:[],lastRolloverMonth:null,fixedExpenses:[],ownEntries:[],workHours:{start:"5:00 م",end:"11:00 م"},customHours:{},services:[
   {id:'svc1',name:'حلاقة كاملة',price:20000,minPrice:5000,maxPrice:50000,icon:'✂️'},
   {id:'svc2',name:'تحديد ولحية',price:10000,icon:'🪒'},
   {id:'svc3',name:'شسوار',price:5000,icon:'💧'},
@@ -779,8 +832,18 @@ const ARC_PAGE_SIZE=20;
 function dk(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function dl(d){return`${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;}
 function fp(p){return Number(p).toLocaleString('ar-IQ')+' د.ع';}
-function next7(){const r=[];const t=new Date();t.setHours(0,0,0,0);for(let i=0;i<7;i++){const d=new Date(t);d.setDate(t.getDate()+i);r.push(d);}return r;}
-function todayK(){return dk(new Date());}
+function next7(){const r=[];const t=bizToday();for(let i=0;i<7;i++){const d=new Date(t);d.setDate(t.getDate()+i);r.push(d);}return r;}
+function cycleDays(){
+  const now=bizToday();
+  const start=now.getDate()>=5?new Date(now.getFullYear(),now.getMonth(),5):new Date(now.getFullYear(),now.getMonth()-1,5);
+  const end=new Date(start.getFullYear(),start.getMonth()+1,5);
+  const days=[];const cur=new Date(start);
+  while(cur<end){days.push(new Date(cur));cur.setDate(cur.getDate()+1);}
+  return days;
+}
+// "يوم الشغل" — أي وقت بين 12 بالليل ولين 7 الصبح لسا يعتبر اليوم السابق (استمرار لشغل الليلة)، وبعد 7 الصبح يبدي يوم جديد
+function bizToday(){const n=new Date();const d=new Date(n);if(n.getHours()<7)d.setDate(d.getDate()-1);d.setHours(0,0,0,0);return d;}
+function todayK(){return dk(bizToday());}
 function normPhone(p){const c=p.replace(/\D/g,'');return c.startsWith('964')?'0'+c.slice(3):c;}
 function wh(){return data.workHours||{start:"5:00 م",end:"11:00 م"};}
 function whFor(dateKey){return(dateKey&&data.customHours&&data.customHours[dateKey])||wh();}
@@ -826,9 +889,12 @@ function waitInfo(id){
   const mins=active.slice(0,idx).reduce((sum,x)=>sum+getSvcDuration(x.serviceId),0);
   return{before:idx,mins};
 }
-function monthKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
-function monthLabel(k){const[y,m]=k.split('-');return`${MONTHS[parseInt(m)-1]} ${y}`;}
-function nextMonthKey(mk){const[y,m]=mk.split('-').map(Number);return monthKey(new Date(y,m,1));}
+function monthKey(d){const s=d.getDate()>=5?new Date(d.getFullYear(),d.getMonth(),5):new Date(d.getFullYear(),d.getMonth()-1,5);return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}`;}
+function monthLabel(k){const[y,m]=k.split('-');const mi=parseInt(m)-1;const endD=new Date(parseInt(y),mi+1,4);return`${MONTHS[mi]} ${y} (5 - ${endD.getDate()} ${MONTHS[endD.getMonth()]})`;}
+function nextMonthKey(mk){const[y,m]=mk.split('-').map(Number);const nm=m===12?1:m+1;const ny=m===12?y+1:y;return`${ny}-${String(nm).padStart(2,'0')}`;}
+// نطاق دورة 5-إلى-5 المقابل لمفتاح شهر معين (يبدي 5 الشهر وينتهي 4 الشهر التالي)
+function cycleRange(mk){const[y,m]=mk.split('-').map(Number);const start=new Date(y,m-1,5);const end=new Date(y,m,5);return{start,end};}
+function inCycle(dateKey,mk){if(!dateKey)return false;const{start,end}=cycleRange(mk);const d=new Date(dateKey+'T12:00:00');return d>=start&&d<end;}
 
 async function load(){
   try{
@@ -849,6 +915,7 @@ async function load(){
         blockedSlots:typeof r.blockedSlots==='string'?JSON.parse(r.blockedSlots):(r.blockedSlots||{}),
         archivedBookings:typeof r.archivedBookings==='string'?JSON.parse(r.archivedBookings):(r.archivedBookings||[]),
         expenses:typeof r.expenses==='string'?JSON.parse(r.expenses):(r.expenses||[]),
+        ownEntries:typeof r.ownEntries==='string'?JSON.parse(r.ownEntries):(r.ownEntries||[]),
         incomes:typeof r.incomes==='string'?JSON.parse(r.incomes):(r.incomes||[]),
         debts:typeof r.debts==='string'?JSON.parse(r.debts):(r.debts||[]),
         monthlyHistory:typeof r.monthlyHistory==='string'?JSON.parse(r.monthlyHistory):(r.monthlyHistory||[]),
@@ -866,7 +933,7 @@ async function load(){
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
 }
 async function save(){
-  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30,customHours:JSON.stringify(data.customHours||{}),msgTemplates:JSON.stringify(data.msgTemplates||DEFAULT_MSG_TPL)},{merge:true});
+  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),ownEntries:JSON.stringify(data.ownEntries||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30,customHours:JSON.stringify(data.customHours||{}),msgTemplates:JSON.stringify(data.msgTemplates||DEFAULT_MSG_TPL)},{merge:true});
   lastSync=new Date();syncBar(true);
 }
 function cleanOld(){
@@ -892,7 +959,7 @@ async function loadAndRender(){await load();render();}
 function syncBar(ok){const s=document.getElementById('syncStatus');const l=document.getElementById('lastSync');if(lastSync)l.textContent='آخر تحديث: '+lastSync.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});s.style.color=ok?'var(--green)':'#EF5350';s.textContent=ok?'متزامن ✓':'خطأ';}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3200);}
 function switchTab(t){activeTab=t;const n=['bookings','stats','archive','waitlist','store','settings'];document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',n[i]===t));document.querySelectorAll('.tc').forEach(el=>el.classList.remove('active'));document.getElementById('tc-'+t).classList.add('active');if(t==='archive')arcPage=0;render();}
-function sstab(t){activeSTab=t;['week','month','svcs','acc'].forEach(s=>{const b=document.getElementById('stb-'+s);if(b)b.classList.toggle('active',s===t);const el=document.getElementById('sw-'+s);if(el)el.style.display=s===t?'block':'none';});renderStats();}
+function sstab(t){activeSTab=t;['week','month','svcs','acc','own'].forEach(s=>{const b=document.getElementById('stb-'+s);if(b)b.classList.toggle('active',s===t);const el=document.getElementById('sw-'+s);if(el)el.style.display=s===t?'block':'none';});renderStats();}
 function openWA(phone,msg){const c=phone.replace(/\D/g,'');const i=c.startsWith('0')?'964'+c.slice(1):c;window.open(`https://wa.me/${i}?text=${encodeURIComponent(msg)}`,'_blank');}
 
 function renderBookings(){
@@ -986,9 +1053,14 @@ function renderStats(){
   const archived=data.archivedBookings||[];
   const all=[...active,...archived];
   if(activeSTab==='week'){
-    const keys=next7().map(d=>dk(d));const wRev=active.filter(b=>keys.includes(b.dateKey)).reduce((s,b)=>s+(b.price||0),0);document.getElementById('weekRev').textContent=wRev.toLocaleString('ar-IQ')+' د.ع';
-    const max=Math.max(...next7().map(d=>active.filter(b=>b.dateKey===dk(d)).length),1);
-    document.getElementById('weekRows').innerHTML=next7().map(d=>{const key=dk(d);const cnt=active.filter(b=>b.dateKey===key).length;const rev=active.filter(b=>b.dateKey===key).reduce((s,b)=>s+(b.price||0),0);const pct=Math.round(cnt/max*100);return`<div class="wrow"><span class="wday">${DAYS[d.getDay()]} ${d.getDate()}</span><div class="wbar-wrap"><div class="wbar" style="width:${pct}%"></div></div><span class="wcount">${cnt}${rev?` • ${rev.toLocaleString()}`:''}</span></div>`;}).join('');
+    const days=cycleDays();
+    const rangeLbl=document.getElementById('cycleRangeLbl');if(rangeLbl)rangeLbl.textContent=`${dl(days[0])} ← ${dl(days[days.length-1])}`;
+    const perDay=days.map(d=>{const key=dk(d);return{d,key,rev:all.filter(b=>b.dateKey===key).reduce((s,b)=>s+(b.price||0),0)};});
+    const cycleRev=perDay.reduce((s,x)=>s+x.rev,0);
+    document.getElementById('weekRev').textContent=cycleRev.toLocaleString('ar-IQ')+' د.ع';
+    const max=Math.max(...perDay.map(x=>x.rev),1);
+    const todayKey=todayK();
+    document.getElementById('weekRows').innerHTML=perDay.map(({d,key,rev})=>{const pct=Math.round(rev/max*100);const isToday=key===todayKey;return`<div class="wrow"${isToday?' style="color:var(--gold)"':''}><span class="wday">${DAYS[d.getDay()]} ${d.getDate()}${isToday?' (اليوم)':''}</span><div class="wbar-wrap"><div class="wbar" style="width:${pct}%"></div></div><span class="wcount">${rev.toLocaleString()} د.ع</span></div>`;}).join('');
   }
   if(activeSTab==='month'){
     const now=new Date();const inM=b=>{if(!b.dateKey)return false;const d=new Date(b.dateKey);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();};
@@ -1000,6 +1072,7 @@ function renderStats(){
     document.getElementById('monthRows').innerHTML=Object.entries(weeks).map(([w,v])=>`<div class="wrow"><span class="wday">الأسبوع ${w}</span><span class="wcount">${v.cnt} حجز • ${v.rev.toLocaleString()}</span></div>`).join('')||'<div style="color:var(--muted);font-size:12px;padding:8px">لا توجد بيانات</div>';
   }
   if(activeSTab==='acc'){renderAcc();return;}
+  if(activeSTab==='own'){renderOwn();return;}
   if(activeSTab==='svcs'){
     const sc={};const sr={};all.forEach(b=>{const n=b.service||'?';sc[n]=(sc[n]||0)+1;sr[n]=(sr[n]||0)+(b.price||0);});
     document.getElementById('svcsRows').innerHTML=Object.entries(sc).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<div class="wrow"><span class="wday">${n}</span><span class="wcount">${c} • ${(sr[n]||0).toLocaleString()}</span></div>`).join('')||'<div style="color:var(--muted);padding:8px;font-size:12px">لا توجد بيانات</div>';
@@ -1010,8 +1083,8 @@ function renderStats(){
 
 let accSub='exp',debtType='lena';
 function popMonthSels(){
-  const now=new Date();const months=[];for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:monthKey(d),label:monthLabel(monthKey(d))});}
-  ['expM','fltM','incM','fltIM','sumM'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=months.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');if(cur)el.value=cur;});
+  const months=[];let k=monthKey(new Date());for(let i=0;i<6;i++){months.push({key:k,label:monthLabel(k)});const[y,m]=k.split('-').map(Number);const pm=m===1?12:m-1;const py=m===1?y-1:y;k=`${py}-${String(pm).padStart(2,'0')}`;}
+  ['expM','fltM','fltMCat','incM','fltIM','sumM'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=months.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');if(cur)el.value=cur;});
 }
 function accsub(which){
   accSub=which;
@@ -1029,6 +1102,35 @@ function setDebtType(t){
 }
 window.setDebtType=setDebtType;
 
+// ─── ملكيتي (سجل منفصل تماماً، صافي مبالغ يدوية فقط) ───
+let ownType='add';
+function setOwnType(t){
+  ownType=t;
+  document.getElementById('ownTypeAdd').className=t==='add'?'active lena':'';
+  document.getElementById('ownTypeSub').className=t==='sub'?'active alayna':'';
+}
+window.setOwnType=setOwnType;
+function addOwn(){
+  const n=document.getElementById('ownN').value.trim();const a=parseInt(document.getElementById('ownA').value)||0;
+  if(!a){toast('أدخل المبلغ');return;}
+  if(!data.ownEntries)data.ownEntries=[];
+  data.ownEntries.push({id:'o'+Date.now(),name:n,amount:a,type:ownType,createdAt:Date.now()});
+  save().then(()=>{document.getElementById('ownN').value='';document.getElementById('ownA').value='';renderOwn();toast('✅ تمت الإضافة');}).catch(()=>{data.ownEntries.pop();toast('❌ فشل');});
+}
+function delOwn(id){if(!confirm('حذف؟'))return;const idx=data.ownEntries.findIndex(e=>e.id===id);if(idx<0)return;const rm=data.ownEntries.splice(idx,1)[0];save().then(()=>renderOwn()).catch(()=>{data.ownEntries.splice(idx,0,rm);});}
+function renderOwn(){
+  if(!data.ownEntries)data.ownEntries=[];
+  const net=data.ownEntries.reduce((s,e)=>s+(e.type==='sub'?-e.amount:e.amount),0);
+  const netEl=document.getElementById('ownNet');if(netEl)netEl.textContent=net.toLocaleString('ar-IQ')+' د.ع';
+  const list=document.getElementById('ownList');if(!list)return;
+  const rows=[...data.ownEntries].sort((a,b)=>b.createdAt-a.createdAt).map(e=>{
+    const isSub=e.type==='sub';
+    return`<div class="exp-item"><div><div class="exp-name">${e.name?escHtmlA(e.name):(isSub?'سحب':'زيادة')}</div><div class="exp-sub">${dl(new Date(e.createdAt))}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="exp-amt${isSub?'':' gr'}">${isSub?'-':'+'}${e.amount.toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delOwn('${e.id}')">🗑️</button></div></div>`;
+  }).join('');
+  list.innerHTML=rows||`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد قيود بعد</div>`;
+}
+window.addOwn=addOwn;window.delOwn=delOwn;window.renderOwn=renderOwn;
+
 // ─── الثوابت الشهرية (مصاريف متكررة: إيجار، نت، اشتراكات...) — تنحسب فقط أول ما تنضغط "تم الدفع" لهذا الشهر ───
 function monthFixedTotal(mk){
   return(data.fixedExpenses||[]).reduce((s,f)=>s+((f.paidMonths||[]).includes(mk)?(Number(f.amount)||0):0),0);
@@ -1037,7 +1139,7 @@ function monthFixedTotal(mk){
 function computeMonthSummary(mk){
   // فقط الحجوزات المكتملة (اللي انضغط عليها "تم") تدخل بالوارد — الحجوزات الجاية/المنتظرة ما تنحسب لين تخلص
   const allB=(data.archivedBookings||[]);
-  const bookRev=allB.filter(b=>!b.cancelled&&b.dateKey&&b.dateKey.startsWith(mk)).reduce((s,b)=>s+(b.price||0),0);
+  const bookRev=allB.filter(b=>!b.cancelled&&inCycle(b.dateKey,mk)).reduce((s,b)=>s+(b.price||0),0);
   const incRev=(data.incomes||[]).filter(e=>e.month===mk).reduce((s,e)=>s+e.amount,0);
   const revenue=bookRev+incRev;
   const fixed=monthFixedTotal(mk);
@@ -1045,7 +1147,7 @@ function computeMonthSummary(mk){
   return{revenue,expenses,profit:revenue-expenses};
 }
 function purgeMonth(mk){
-  data.archivedBookings=(data.archivedBookings||[]).filter(b=>!(b.dateKey&&b.dateKey.slice(0,7)===mk));
+  data.archivedBookings=(data.archivedBookings||[]).filter(b=>!inCycle(b.dateKey,mk));
   data.expenses=(data.expenses||[]).filter(e=>e.month!==mk);
   data.incomes=(data.incomes||[]).filter(e=>e.month!==mk);
 }
@@ -1069,7 +1171,7 @@ function rolloverIfNeeded(){
   const monthsSet=new Set([data.lastRolloverMonth]);
   (data.expenses||[]).forEach(e=>{if(e.month<cm)monthsSet.add(e.month);});
   (data.incomes||[]).forEach(e=>{if(e.month<cm)monthsSet.add(e.month);});
-  (data.archivedBookings||[]).forEach(b=>{if(b.dateKey&&b.dateKey.slice(0,7)<cm)monthsSet.add(b.dateKey.slice(0,7));});
+  (data.archivedBookings||[]).forEach(b=>{if(!b.dateKey)return;const bk=monthKey(new Date(b.dateKey+'T12:00:00'));if(bk<cm)monthsSet.add(bk);});
   let changed=false;
   monthsSet.forEach(mk=>{if(mk<cm){closeMonthToHistory(mk);changed=true;}});
   data.lastRolloverMonth=cm;
@@ -1088,9 +1190,10 @@ window.closeMonthNow=closeMonthNow;
 function addFixed(){
   const n=document.getElementById('fixedN').value.trim();const a=parseInt(document.getElementById('fixedA').value)||0;
   const dRaw=document.getElementById('fixedD').value;const d=dRaw?Math.min(31,Math.max(1,parseInt(dRaw)||1)):null;
+  const cat=document.getElementById('fixedCat')?.value||'shop';
   if(!n){toast('أدخل اسم المصروف الثابت');return;}if(!a){toast('أدخل المبلغ');return;}
   if(!data.fixedExpenses)data.fixedExpenses=[];
-  data.fixedExpenses.push({id:'fx'+Date.now(),name:n,amount:a,day:d,paidMonths:[],createdAt:Date.now()});
+  data.fixedExpenses.push({id:'fx'+Date.now(),name:n,amount:a,day:d,category:cat,paidMonths:[],createdAt:Date.now()});
   save().then(()=>{document.getElementById('fixedN').value='';document.getElementById('fixedA').value='';document.getElementById('fixedD').value='';renderAcc();toast('✅ تمت الإضافة');}).catch(()=>{data.fixedExpenses.pop();toast('❌ فشل');});
 }
 function delFixed(id){
@@ -1122,33 +1225,52 @@ function renderFixedList(){
     const paidTs=f.paymentLog&&f.paymentLog[cm];
     const subLine=f.day?'يستحق يوم '+f.day+' من كل شهر':'مصروف ثابت شهري';
     const paidLine=isPaid&&paidTs?` — ✅ دُفع ${dl(new Date(paidTs))}`:'';
-    return`<div class="exp-item"><div><div class="exp-name">📌 ${escHtmlA(f.name)}</div><div class="exp-sub">${subLine}${paidLine}</div></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span><button class="save-btn" style="width:auto;padding:6px 10px;font-size:10.5px;${isPaid?'':'opacity:.55'}" onclick="window.toggleFixedPaid('${f.id}')">${isPaid?'✅ مدفوع لهذا الشهر':'⬜ تم الدفع لهذا الشهر'}</button><button class="exp-del" onclick="window.delFixed('${f.id}')">🗑️</button></div></div>`;
+    return`<div class="exp-item"><div><div class="exp-name">📌 ${escHtmlA(f.name)} <span class="tag t-manual">${expCatInfo(f.category).icon} ${expCatInfo(f.category).label}</span></div><div class="exp-sub">${subLine}${paidLine}</div></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span><button class="save-btn" style="width:auto;padding:6px 10px;font-size:10.5px;${isPaid?'':'opacity:.55'}" onclick="window.toggleFixedPaid('${f.id}')">${isPaid?'✅ مدفوع لهذا الشهر':'⬜ تم الدفع لهذا الشهر'}</button><button class="exp-del" onclick="window.delFixed('${f.id}')">🗑️</button></div></div>`;
   }).join('');
 }
 
-// ─── تصفير الحسابات بالكامل والبدء من اليوم ───
-async function resetAccounting(){
-  if(!confirm('تحذير: راح تنمسح كل بيانات الحسابات (الأرشيف، الصرفيات، الدخل اليدوي، الديون، سجل الأشهر السابقة) وتبدي من الصفر من اليوم.\nراح يتحمّل نسخة احتياطية تلقائياً قبل الحذف. الحجوزات الحالية (الجاية) ما راح تتأثر.'))return;
-  const code=prompt('اكتب "تصفير" للتأكيد:');
-  if(code!=='تصفير'){toast('❌ تم الإلغاء');return;}
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=`salonart_accounting_backup_${todayK()}.json`;a.click();URL.revokeObjectURL(url);
-  const bk={archivedBookings:data.archivedBookings,expenses:data.expenses,incomes:data.incomes,debts:data.debts,monthlyHistory:data.monthlyHistory,lastRolloverMonth:data.lastRolloverMonth};
-  data.archivedBookings=[];data.expenses=[];data.incomes=[];data.debts=[];data.monthlyHistory=[];data.lastRolloverMonth=monthKey(new Date());
-  try{await save();render();toast('✅ تم تصفير الحسابات — بداية جديدة من اليوم');}
-  catch{Object.assign(data,bk);toast('❌ فشل التصفير');}
-}
-window.resetAccounting=resetAccounting;
-
 // ─── الصرفيات ───
+const EXP_CATS={shop:{icon:'🏪',label:'محل'},mom:{icon:'👩',label:'امي'},salman:{icon:'🧑',label:'اخو سلمان'},me:{icon:'👤',label:'صرفيتي'}};
+function expCatInfo(c){return EXP_CATS[c]||EXP_CATS.shop;}
+function renderAccExpBreakdown(sm){
+  const el=document.getElementById('accExpBreakdown');if(!el)return;
+  let rows='';
+  const paidFixed=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(sm));
+  Object.keys(EXP_CATS).forEach(k=>{
+    const ci=EXP_CATS[k];
+    const fixedInCat=paidFixed.filter(f=>(f.category||'shop')===k);
+    const fixedTot=fixedInCat.reduce((s,f)=>s+(Number(f.amount)||0),0);
+    const manualTot=data.expenses.filter(e=>e.month===sm&&(e.category||'shop')===k).reduce((s,e)=>s+e.amount,0);
+    const tot=fixedTot+manualTot;
+    if(tot<=0)return;
+    rows+=`<div class="acc-row"><span class="acc-lbl">${ci.icon} ${ci.label}</span><span class="acc-val rd">${tot.toLocaleString('ar-IQ')} د.ع</span></div>`;
+    fixedInCat.forEach(f=>{rows+=`<div class="acc-row" style="padding-right:14px;opacity:.75"><span class="acc-lbl" style="font-size:10px">📌 ${escHtmlA(f.name)}</span><span class="acc-val rd" style="font-size:10.5px">${Number(f.amount||0).toLocaleString('ar-IQ')} د.ع</span></div>`;});
+  });
+  el.innerHTML=rows||`<div style="text-align:center;padding:8px;color:var(--muted);font-size:11px">لا توجد صرفيات هذا الشهر</div>`;
+}
 function addExp(){
-  const n=document.getElementById('expN').value.trim();const a=parseInt(document.getElementById('expA').value)||0;const m=document.getElementById('expM').value;
+  const n=document.getElementById('expN').value.trim();const a=parseInt(document.getElementById('expA').value)||0;const m=document.getElementById('expM').value;const cat=document.getElementById('expCat')?.value||'shop';
   if(!n){toast('أدخل اسم الصرفية');return;}if(!a){toast('أدخل المبلغ');return;}
-  if(!data.expenses)data.expenses=[];data.expenses.push({id:'e'+Date.now(),name:n,amount:a,month:m,createdAt:Date.now()});
+  if(!data.expenses)data.expenses=[];data.expenses.push({id:'e'+Date.now(),name:n,amount:a,month:m,category:cat,createdAt:Date.now()});
   save().then(()=>{document.getElementById('expN').value='';document.getElementById('expA').value='';renderAcc();toast('✅ تمت الإضافة');}).catch(()=>{data.expenses.pop();toast('❌ فشل');});
 }
 function delExp(id){if(!confirm('حذف؟'))return;const idx=data.expenses.findIndex(e=>e.id===id);if(idx<0)return;const rm=data.expenses.splice(idx,1)[0];save().then(()=>renderAcc()).catch(()=>{data.expenses.splice(idx,0,rm);});}
+let editingExpId=null;
+function startEditExp(id){editingExpId=id;renderAcc();}
+function cancelEditExp(){editingExpId=null;renderAcc();}
+function saveEditExp(id){
+  const e=data.expenses.find(x=>x.id===id);if(!e)return;
+  const n=document.getElementById('editExpN_'+id).value.trim();
+  const a=parseInt(document.getElementById('editExpA_'+id).value)||0;
+  const cat=document.getElementById('editExpCat_'+id).value;
+  if(!n){toast('أدخل اسم الصرفية');return;}
+  if(!a){toast('أدخل المبلغ');return;}
+  const old={name:e.name,amount:e.amount,category:e.category};
+  e.name=n;e.amount=a;e.category=cat;
+  editingExpId=null;
+  save().then(()=>{renderAcc();toast('✅ تم التعديل');}).catch(()=>{Object.assign(e,old);editingExpId=null;renderAcc();toast('❌ فشل');});
+}
+window.startEditExp=startEditExp;window.cancelEditExp=cancelEditExp;window.saveEditExp=saveEditExp;
 
 // ─── الدخل اليدوي ───
 function addInc(){
@@ -1199,7 +1321,7 @@ function renderAcc(){
 
   // فقط الحجوزات المكتملة (اللي انضغط عليها "تم") تدخل بالوارد — الحجوزات الجاية/المنتظرة ما تنحسب لين تخلص
   const allBookings=(data.archivedBookings||[]);
-  const bookRev=allBookings.filter(b=>!b.cancelled&&b.dateKey&&b.dateKey.startsWith(sm)).reduce((s,b)=>s+(b.price||0),0);
+  const bookRev=allBookings.filter(b=>!b.cancelled&&inCycle(b.dateKey,sm)).reduce((s,b)=>s+(b.price||0),0);
   const incRev=data.incomes.filter(e=>e.month===sm).reduce((s,e)=>s+e.amount,0);
   const mRev=bookRev+incRev;
 
@@ -1212,17 +1334,51 @@ function renderAcc(){
   document.getElementById('acc-e').textContent=mExp.toLocaleString('ar-IQ')+' د.ع';
   const accFixedEl=document.getElementById('acc-fixed');if(accFixedEl)accFixedEl.textContent=fixed.toLocaleString('ar-IQ')+' د.ع';
   const pel=document.getElementById('acc-p');pel.textContent=profit.toLocaleString('ar-IQ')+' د.ع';pel.className='acc-val '+(profit>=0?'gd':'rd');
+  renderAccExpBreakdown(sm);
 
   // الصرفيات
   const fm=document.getElementById('fltM')?.value||monthKey(new Date());
-  const fExp=data.expenses.filter(e=>e.month===fm);
+  const fCat=document.getElementById('fltCat')?.value||'all';
+  const fExpAll=data.expenses.filter(e=>e.month===fm);
+  const fExp=fCat==='all'?fExpAll:fExpAll.filter(e=>(e.category||'shop')===fCat);
   const expList=document.getElementById('expList');
   const fixedRows=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(fm)).map(f=>{
     const ts=f.paymentLog&&f.paymentLog[fm];
     return`<div class="rent-auto"><div><div class="exp-name">📌 ${escHtmlA(f.name)} (مدفوع)</div><div class="exp-sub">${ts?dl(new Date(ts)):monthLabel(fm)}</div></div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`;
   }).join('');
-  const expRows=fExp.sort((a,b)=>b.createdAt-a.createdAt).map(e=>`<div class="exp-item"><div><div class="exp-name">${e.name}</div><div class="exp-sub">${e.createdAt?dl(new Date(e.createdAt))+' — ':''}${monthLabel(e.month)}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="exp-amt">${e.amount.toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delExp('${e.id}')">🗑️</button></div></div>`).join('');
-  expList.innerHTML=fixedRows+(expRows||(fixedRows?'':`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد صرفيات إضافية</div>`));
+  const expRows=fExp.sort((a,b)=>b.createdAt-a.createdAt).map(e=>{
+    const ci=expCatInfo(e.category);
+    if(editingExpId===e.id){
+      return`<div class="exp-item" style="flex-direction:column;align-items:stretch;gap:7px">
+        <input id="editExpN_${e.id}" class="sinp" value="${escHtmlA(e.name)}" maxlength="40"/>
+        <div style="display:flex;gap:7px">
+          <input id="editExpA_${e.id}" class="sinp" type="number" min="0" value="${e.amount}" style="flex:1"/>
+          <select id="editExpCat_${e.id}" class="sinp" style="flex:1">${Object.keys(EXP_CATS).map(k=>`<option value="${k}" ${(e.category||'shop')===k?'selected':''}>${EXP_CATS[k].icon} ${EXP_CATS[k].label}</option>`).join('')}</select>
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="save-btn" style="flex:1" onclick="window.saveEditExp('${e.id}')">✅ حفظ</button>
+          <button class="sm-btn" style="flex:1;text-align:center" onclick="window.cancelEditExp()">✖️ إلغاء</button>
+        </div>
+      </div>`;
+    }
+    return`<div class="exp-item"><div><div class="exp-name">${escHtmlA(e.name)} <span class="tag t-manual">${ci.icon} ${ci.label}</span></div><div class="exp-sub">${e.createdAt?dl(new Date(e.createdAt))+' — ':''}${monthLabel(e.month)}</div></div><div style="display:flex;align-items:center;gap:6px"><span class="exp-amt">${e.amount.toLocaleString()} د.ع</span><button class="exp-del" style="color:var(--gold2);opacity:.75" onclick="window.startEditExp('${e.id}')">✏️</button><button class="exp-del" onclick="window.delExp('${e.id}')">🗑️</button></div></div>`;
+  }).join('');
+  expList.innerHTML=(fCat==='all'?fixedRows:'')+(expRows||((fCat==='all'&&fixedRows)?'':`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد صرفيات إضافية</div>`));
+
+  // توزيع الصرفيات حسب النوع (يدوية + ثوابت مدفوعة)
+  const fmc=document.getElementById('fltMCat')?.value||monthKey(new Date());
+  const fExpCat=data.expenses.filter(e=>e.month===fmc);
+  const fFixedCat=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(fmc));
+  const catBreakEl=document.getElementById('expCatBreak');
+  if(catBreakEl){
+    catBreakEl.innerHTML=Object.keys(EXP_CATS).map(k=>{
+      const ci=EXP_CATS[k];
+      const manualTot=fExpCat.filter(e=>(e.category||'shop')===k).reduce((s,e)=>s+e.amount,0);
+      const fixedTot=fFixedCat.filter(f=>(f.category||'shop')===k).reduce((s,f)=>s+(Number(f.amount)||0),0);
+      const tot=manualTot+fixedTot;
+      return`<div class="mini-stat"><div class="ms-n" style="font-size:15px">${tot.toLocaleString('ar-IQ')}</div><div class="ms-l">${ci.icon} ${ci.label}</div></div>`;
+    }).join('');
+  }
 
   // الدخل اليدوي
   const fim=document.getElementById('fltIM')?.value||monthKey(new Date());
