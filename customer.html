@@ -166,10 +166,19 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);min-he
   background:#0F0F08;border:1px solid var(--border2);border-radius:7px;
   padding:11px 4px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;
   color:var(--muted);cursor:pointer;transition:all .15s;text-align:center;
+  position:relative;overflow:hidden;
 }
 .slot-btn:hover:not(.bkd):not(.past){border-color:rgba(201,168,76,0.4);color:var(--gold);}
 .slot-btn.sel{background:rgba(201,168,76,0.1);border-color:var(--gold);color:var(--gold2);font-weight:900;}
-.slot-btn.bkd{opacity:.25;cursor:not-allowed;}
+.slot-btn.bkd{opacity:.7;cursor:not-allowed;color:#EF5350;font-style:italic;border-color:rgba(239,83,80,0.35);background:rgba(239,83,80,0.06);}
+.slot-btn.bkd .bkd-ribbon{
+  position:absolute;top:6px;left:-22px;width:80px;
+  transform:rotate(-40deg);transform-origin:center;
+  background:#8B2020;color:#FFD9D9;
+  font-size:8px;font-weight:900;font-style:italic;
+  letter-spacing:0.5px;padding:1px 0;text-align:center;
+  box-shadow:0 1px 3px rgba(0,0,0,.4);pointer-events:none;
+}
 .slot-btn.past{opacity:.15;cursor:not-allowed;text-decoration:line-through;}
 .all-bkd{background:rgba(139,32,32,0.08);border:1px solid rgba(139,32,32,0.2);border-radius:10px;padding:18px;text-align:center;margin-top:6px;}
 .all-bkd p{font-size:14px;color:#EF5350;font-weight:700;}
@@ -821,7 +830,7 @@ function renderSlots(){
     const bkd=isBooked(selDateKey,s,selSvc),past=isPast(selDateKey,s);
     const b=document.createElement('button');
     b.className='slot-btn'+(bkd?' bkd':'')+(past&&!bkd?' past':'')+(selSlot===s?' sel':'');
-    b.textContent=s;
+    b.innerHTML=bkd?`<span class="bkd-ribbon">محجوز</span>${s}`:s;
     if(!bkd&&!past)b.onclick=()=>{selSlot=s;renderSlots();updateBtn();};
     g.appendChild(b);
   });

@@ -1154,9 +1154,9 @@ function purgeMonth(mk){
 function closeMonthToHistory(mk){
   if(!data.monthlyHistory)data.monthlyHistory=[];
   const sum=computeMonthSummary(mk);
-  const expDetail=(data.expenses||[]).filter(e=>e.month===mk).map(e=>({name:e.name,amount:e.amount,createdAt:e.createdAt}));
+  const expDetail=(data.expenses||[]).filter(e=>e.month===mk).map(e=>({name:e.name,amount:e.amount,createdAt:e.createdAt,category:e.category||'shop'}));
   const incDetail=(data.incomes||[]).filter(e=>e.month===mk).map(e=>({name:e.name,amount:e.amount,createdAt:e.createdAt}));
-  const fixedDetail=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(mk)).map(f=>({name:f.name,amount:f.amount}));
+  const fixedDetail=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(mk)).map(f=>({name:f.name,amount:f.amount,category:f.category||'shop'}));
   const entry={month:mk,label:monthLabel(mk),revenue:sum.revenue,expenses:sum.expenses,profit:sum.profit,closedAt:Date.now(),expDetail,incDetail,fixedDetail};
   const idx=data.monthlyHistory.findIndex(h=>h.month===mk);
   if(idx>=0)data.monthlyHistory[idx]=entry;else data.monthlyHistory.push(entry);
@@ -1303,8 +1303,8 @@ function renderHistDetail(h){
   let html='<div class="hist-detail">';
   if(fixed.length||exp.length){
     html+='<div class="hist-sec-lbl">💸 الصرفيات</div>';
-    fixed.forEach(f=>{html+=`<div class="exp-item"><div class="exp-name">📌 ${escHtmlA(f.name)}</div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`;});
-    exp.forEach(e=>{html+=`<div class="exp-item"><div class="exp-name">${escHtmlA(e.name)}</div><span class="exp-amt">${Number(e.amount||0).toLocaleString()} د.ع</span></div>`;});
+    fixed.forEach(f=>{const ci=expCatInfo(f.category);html+=`<div class="exp-item"><div class="exp-name">📌 ${escHtmlA(f.name)} <span class="tag t-manual">${ci.icon} ${ci.label}</span></div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`;});
+    exp.forEach(e=>{const ci=expCatInfo(e.category);html+=`<div class="exp-item"><div class="exp-name">${escHtmlA(e.name)} <span class="tag t-manual">${ci.icon} ${ci.label}</span></div><span class="exp-amt">${Number(e.amount||0).toLocaleString()} د.ع</span></div>`;});
   }
   if(inc.length){
     html+='<div class="hist-sec-lbl">💵 الدخل اليدوي</div>';
