@@ -776,6 +776,8 @@ function updateBtn(){
   else if(name&&!validName(name)){ni.classList.add('err');ne.style.display='block';nbe.style.display='none';}
   else{ni.classList.remove('err');ne.style.display='none';nbe.style.display='none';}
   if(phone&&!validPhone(phone)){pi.classList.add('err');pe.style.display='block';}else{pi.classList.remove('err');pe.style.display='none';}
+  // حفظ فوري لبيانات الزبون أول ما يصير الاسم والرقم صحيحين — حتى لو ما أكمل الحجز بعد
+  if(name&&phone&&validName(name)&&!containsBadWord(name)&&validPhone(phone))saveCustomer(name,phone);
   const btn=document.getElementById('bookBtn');
   const s=SVCS.find(x=>x.id===selSvc);
   // لو الخدمة تطلب range ولم يختر سعر، ما نكمّل
