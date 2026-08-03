@@ -407,7 +407,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
 
         <div class="wcard">
           <div class="wcard-title">📌 الثوابت الشهرية</div>
-          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">مصاريف متكررة كل شهر (مثل: الإيجار، اشتراك النت، مسواك، اشتراكات...) — ضيفها هنا مرة وحدة، وكل شهر أول ما تدفعها اضغط زر "تم الدفع لهذا الشهر" حتى تنحسب بحساباتك.</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">مصاريف متكررة كل شهر (مثل: الإيجار، اشتراك النت، مسواك، اشتراكات...) — ضيفها هنا مرة وحدة. إذا تدفعها دفعة وحدة، اضغط "تم الدفع لهذا الشهر". إذا تحب تقسمها على دفعات (مثلاً الإيجار كل 10 أيام)، حدد عدد الدفعات وكل دفعة تنحسب لحالها أول ما تدفعها.</div>
           <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
             <input id="fixedN" class="sinp" placeholder="اسم المصروف الثابت (مثال: اشتراك النت)..." maxlength="40"/>
             <select id="fixedCat" class="sinp">
@@ -417,8 +417,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
               <option value="me">👤 صرفيتي</option>
             </select>
             <div style="display:flex;gap:7px">
-              <input id="fixedA" class="sinp" placeholder="المبلغ الشهري..." type="number" min="0"/>
+              <input id="fixedA" class="sinp" placeholder="المبلغ الشهري الكلي..." type="number" min="0"/>
               <input id="fixedD" class="sinp" style="max-width:90px" type="number" min="1" max="31" placeholder="يوم الدفع"/>
+            </div>
+            <div style="display:flex;gap:7px;align-items:center">
+              <input id="fixedInst" class="sinp" style="max-width:120px" type="number" min="1" max="10" value="1" placeholder="عدد الدفعات"/>
+              <span style="font-size:10px;color:var(--muted);flex:1">عدد الدفعات (مثلاً 3 = دفعة كل 10 أيام لمبلغ شهري)</span>
               <button class="save-btn" style="width:auto;padding:9px 16px" onclick="addFixed()">➕</button>
             </div>
           </div>
@@ -429,6 +433,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
           <div class="wcard-title">📊 سجل الأشهر المغلقة</div>
           <div id="histList"></div>
         </div>
+
 
         <div class="acc-subtabs">
           <button class="acc-stab active" id="acstb-exp" onclick="accsub('exp')">📤 الصرفيات</button>
@@ -809,7 +814,7 @@ const SH={"12:00 م":12,"12:30 م":12.5,"1:00 م":13,"1:30 م":13.5,"2:00 م":14
 const DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
-let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],incomes:[],debts:[],monthlyHistory:[],lastRolloverMonth:null,fixedExpenses:[],ownEntries:[],workHours:{start:"5:00 م",end:"11:00 م"},customHours:{},services:[
+let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],incomes:[],debts:[],monthlyHistory:[],lastRolloverMonth:null,cycleStart:null,fixedExpenses:[],ownEntries:[],workHours:{start:"5:00 م",end:"11:00 م"},customHours:{},services:[
   {id:'svc1',name:'حلاقة كاملة',price:20000,minPrice:5000,maxPrice:50000,icon:'✂️'},
   {id:'svc2',name:'تحديد ولحية',price:10000,icon:'🪒'},
   {id:'svc3',name:'شسوار',price:5000,icon:'💧'},
@@ -889,12 +894,25 @@ function waitInfo(id){
   const mins=active.slice(0,idx).reduce((sum,x)=>sum+getSvcDuration(x.serviceId),0);
   return{before:idx,mins};
 }
-function monthKey(d){const s=d.getDate()>=5?new Date(d.getFullYear(),d.getMonth(),5):new Date(d.getFullYear(),d.getMonth()-1,5);return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}`;}
-function monthLabel(k){const[y,m]=k.split('-');const mi=parseInt(m)-1;const endD=new Date(parseInt(y),mi+1,4);return`${MONTHS[mi]} ${y} (5 - ${endD.getDate()} ${MONTHS[endD.getMonth()]})`;}
-function nextMonthKey(mk){const[y,m]=mk.split('-').map(Number);const nm=m===12?1:m+1;const ny=m===12?y+1:y;return`${ny}-${String(nm).padStart(2,'0')}`;}
-// نطاق دورة 5-إلى-5 المقابل لمفتاح شهر معين (يبدي 5 الشهر وينتهي 4 الشهر التالي)
-function cycleRange(mk){const[y,m]=mk.split('-').map(Number);const start=new Date(y,m-1,5);const end=new Date(y,m,5);return{start,end};}
-function inCycle(dateKey,mk){if(!dateKey)return false;const{start,end}=cycleRange(mk);const d=new Date(dateKey+'T12:00:00');return d>=start&&d<end;}
+// (يستخدم فقط لأول مرة لترحيل البيانات القديمة المسجلة بنظام الدورة الشهري 5-إلى-5)
+function legacyMonthKey(d){const s=d.getDate()>=5?new Date(d.getFullYear(),d.getMonth(),5):new Date(d.getFullYear(),d.getMonth()-1,5);return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}`;}
+// ─── الفترة المحاسبية الحالية: تبدي من آخر مرة ضغطت "إغلاق" وتستمر لين تضغط "إغلاق" مرة ثانية (بدون ربط بتاريخ ثابت) ───
+function currentPeriodKey(){if(!data.cycleStart){data.cycleStart=legacyMonthKey(new Date());}return data.cycleStart;}
+function monthLabel(k){
+  if(k===currentPeriodKey()){
+    const start=data.cycleStart?new Date(data.cycleStart+'T00:00:00'):null;
+    return start?`الفترة الحالية (من ${dl(start)})`:'الفترة الحالية';
+  }
+  if(/^\d{4}-\d{2}$/.test(k)){const[y,m]=k.split('-');const mi=parseInt(m)-1;const endD=new Date(parseInt(y),mi+1,4);return`${MONTHS[mi]} ${y} (5 - ${endD.getDate()} ${MONTHS[endD.getMonth()]})`;}
+  return'فترة سابقة';
+}
+function inCycle(dateKey,mk){
+  if(!dateKey)return false;
+  if(mk!==currentPeriodKey())return false;
+  if(!data.cycleStart)return true;
+  const d=new Date(dateKey+'T12:00:00');const start=new Date(data.cycleStart+'T00:00:00');
+  return d>=start;
+}
 
 async function load(){
   try{
@@ -920,6 +938,7 @@ async function load(){
         debts:typeof r.debts==='string'?JSON.parse(r.debts):(r.debts||[]),
         monthlyHistory:typeof r.monthlyHistory==='string'?JSON.parse(r.monthlyHistory):(r.monthlyHistory||[]),
         lastRolloverMonth:r.lastRolloverMonth||null,
+        cycleStart:r.cycleStart||null,
         fixedExpenses:typeof r.fixedExpenses==='string'?JSON.parse(r.fixedExpenses):(r.fixedExpenses||[]),
         workHours:{start:r.workHoursStart||"5:00 م",end:r.workHoursEnd||"11:00 م"},
         avgMins:r.avgMins||30,
@@ -928,12 +947,13 @@ async function load(){
         msgTemplates:{...DEFAULT_MSG_TPL,...(typeof r.msgTemplates==='string'?JSON.parse(r.msgTemplates):(r.msgTemplates||{}))}
       };
     }
-    if(rolloverIfNeeded()){save().catch(()=>{});}
+    // تم تعطيل الإغلاق التلقائي — الإغلاق صار يدوي بالكامل من زر "إغلاق الفترة الحالية الآن"
+    if(!data.cycleStart){data.cycleStart=legacyMonthKey(new Date());save().catch(()=>{});}
     lastSync=new Date();syncBar(true);
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
 }
 async function save(){
-  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),ownEntries:JSON.stringify(data.ownEntries||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30,customHours:JSON.stringify(data.customHours||{}),msgTemplates:JSON.stringify(data.msgTemplates||DEFAULT_MSG_TPL)},{merge:true});
+  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),ownEntries:JSON.stringify(data.ownEntries||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,cycleStart:data.cycleStart||null,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30,customHours:JSON.stringify(data.customHours||{}),msgTemplates:JSON.stringify(data.msgTemplates||DEFAULT_MSG_TPL)},{merge:true});
   lastSync=new Date();syncBar(true);
 }
 function cleanOld(){
@@ -1083,8 +1103,9 @@ function renderStats(){
 
 let accSub='exp',debtType='lena';
 function popMonthSels(){
-  const months=[];let k=monthKey(new Date());for(let i=0;i<6;i++){months.push({key:k,label:monthLabel(k)});const[y,m]=k.split('-').map(Number);const pm=m===1?12:m-1;const py=m===1?y-1:y;k=`${py}-${String(pm).padStart(2,'0')}`;}
-  ['expM','fltM','fltMCat','incM','fltIM','sumM'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=months.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');if(cur)el.value=cur;});
+  // ما في غير فترة واحدة مفتوحة بأي وقت — تنحسب الفترات المغلقة بسجل منفصل
+  const k=currentPeriodKey();const lbl=monthLabel(k);
+  ['expM','fltM','fltMCat','incM','fltIM','sumM'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=`<option value="${k}">${lbl}</option>`;el.value=k;});
 }
 function accsub(which){
   accSub=which;
@@ -1131,9 +1152,18 @@ function renderOwn(){
 }
 window.addOwn=addOwn;window.delOwn=delOwn;window.renderOwn=renderOwn;
 
-// ─── الثوابت الشهرية (مصاريف متكررة: إيجار، نت، اشتراكات...) — تنحسب فقط أول ما تنضغط "تم الدفع" لهذا الشهر ───
+// ─── الثوابت الشهرية (مصاريف متكررة: إيجار، نت، اشتراكات...) — تنحسب فقط أول ما تنضغط "تم الدفع"، أو تدفع دفعة دفعة لو مقسمة ───
+function fixedInstCount(f){return Math.max(1,parseInt(f.installments)||1);}
+function fixedPaidAmount(f,mk){
+  if(fixedInstCount(f)>1){
+    const arr=(f.instPayments&&f.instPayments[mk])||[];
+    const perAmt=(Number(f.amount)||0)/fixedInstCount(f);
+    return perAmt*arr.filter(Boolean).length;
+  }
+  return(f.paidMonths||[]).includes(mk)?(Number(f.amount)||0):0;
+}
 function monthFixedTotal(mk){
-  return(data.fixedExpenses||[]).reduce((s,f)=>s+((f.paidMonths||[]).includes(mk)?(Number(f.amount)||0):0),0);
+  return(data.fixedExpenses||[]).reduce((s,f)=>s+fixedPaidAmount(f,mk),0);
 }
 // ─── إغلاق الشهر تلقائياً (يبقي بس الوارد وصافي الربح) ───
 function computeMonthSummary(mk){
@@ -1150,38 +1180,40 @@ function purgeMonth(mk){
   data.archivedBookings=(data.archivedBookings||[]).filter(b=>!inCycle(b.dateKey,mk));
   data.expenses=(data.expenses||[]).filter(e=>e.month!==mk);
   data.incomes=(data.incomes||[]).filter(e=>e.month!==mk);
+  // تنظيف دفعات الثوابت المقسمة الخاصة بهذي الفترة بعد أرشفتها
+  (data.fixedExpenses||[]).forEach(f=>{if(f.instPayments&&f.instPayments[mk])delete f.instPayments[mk];});
 }
-function closeMonthToHistory(mk){
+function closeMonthToHistory(mk,customLabel){
   if(!data.monthlyHistory)data.monthlyHistory=[];
   const sum=computeMonthSummary(mk);
   const expDetail=(data.expenses||[]).filter(e=>e.month===mk).map(e=>({name:e.name,amount:e.amount,createdAt:e.createdAt,category:e.category||'shop'}));
   const incDetail=(data.incomes||[]).filter(e=>e.month===mk).map(e=>({name:e.name,amount:e.amount,createdAt:e.createdAt}));
-  const fixedDetail=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(mk)).map(f=>({name:f.name,amount:f.amount,category:f.category||'shop'}));
-  const entry={month:mk,label:monthLabel(mk),revenue:sum.revenue,expenses:sum.expenses,profit:sum.profit,closedAt:Date.now(),expDetail,incDetail,fixedDetail};
+  const fixedDetail=[];
+  (data.fixedExpenses||[]).forEach(f=>{
+    if(fixedInstCount(f)>1){
+      const arr=(f.instPayments&&f.instPayments[mk])||[];
+      const perAmt=(Number(f.amount)||0)/fixedInstCount(f);
+      arr.forEach((ts,i)=>{if(ts)fixedDetail.push({name:`${f.name} (دفعة ${i+1}/${fixedInstCount(f)})`,amount:perAmt,category:f.category||'shop'});});
+    }else if((f.paidMonths||[]).includes(mk)){
+      fixedDetail.push({name:f.name,amount:f.amount,category:f.category||'shop'});
+    }
+  });
+  const entry={month:mk,label:customLabel||monthLabel(mk),revenue:sum.revenue,expenses:sum.expenses,profit:sum.profit,closedAt:Date.now(),expDetail,incDetail,fixedDetail};
   const idx=data.monthlyHistory.findIndex(h=>h.month===mk);
   if(idx>=0)data.monthlyHistory[idx]=entry;else data.monthlyHistory.push(entry);
-  data.monthlyHistory.sort((a,b)=>b.month.localeCompare(a.month));
+  data.monthlyHistory.sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
   purgeMonth(mk);
 }
-function rolloverIfNeeded(){
-  const cm=monthKey(new Date());
-  if(!data.monthlyHistory)data.monthlyHistory=[];
-  if(!data.lastRolloverMonth){data.lastRolloverMonth=cm;return false;}
-  if(data.lastRolloverMonth===cm)return false;
-  const monthsSet=new Set([data.lastRolloverMonth]);
-  (data.expenses||[]).forEach(e=>{if(e.month<cm)monthsSet.add(e.month);});
-  (data.incomes||[]).forEach(e=>{if(e.month<cm)monthsSet.add(e.month);});
-  (data.archivedBookings||[]).forEach(b=>{if(!b.dateKey)return;const bk=monthKey(new Date(b.dateKey+'T12:00:00'));if(bk<cm)monthsSet.add(bk);});
-  let changed=false;
-  monthsSet.forEach(mk=>{if(mk<cm){closeMonthToHistory(mk);changed=true;}});
-  data.lastRolloverMonth=cm;
-  return changed;
-}
+// ─── إغلاق الفترة الحالية يدوياً — تبدي فترة جديدة من نفس لحظة الضغط، وتنتهي أول ما تضغط الزر مرة ثانية ───
 async function closeMonthNow(){
-  const cm=monthKey(new Date());
-  if(!confirm(`سيتم إغلاق شهر ${monthLabel(cm)} الآن — تنحفظ كل تفاصيله (الصرفيات، الدخل اليدوي) بسجل خاص باسم الشهر، وتتفرغ صفحة الحسابات الحالية للشهر الجديد. متأكد؟`))return;
-  closeMonthToHistory(cm);
-  try{await save();renderAcc();renderArchive();toast('✅ تم إغلاق الشهر وأرشفته');}
+  const pk=currentPeriodKey();
+  const startDate=data.cycleStart?new Date(data.cycleStart+'T00:00:00'):null;
+  const endDate=bizToday();
+  const rangeLabel=startDate?`${dl(startDate)} ← ${dl(endDate)}`:monthLabel(pk);
+  if(!confirm(`سيتم إغلاق الفترة الحالية الآن (${rangeLabel}) — تنحفظ كل تفاصيلها (الصرفيات، الدخل اليدوي) بسجل خاص، وتبدي فترة محاسبية جديدة من اليوم لين تضغط الزر مرة ثانية. متأكد؟`))return;
+  closeMonthToHistory(pk,rangeLabel);
+  data.cycleStart=todayK();
+  try{await save();renderAcc();renderArchive();toast('✅ تم إغلاق الفترة الحالية وبدء فترة جديدة');}
   catch{toast('❌ فشل الحفظ');}
 }
 window.closeMonthNow=closeMonthNow;
@@ -1191,10 +1223,11 @@ function addFixed(){
   const n=document.getElementById('fixedN').value.trim();const a=parseInt(document.getElementById('fixedA').value)||0;
   const dRaw=document.getElementById('fixedD').value;const d=dRaw?Math.min(31,Math.max(1,parseInt(dRaw)||1)):null;
   const cat=document.getElementById('fixedCat')?.value||'shop';
+  const inst=Math.max(1,Math.min(10,parseInt(document.getElementById('fixedInst')?.value)||1));
   if(!n){toast('أدخل اسم المصروف الثابت');return;}if(!a){toast('أدخل المبلغ');return;}
   if(!data.fixedExpenses)data.fixedExpenses=[];
-  data.fixedExpenses.push({id:'fx'+Date.now(),name:n,amount:a,day:d,category:cat,paidMonths:[],createdAt:Date.now()});
-  save().then(()=>{document.getElementById('fixedN').value='';document.getElementById('fixedA').value='';document.getElementById('fixedD').value='';renderAcc();toast('✅ تمت الإضافة');}).catch(()=>{data.fixedExpenses.pop();toast('❌ فشل');});
+  data.fixedExpenses.push({id:'fx'+Date.now(),name:n,amount:a,day:d,category:cat,installments:inst,paidMonths:[],paymentLog:{},instPayments:{},createdAt:Date.now()});
+  save().then(()=>{document.getElementById('fixedN').value='';document.getElementById('fixedA').value='';document.getElementById('fixedD').value='';document.getElementById('fixedInst').value='1';renderAcc();toast('✅ تمت الإضافة');}).catch(()=>{data.fixedExpenses.pop();toast('❌ فشل');});
 }
 function delFixed(id){
   if(!confirm('حذف هذا المصروف الثابت؟'))return;
@@ -1204,7 +1237,7 @@ function delFixed(id){
 }
 function toggleFixedPaid(id){
   const f=data.fixedExpenses.find(x=>x.id===id);if(!f)return;
-  const cm=monthKey(new Date());
+  const cm=currentPeriodKey();
   if(!f.paidMonths)f.paidMonths=[];
   if(!f.paymentLog)f.paymentLog={};
   const i=f.paidMonths.indexOf(cm);
@@ -1214,13 +1247,38 @@ function toggleFixedPaid(id){
   else{f.paidMonths.push(cm);f.paymentLog[cm]=Date.now();}
   save().then(()=>{renderAcc();toast(wasPaid?'↩️ تم التراجع':'✅ تم تسجيل الدفع لهذا الشهر');}).catch(()=>{if(wasPaid){f.paidMonths.push(cm);f.paymentLog[cm]=oldTs;}else{f.paidMonths.splice(f.paidMonths.indexOf(cm),1);delete f.paymentLog[cm];}});
 }
-window.addFixed=addFixed;window.delFixed=delFixed;window.toggleFixedPaid=toggleFixedPaid;
+// دفعة واحدة من مصروف مقسم على عدة دفعات (مثلاً دفعة الإيجار كل 10 أيام)
+function toggleFixedInstallment(id,idx){
+  const f=data.fixedExpenses.find(x=>x.id===id);if(!f)return;
+  const cm=currentPeriodKey();
+  if(!f.instPayments)f.instPayments={};
+  if(!f.instPayments[cm])f.instPayments[cm]=[];
+  const arr=f.instPayments[cm];
+  const wasPaid=!!arr[idx];
+  const old=arr[idx];
+  arr[idx]=wasPaid?null:Date.now();
+  save().then(()=>{renderAcc();toast(wasPaid?'↩️ تم التراجع عن الدفعة':'✅ تم تسجيل الدفعة');}).catch(()=>{arr[idx]=old;renderAcc();toast('❌ فشل');});
+}
+window.addFixed=addFixed;window.delFixed=delFixed;window.toggleFixedPaid=toggleFixedPaid;window.toggleFixedInstallment=toggleFixedInstallment;
 function renderFixedList(){
   const el=document.getElementById('fixedList');if(!el)return;
   const list=data.fixedExpenses||[];
   if(!list.length){el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد ثوابت مضافة بعد</div>`;return;}
-  const cm=monthKey(new Date());
+  const cm=currentPeriodKey();
+  const cycleStartDate=data.cycleStart?new Date(data.cycleStart+'T00:00:00'):null;
   el.innerHTML=list.slice().sort((a,b)=>(a.day||99)-(b.day||99)).map(f=>{
+    const n=fixedInstCount(f);
+    if(n>1){
+      const perAmt=Math.round((Number(f.amount)||0)/n);
+      const arr=(f.instPayments&&f.instPayments[cm])||[];
+      const paidCount=arr.filter(Boolean).length;
+      const btns=Array.from({length:n}).map((_,i)=>{
+        const isPaid=!!arr[i];
+        const dueLbl=cycleStartDate?(()=>{const dd=new Date(cycleStartDate);dd.setDate(dd.getDate()+10*(i+1));return' — '+dl(dd);})():'';
+        return`<button class="save-btn" style="width:auto;padding:6px 10px;font-size:10px;${isPaid?'':'opacity:.55'}" onclick="window.toggleFixedInstallment('${f.id}',${i})">${isPaid?'✅':'⬜'} دفعة ${i+1}/${n}${dueLbl}</button>`;
+      }).join('');
+      return`<div class="exp-item" style="flex-direction:column;align-items:stretch;gap:7px"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="exp-name">📌 ${escHtmlA(f.name)} <span class="tag t-manual">${expCatInfo(f.category).icon} ${expCatInfo(f.category).label}</span></div><div class="exp-sub">مقسم على ${n} دفعات (${perAmt.toLocaleString()} د.ع لكل دفعة) — دُفع ${paidCount}/${n}</div></div><div style="display:flex;align-items:center;gap:6px"><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span><button class="exp-del" onclick="window.delFixed('${f.id}')">🗑️</button></div></div><div style="display:flex;gap:6px;flex-wrap:wrap">${btns}</div></div>`;
+    }
     const isPaid=(f.paidMonths||[]).includes(cm);
     const paidTs=f.paymentLog&&f.paymentLog[cm];
     const subLine=f.day?'يستحق يوم '+f.day+' من كل شهر':'مصروف ثابت شهري';
@@ -1235,16 +1293,16 @@ function expCatInfo(c){return EXP_CATS[c]||EXP_CATS.shop;}
 function renderAccExpBreakdown(sm){
   const el=document.getElementById('accExpBreakdown');if(!el)return;
   let rows='';
-  const paidFixed=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(sm));
+  const fixedList=(data.fixedExpenses||[]);
   Object.keys(EXP_CATS).forEach(k=>{
     const ci=EXP_CATS[k];
-    const fixedInCat=paidFixed.filter(f=>(f.category||'shop')===k);
-    const fixedTot=fixedInCat.reduce((s,f)=>s+(Number(f.amount)||0),0);
+    const fixedInCat=fixedList.filter(f=>(f.category||'shop')===k&&fixedPaidAmount(f,sm)>0);
+    const fixedTot=fixedInCat.reduce((s,f)=>s+fixedPaidAmount(f,sm),0);
     const manualTot=data.expenses.filter(e=>e.month===sm&&(e.category||'shop')===k).reduce((s,e)=>s+e.amount,0);
     const tot=fixedTot+manualTot;
     if(tot<=0)return;
     rows+=`<div class="acc-row"><span class="acc-lbl">${ci.icon} ${ci.label}</span><span class="acc-val rd">${tot.toLocaleString('ar-IQ')} د.ع</span></div>`;
-    fixedInCat.forEach(f=>{rows+=`<div class="acc-row" style="padding-right:14px;opacity:.75"><span class="acc-lbl" style="font-size:10px">📌 ${escHtmlA(f.name)}</span><span class="acc-val rd" style="font-size:10.5px">${Number(f.amount||0).toLocaleString('ar-IQ')} د.ع</span></div>`;});
+    fixedInCat.forEach(f=>{const amt=fixedPaidAmount(f,sm);const n=fixedInstCount(f);const suffix=n>1?` (${((f.instPayments&&f.instPayments[sm])||[]).filter(Boolean).length}/${n} دفعات)`:'';rows+=`<div class="acc-row" style="padding-right:14px;opacity:.75"><span class="acc-lbl" style="font-size:10px">📌 ${escHtmlA(f.name)}${suffix}</span><span class="acc-val rd" style="font-size:10.5px">${Math.round(amt).toLocaleString('ar-IQ')} د.ع</span></div>`;});
   });
   el.innerHTML=rows||`<div style="text-align:center;padding:8px;color:var(--muted);font-size:11px">لا توجد صرفيات هذا الشهر</div>`;
 }
@@ -1287,7 +1345,7 @@ function addDebt(){
   const p=document.getElementById('debtP').value.trim();const a=parseInt(document.getElementById('debtA').value)||0;const note=document.getElementById('debtNote').value.trim();
   if(!p){toast('أدخل الاسم');return;}if(!a){toast('أدخل المبلغ');return;}
   if(!data.debts)data.debts=[];
-  data.debts.push({id:'d'+Date.now(),person:p,amount:a,type:debtType,note,paid:false,month:monthKey(new Date()),createdAt:Date.now()});
+  data.debts.push({id:'d'+Date.now(),person:p,amount:a,type:debtType,note,paid:false,month:currentPeriodKey(),createdAt:Date.now()});
   save().then(()=>{document.getElementById('debtP').value='';document.getElementById('debtA').value='';document.getElementById('debtNote').value='';renderAcc();toast('✅ تمت الإضافة');}).catch(()=>{data.debts.pop();toast('❌ فشل');});
 }
 function delDebt(id){if(!confirm('حذف؟'))return;const idx=data.debts.findIndex(e=>e.id===id);if(idx<0)return;const rm=data.debts.splice(idx,1)[0];save().then(()=>renderAcc()).catch(()=>{data.debts.splice(idx,0,rm);});}
@@ -1317,7 +1375,7 @@ function renderAcc(){
   if(!data.expenses)data.expenses=[];if(!data.incomes)data.incomes=[];if(!data.debts)data.debts=[];if(!data.fixedExpenses)data.fixedExpenses=[];
   renderFixedList();
   popMonthSels();
-  const sm=document.getElementById('sumM')?.value||monthKey(new Date());
+  const sm=document.getElementById('sumM')?.value||currentPeriodKey();
 
   // فقط الحجوزات المكتملة (اللي انضغط عليها "تم") تدخل بالوارد — الحجوزات الجاية/المنتظرة ما تنحسب لين تخلص
   const allBookings=(data.archivedBookings||[]);
@@ -1337,14 +1395,17 @@ function renderAcc(){
   renderAccExpBreakdown(sm);
 
   // الصرفيات
-  const fm=document.getElementById('fltM')?.value||monthKey(new Date());
+  const fm=document.getElementById('fltM')?.value||currentPeriodKey();
   const fCat=document.getElementById('fltCat')?.value||'all';
   const fExpAll=data.expenses.filter(e=>e.month===fm);
   const fExp=fCat==='all'?fExpAll:fExpAll.filter(e=>(e.category||'shop')===fCat);
   const expList=document.getElementById('expList');
-  const fixedRows=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(fm)).map(f=>{
+  const fixedRows=(data.fixedExpenses||[]).filter(f=>fixedInstCount(f)<=1&&(f.paidMonths||[]).includes(fm)).map(f=>{
     const ts=f.paymentLog&&f.paymentLog[fm];
     return`<div class="rent-auto"><div><div class="exp-name">📌 ${escHtmlA(f.name)} (مدفوع)</div><div class="exp-sub">${ts?dl(new Date(ts)):monthLabel(fm)}</div></div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`;
+  }).join('')+(data.fixedExpenses||[]).filter(f=>fixedInstCount(f)>1).flatMap(f=>{
+    const n=fixedInstCount(f);const perAmt=Math.round((Number(f.amount)||0)/n);const arr=(f.instPayments&&f.instPayments[fm])||[];
+    return arr.map((ts,i)=>ts?`<div class="rent-auto"><div><div class="exp-name">📌 ${escHtmlA(f.name)} — دفعة ${i+1}/${n} (مدفوعة)</div><div class="exp-sub">${dl(new Date(ts))}</div></div><span class="exp-amt">${perAmt.toLocaleString()} د.ع</span></div>`:null).filter(Boolean);
   }).join('');
   const expRows=fExp.sort((a,b)=>b.createdAt-a.createdAt).map(e=>{
     const ci=expCatInfo(e.category);
@@ -1366,22 +1427,21 @@ function renderAcc(){
   expList.innerHTML=(fCat==='all'?fixedRows:'')+(expRows||((fCat==='all'&&fixedRows)?'':`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد صرفيات إضافية</div>`));
 
   // توزيع الصرفيات حسب النوع (يدوية + ثوابت مدفوعة)
-  const fmc=document.getElementById('fltMCat')?.value||monthKey(new Date());
+  const fmc=document.getElementById('fltMCat')?.value||currentPeriodKey();
   const fExpCat=data.expenses.filter(e=>e.month===fmc);
-  const fFixedCat=(data.fixedExpenses||[]).filter(f=>(f.paidMonths||[]).includes(fmc));
   const catBreakEl=document.getElementById('expCatBreak');
   if(catBreakEl){
     catBreakEl.innerHTML=Object.keys(EXP_CATS).map(k=>{
       const ci=EXP_CATS[k];
       const manualTot=fExpCat.filter(e=>(e.category||'shop')===k).reduce((s,e)=>s+e.amount,0);
-      const fixedTot=fFixedCat.filter(f=>(f.category||'shop')===k).reduce((s,f)=>s+(Number(f.amount)||0),0);
+      const fixedTot=(data.fixedExpenses||[]).filter(f=>(f.category||'shop')===k).reduce((s,f)=>s+fixedPaidAmount(f,fmc),0);
       const tot=manualTot+fixedTot;
-      return`<div class="mini-stat"><div class="ms-n" style="font-size:15px">${tot.toLocaleString('ar-IQ')}</div><div class="ms-l">${ci.icon} ${ci.label}</div></div>`;
+      return`<div class="mini-stat"><div class="ms-n" style="font-size:15px">${Math.round(tot).toLocaleString('ar-IQ')}</div><div class="ms-l">${ci.icon} ${ci.label}</div></div>`;
     }).join('');
   }
 
   // الدخل اليدوي
-  const fim=document.getElementById('fltIM')?.value||monthKey(new Date());
+  const fim=document.getElementById('fltIM')?.value||currentPeriodKey();
   const fInc=data.incomes.filter(e=>e.month===fim);
   const incList=document.getElementById('incList');
   if(!fInc.length){incList.innerHTML=`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا يوجد دخل يدوي</div>`;}
