@@ -895,7 +895,7 @@ function waitInfo(id){
   return{before:idx,mins};
 }
 // (يستخدم فقط لأول مرة لترحيل البيانات القديمة المسجلة بنظام الدورة الشهري 5-إلى-5)
-function legacyMonthKey(d){const s=d.getDate()>=5?new Date(d.getFullYear(),d.getMonth(),5):new Date(d.getFullYear(),d.getMonth()-1,5);return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}`;}
+function legacyMonthKey(d){const s=d.getDate()>=5?new Date(d.getFullYear(),d.getMonth(),5):new Date(d.getFullYear(),d.getMonth()-1,5);return dk(s);}
 // ─── الفترة المحاسبية الحالية: تبدي من آخر مرة ضغطت "إغلاق" وتستمر لين تضغط "إغلاق" مرة ثانية (بدون ربط بتاريخ ثابت) ───
 function currentPeriodKey(){if(!data.cycleStart){data.cycleStart=legacyMonthKey(new Date());}return data.cycleStart;}
 function monthLabel(k){
@@ -912,6 +912,23 @@ function inCycle(dateKey,mk){
   if(!data.cycleStart)return true;
   const d=new Date(dateKey+'T12:00:00');const start=new Date(data.cycleStart+'T00:00:00');
   return d>=start;
+}
+// ─── إصلاح ذاتي: يرجّع أي بيانات (صرفيات/دخل/ديون) انخفت بسبب مشكلة سابقة بتنسيق تاريخ الترحيل، ويصحح تنسيق cycleStart لو كان ناقص ───
+function repairPeriodData(){
+  let changed=false;
+  // تصحيح تنسيق cycleStart القديم الناقص (كان يحفظ "YYYY-MM" بدون يوم فيصير تاريخ غير صالح)
+  if(data.cycleStart && !/^\d{4}-\d{2}-\d{2}$/.test(data.cycleStart)){
+    const m=/^(\d{4})-(\d{2})$/.exec(data.cycleStart);
+    data.cycleStart = m ? `${m[1]}-${m[2]}-05` : legacyMonthKey(new Date());
+    changed=true;
+  }
+  if(!data.cycleStart){data.cycleStart=legacyMonthKey(new Date());changed=true;}
+  const cur=data.cycleStart;
+  // أي صرفية/دخل/دين لسا موجود بالبيانات الحية (يعني ما تسكّر بعد) لازم ينحسب بالفترة الحالية، مهما كان الوسم المخزّن فيه قديم
+  (data.expenses||[]).forEach(e=>{if(e.month!==cur){e.month=cur;changed=true;}});
+  (data.incomes||[]).forEach(e=>{if(e.month!==cur){e.month=cur;changed=true;}});
+  (data.debts||[]).forEach(e=>{if(e.month&&e.month!==cur){e.month=cur;changed=true;}});
+  return changed;
 }
 
 async function load(){
@@ -948,7 +965,7 @@ async function load(){
       };
     }
     // تم تعطيل الإغلاق التلقائي — الإغلاق صار يدوي بالكامل من زر "إغلاق الفترة الحالية الآن"
-    if(!data.cycleStart){data.cycleStart=legacyMonthKey(new Date());save().catch(()=>{});}
+    if(repairPeriodData()){save().catch(()=>{});}
     lastSync=new Date();syncBar(true);
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
 }
@@ -1473,9 +1490,16 @@ function renderAcc(){
   if(!hist.length){histList.innerHTML=`<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">لا توجد أشهر مغلقة بعد</div>`;}
   else{histList.innerHTML=hist.map(h=>{
     const isOpen=expandedHistMonths.has(h.month);
-    return`<div class="hist-block"><div class="acc-row" style="cursor:pointer" onclick="toggleHistMonth('${h.month}')"><span class="acc-lbl">${isOpen?'▾':'▸'} ${h.label}</span><span style="display:flex;gap:10px;align-items:center"><span class="acc-val gr" style="font-size:12px">${h.revenue.toLocaleString('ar-IQ')}</span><span class="acc-val ${h.profit>=0?'gd':'rd'}" style="font-size:12px">${h.profit.toLocaleString('ar-IQ')}</span></span></div>${isOpen?renderHistDetail(h):''}</div>`;
+    return`<div class="hist-block"><div class="acc-row" style="cursor:pointer" onclick="toggleHistMonth('${h.month}')"><span class="acc-lbl">${isOpen?'▾':'▸'} ${h.label}</span><span style="display:flex;gap:10px;align-items:center"><span class="acc-val gr" style="font-size:12px">${h.revenue.toLocaleString('ar-IQ')}</span><span class="acc-val ${h.profit>=0?'gd':'rd'}" style="font-size:12px">${h.profit.toLocaleString('ar-IQ')}</span><button class="exp-del" onclick="event.stopPropagation();window.delHistMonth('${h.month}')">🗑️</button></span></div>${isOpen?renderHistDetail(h):''}</div>`;
   }).join('');}
 }
+function delHistMonth(mk){
+  if(!confirm('حذف هذا السجل المغلق نهائياً؟ (البيانات المحفوظة فيه فقط، ما يأثر على الفترة الحالية المفتوحة)'))return;
+  const idx=(data.monthlyHistory||[]).findIndex(h=>h.month===mk);if(idx<0)return;
+  const rm=data.monthlyHistory.splice(idx,1)[0];
+  save().then(()=>{renderAcc();toast('✅ تم الحذف');}).catch(()=>{data.monthlyHistory.splice(idx,0,rm);toast('❌ فشل');});
+}
+window.delHistMonth=delHistMonth;
 
 function renderArchive(){
   const arc=data.archivedBookings||[];const list=document.getElementById('arcList');
