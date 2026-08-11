@@ -399,6 +399,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
             <select id="sumM" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()"></select>
           </div>
           <div class="acc-row"><span class="acc-lbl">💰 الواردات (حجوزات + دخل يدوي)</span><span class="acc-val gr" id="acc-r">0</span></div>
+          <div class="acc-row" style="opacity:.85"><span class="acc-lbl">📈 الوارد التراكمي (كل الأشهر)</span><span class="acc-val gr" id="acc-cum">0</span></div>
           <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--gold-dim);margin:10px 0 2px">📤 الصرفيات — تفصيل حسب النوع</div>
           <div id="accExpBreakdown"></div>
           <div class="acc-row" style="border-top:1px solid var(--border2);margin-top:2px;padding-top:8px;"><span class="acc-lbl">📤 إجمالي الصرفيات</span><span class="acc-val rd" id="acc-e">0</span></div>
@@ -431,6 +432,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
 
         <div class="wcard">
           <div class="wcard-title">📊 سجل الأشهر المغلقة</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.7">لإضافة وارد شهر سابق ما كان مسجل بالنظام (يدخل بالتراكمي وبهاي القائمة تلقائياً):</div>
+          <div style="display:flex;gap:7px;margin-bottom:10px">
+            <input id="histAddLbl" class="sinp" placeholder="اسم الشهر (مثال: تموز 2026)..." maxlength="40"/>
+            <input id="histAddAmt" class="sinp" style="max-width:130px" type="number" min="0" placeholder="الوارد"/>
+            <button class="save-btn" style="width:auto;padding:9px 14px" onclick="addManualHistMonth()">➕</button>
+          </div>
           <div id="histList"></div>
         </div>
 
@@ -814,6 +821,8 @@ const SH={"12:00 م":12,"12:30 م":12.5,"1:00 م":13,"1:30 م":13.5,"2:00 م":14
 const DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
+// حارس: يمنع تحديث الخلفية التلقائي (كل 60 ثانية) من استبدال بيانات الذاكرة أثناء عملية حساسة (متل إغلاق الشهر) وضياع تفاصيلها بسباق تزامن
+let criticalOpInProgress=false;
 let data={bookings:[],waitlist:[],disabledDays:[],blockedSlots:{},archivedBookings:[],expenses:[],incomes:[],debts:[],monthlyHistory:[],lastRolloverMonth:null,cycleStart:null,fixedExpenses:[],ownEntries:[],workHours:{start:"5:00 م",end:"11:00 م"},customHours:{},services:[
   {id:'svc1',name:'حلاقة كاملة',price:20000,minPrice:5000,maxPrice:50000,icon:'✂️'},
   {id:'svc2',name:'تحديد ولحية',price:10000,icon:'🪒'},
@@ -1228,10 +1237,14 @@ async function closeMonthNow(){
   const endDate=bizToday();
   const rangeLabel=startDate?`${dl(startDate)} ← ${dl(endDate)}`:monthLabel(pk);
   if(!confirm(`سيتم إغلاق الفترة الحالية الآن (${rangeLabel}) — تنحفظ كل تفاصيلها (الصرفيات، الدخل اليدوي) بسجل خاص، وتبدي فترة محاسبية جديدة من اليوم لين تضغط الزر مرة ثانية. متأكد؟`))return;
-  closeMonthToHistory(pk,rangeLabel);
-  data.cycleStart=todayK();
-  try{await save();renderAcc();renderArchive();toast('✅ تم إغلاق الفترة الحالية وبدء فترة جديدة');}
+  criticalOpInProgress=true;
+  try{
+    closeMonthToHistory(pk,rangeLabel);
+    data.cycleStart=todayK();
+    await save();renderAcc();renderArchive();toast('✅ تم إغلاق الفترة الحالية وبدء فترة جديدة');
+  }
   catch{toast('❌ فشل الحفظ');}
+  finally{criticalOpInProgress=false;}
 }
 window.closeMonthNow=closeMonthNow;
 
@@ -1406,6 +1419,11 @@ function renderAcc(){
   const profit=mRev-mExp;
 
   document.getElementById('acc-r').textContent=mRev.toLocaleString('ar-IQ')+' د.ع';
+  // الوارد التراكمي: واردات كل الأشهر المغلقة (من السجل) + واردات الأشهر الحالية المفتوحة (لسا ما انغلقت) — يتراكم تلقائياً كل ما يبدي شهر جديد أو ينغلق شهر
+  const cumHistRev=(data.monthlyHistory||[]).reduce((s,h)=>s+(h.revenue||0),0);
+  const cumLiveRev=allBookings.filter(b=>!b.cancelled).reduce((s,b)=>s+(b.price||0),0)+data.incomes.reduce((s,e)=>s+e.amount,0);
+  const cumRev=cumHistRev+cumLiveRev;
+  const accCumEl=document.getElementById('acc-cum');if(accCumEl)accCumEl.textContent=cumRev.toLocaleString('ar-IQ')+' د.ع';
   document.getElementById('acc-e').textContent=mExp.toLocaleString('ar-IQ')+' د.ع';
   const accFixedEl=document.getElementById('acc-fixed');if(accFixedEl)accFixedEl.textContent=fixed.toLocaleString('ar-IQ')+' د.ع';
   const pel=document.getElementById('acc-p');pel.textContent=profit.toLocaleString('ar-IQ')+' د.ع';pel.className='acc-val '+(profit>=0?'gd':'rd');
@@ -1500,6 +1518,19 @@ function delHistMonth(mk){
   save().then(()=>{renderAcc();toast('✅ تم الحذف');}).catch(()=>{data.monthlyHistory.splice(idx,0,rm);toast('❌ فشل');});
 }
 window.delHistMonth=delHistMonth;
+// إضافة وارد شهر سابق يدوياً (لشهر ما كان مسجل بالنظام) — تنضاف كسجل مغلق وتدخل بالوارد التراكمي تلقائياً
+function addManualHistMonth(){
+  const lblEl=document.getElementById('histAddLbl'),amtEl=document.getElementById('histAddAmt');
+  const lbl=(lblEl.value||'').trim()||'شهر سابق';
+  const amt=Number(amtEl.value);
+  if(!amt||amt<=0){toast('❌ اكتب مبلغ صحيح');return;}
+  if(!data.monthlyHistory)data.monthlyHistory=[];
+  const entry={month:'manual-'+Date.now(),label:lbl,revenue:amt,expenses:0,profit:amt,closedAt:Date.now(),expDetail:[],incDetail:[],fixedDetail:[]};
+  data.monthlyHistory.push(entry);
+  data.monthlyHistory.sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
+  save().then(()=>{lblEl.value='';amtEl.value='';renderAcc();toast('✅ تمت الإضافة');}).catch(()=>{const idx=data.monthlyHistory.indexOf(entry);if(idx>=0)data.monthlyHistory.splice(idx,1);toast('❌ فشل');});
+}
+window.addManualHistMonth=addManualHistMonth;
 
 function renderArchive(){
   const arc=data.archivedBookings||[];const list=document.getElementById('arcList');
@@ -2004,7 +2035,7 @@ async function init(){
   updateManualSvcSelect();
   document.getElementById('loaderApp').style.display='none';
   document.getElementById('mainApp').style.display='block';
-  setInterval(async()=>{if(activeTab==='settings'||activeTab==='store')return;try{await load();render();checkNew();updateManualSvcSelect();}catch{}},60000);
+  setInterval(async()=>{if(activeTab==='settings'||activeTab==='store'||criticalOpInProgress)return;try{await load();render();checkNew();updateManualSvcSelect();}catch{}},60000);
 }
 window._init=init;
 
