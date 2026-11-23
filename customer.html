@@ -679,11 +679,22 @@ function isPast(dk,s){
   if(!apptTime)return false;
   return new Date()>=apptTime;
 }
+const ARRIVE_EARLY_MINS=15;
+function arriveTime(slot){
+  const m=/^(\d{1,2}):(\d{2})\s*(ص|م)$/.exec(slot||'');if(!m)return slot;
+  let h=parseInt(m[1])%12,mi=parseInt(m[2]),pm=m[3]==='م';
+  let t=h*60+mi-ARRIVE_EARLY_MINS;if(t<0){t+=720;pm=!pm;}
+  let nh=Math.floor(t/60);const nm=t%60;if(nh===0)nh=12;
+  return `${nh}:${String(nm).padStart(2,'0')} ${pm?'م':'ص'}`;
+}
 function isShiswarSvc(id){const svc=SVCS.find(s=>s.id===id);return !!(svc&&(svc.type==='special'||(!svc.type&&svc.name&&(svc.name.includes('شسوار')||svc.name.includes('تنظيف بشرة'))))); }
 function isBooked(dk,s,forSvcId){
   // تحقق من الساعات المحجوبة من الأدمن
   const blocked=(db.blockedSlots||{})[dk]||[];
   if(blocked.includes(s))return true;
+  // الحجب المتكرر (يوم بالأسبوع + ساعات)
+  const wd=new Date(dk+'T00:00:00').getDay();
+  if((db.recurringBlocks||[]).some(r=>(r.days==='all'||(r.days||[]).includes(wd))&&(r.slots||[]).includes(s)))return true;
   // الشسوار: ما يحجب أي وقت ولا يتأثر بالحجوزات الثانية
   if(forSvcId&&isShiswarSvc(forSvcId))return false;
   const avgM=db.avgMins||30;
@@ -714,6 +725,7 @@ async function load(){
         waitlist:typeof r.waitlist==='string'?JSON.parse(r.waitlist):(r.waitlist||[]),
         disabledDays:typeof r.disabledDays==='string'?JSON.parse(r.disabledDays):(r.disabledDays||[]),
         blockedSlots:typeof r.blockedSlots==='string'?JSON.parse(r.blockedSlots):(r.blockedSlots||{}),
+        recurringBlocks:typeof r.recurringBlocks==='string'?JSON.parse(r.recurringBlocks):(r.recurringBlocks||[]),
         customHours:typeof r.customHours==='string'?JSON.parse(r.customHours):(r.customHours||{}),
         workHours:{start:r.workHoursStart||"5:00 م",end:r.workHoursEnd||"11:00 م"},
         avgMins:r.avgMins||30,
@@ -796,7 +808,7 @@ function updateBtn(){
   const priceReady=true;
   const ok=name&&phone&&validName(name)&&validPhone(phone)&&selSvc&&selDateKey&&selSlot&&priceReady;
   btn.disabled=!ok;
-  if(ok){const finalPrice=s?.minPrice||s?.price||0;btn.textContent=`احجز — ${selSlot} • ${fmtPrice(finalPrice)}`;}
+  if(ok){const finalPrice=s?.minPrice||s?.price||0;btn.textContent=`احجز — ${arriveTime(selSlot)} • ${fmtPrice(finalPrice)}`;}
   else if(needsPriceChoice&&!selPrice&&selSvc)btn.textContent='اختار السعر المناسب لك';
   else btn.textContent='اختار الخدمة واليوم والوقت';
 }
@@ -843,7 +855,7 @@ function renderSlots(){
     const bkd=isBooked(selDateKey,s,selSvc),past=isPast(selDateKey,s);
     const b=document.createElement('button');
     b.className='slot-btn'+(bkd?' bkd':'')+(past&&!bkd?' past':'')+(selSlot===s?' sel':'');
-    b.innerHTML=bkd?`<span class="bkd-ribbon">محجوز</span>${s}`:s;
+    b.innerHTML=bkd?`<span class="bkd-ribbon">محجوز</span>${arriveTime(s)}`:arriveTime(s);
     if(!bkd&&!past)b.onclick=()=>{selSlot=s;renderSlots();updateBtn();};
     g.appendChild(b);
   });
@@ -858,6 +870,7 @@ async function doBook(){
   if(!validPhone(phone)){toast('رقم الهاتف غير صحيح');return;}
   if(!selSvc||!selDateKey||!selSlot)return;
   if(phoneBooked(phone)){toast('هذا الرقم عنده حجز مسبق!');return;}
+  if(!confirm(`هل أنت متأكد من فراغك في هذا الوقت والحضور على الموعد؟\n\n📅 ${selDateLabel}\n🕐 ${arriveTime(selSlot)}`))return;
   const btn=document.getElementById('bookBtn');
   btn.disabled=true;btn.textContent='⏳ جاري الحجز...';busy=true;
   await load();
@@ -882,14 +895,14 @@ async function doBook(){
     document.getElementById('s-name').textContent=name;
     document.getElementById('s-svc').textContent=svc.name;
     document.getElementById('s-date').textContent=selDateLabel;
-    document.getElementById('s-slot').textContent=selSlot;
+    document.getElementById('s-slot').textContent=arriveTime(selSlot);
     document.getElementById('s-phone').textContent=phone;
     document.getElementById('s-price').textContent=fmtPrice(finalPrice);
-    const tplVars={name,service:svc.name,date:selDateLabel,time:selSlot,price:fmtPrice(finalPrice)};
+    const tplVars={name,service:svc.name,date:selDateLabel,time:arriveTime(selSlot),price:fmtPrice(finalPrice)};
     document.getElementById('successTitleEl').textContent=fillTpl(MSG_TPL.successTitle,tplVars);
     document.getElementById('successSubEl').textContent=fillTpl(MSG_TPL.successSub,tplVars);
     document.getElementById('successWarnEl').innerHTML=fillTpl(MSG_TPL.successWarn,tplVars).replace(/\n/g,'<br/>');
-    renderUpsell({name,date:selDateLabel,slot:selSlot});
+    renderUpsell({name,date:selDateLabel,slot:arriveTime(selSlot)});
     saveCustomer(name,phone);
     document.getElementById('formView').classList.add('hidden');
     document.getElementById('successView').classList.remove('hidden');

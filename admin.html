@@ -426,6 +426,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
           </div>
           <div class="acc-row"><span class="acc-lbl">💰 الواردات (حجوزات + دخل يدوي)</span><span class="acc-val gr" id="acc-r">0</span></div>
           <div class="acc-row" style="opacity:.85"><span class="acc-lbl">📈 الوارد التراكمي (كل الأشهر)</span><span class="acc-val gr" id="acc-cum">0</span></div>
+          <div class="acc-row" style="opacity:.85"><span class="acc-lbl">📉 الصرفية التراكمية (كل الأشهر)</span><span class="acc-val rd" id="acc-cum-e">0</span></div>
           <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--gold-dim);margin:10px 0 2px">📤 الصرفيات — تفصيل حسب النوع</div>
           <div id="accExpBreakdown"></div>
           <div class="acc-row" style="border-top:1px solid var(--border2);margin-top:2px;padding-top:8px;"><span class="acc-lbl">📤 إجمالي الصرفيات</span><span class="acc-val rd" id="acc-e">0</span></div>
@@ -496,6 +497,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
               <select id="fltMCat" class="sinp" style="width:auto;font-size:10px;padding:3px 7px" onchange="renderAcc()"></select>
             </div>
             <div id="expCatBreak" class="mini-stats" style="padding:0;grid-template-columns:repeat(4,1fr);"></div>
+            <div style="display:flex;gap:7px;margin-top:10px">
+              <input id="newCatIcon" class="sinp" style="max-width:56px;text-align:center" placeholder="🏷️" maxlength="4"/>
+              <input id="newCatName" class="sinp" placeholder="اسم نوع جديد..." maxlength="20"/>
+              <button class="save-btn" style="width:auto;padding:9px 14px" onclick="addCat()">➕</button>
+            </div>
+            <div id="customCatList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
           </div>
           <div class="wcard">
             <div class="wcard-title" style="display:flex;justify-content:space-between;align-items:center;">
@@ -728,6 +735,14 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:var(--black);color:
             <div class="blk-day-sel" id="blkDaySel"></div>
             <div class="blk-slots-grid" id="blkSlotsGrid"><div style="color:var(--muted);font-size:11px;text-align:center;padding:10px;grid-column:span 4">اختار يوماً أولاً</div></div>
             <div id="blkCount" style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px"></div>
+            <div style="border-top:1px solid var(--border2);margin-top:14px;padding-top:12px">
+              <div class="acc-sub-title" style="color:#EF9090">🔁 حجب متكرر</div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">اختار الأيام والساعات اللي تنحجب كل أسبوع تلقائياً (مثلاً كل جمعة 2 - 4 م)</div>
+              <div class="blk-day-sel" id="rcDays" style="margin-bottom:8px"></div>
+              <div class="blk-slots-grid" id="rcSlots"></div>
+              <button class="save-btn" style="width:100%;margin-top:8px" onclick="addRecurringBlock()">🔁 إضافة حجب متكرر</button>
+              <div id="rcList" style="margin-top:10px"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1025,6 +1040,8 @@ async function load(){
         lastRolloverMonth:r.lastRolloverMonth||null,
         cycleStart:r.cycleStart||null,
         fixedExpenses:typeof r.fixedExpenses==='string'?JSON.parse(r.fixedExpenses):(r.fixedExpenses||[]),
+        customCats:typeof r.customCats==='string'?JSON.parse(r.customCats):(r.customCats||{}),
+        recurringBlocks:typeof r.recurringBlocks==='string'?JSON.parse(r.recurringBlocks):(r.recurringBlocks||[]),
         workHours:{start:r.workHoursStart||"5:00 م",end:r.workHoursEnd||"11:00 م"},
         avgMins:r.avgMins||30,
         services:typeof r.services==='string'?JSON.parse(r.services):(r.services||defaultSvcs),
@@ -1038,7 +1055,7 @@ async function load(){
   }catch(e){syncBar(false);toast('خطأ في الاتصال');}
 }
 async function save(){
-  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),ownEntries:JSON.stringify(data.ownEntries||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,cycleStart:data.cycleStart||null,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30,customHours:JSON.stringify(data.customHours||{}),msgTemplates:JSON.stringify(data.msgTemplates||DEFAULT_MSG_TPL)},{merge:true});
+  await setDoc(DB,{bookings:JSON.stringify(data.bookings||[]),waitlist:JSON.stringify(data.waitlist||[]),disabledDays:JSON.stringify(data.disabledDays||[]),blockedSlots:JSON.stringify(data.blockedSlots||{}),archivedBookings:JSON.stringify(data.archivedBookings||[]),expenses:JSON.stringify(data.expenses||[]),ownEntries:JSON.stringify(data.ownEntries||[]),incomes:JSON.stringify(data.incomes||[]),debts:JSON.stringify(data.debts||[]),monthlyHistory:JSON.stringify(data.monthlyHistory||[]),lastRolloverMonth:data.lastRolloverMonth||null,cycleStart:data.cycleStart||null,fixedExpenses:JSON.stringify(data.fixedExpenses||[]),customCats:JSON.stringify(data.customCats||{}),recurringBlocks:JSON.stringify(data.recurringBlocks||[]),services:JSON.stringify(data.services||[]),workHoursStart:(data.workHours&&data.workHours.start)||"5:00 م",workHoursEnd:(data.workHours&&data.workHours.end)||"11:00 م",avgMins:data.avgMins||30,customHours:JSON.stringify(data.customHours||{}),msgTemplates:JSON.stringify(data.msgTemplates||DEFAULT_MSG_TPL)},{merge:true});
   lastSync=new Date();syncBar(true);
 }
 function cleanOld(){
@@ -1417,6 +1434,37 @@ function renderFixedList(){
 // ─── الصرفيات ───
 const EXP_CATS={shop:{icon:'🏪',label:'محل'},mom:{icon:'👩',label:'امي'},salman:{icon:'🧑',label:'اخو سلمان'},me:{icon:'👤',label:'صرفيتي'}};
 function expCatInfo(c){return EXP_CATS[c]||EXP_CATS.shop;}
+// ─── أنواع صرفيات مخصصة (إضافة/حذف) ───
+const DEFAULT_CAT_KEYS=['shop','mom','salman','me'];
+function applyCustomCats(){
+  Object.keys(EXP_CATS).forEach(k=>{if(!DEFAULT_CAT_KEYS.includes(k))delete EXP_CATS[k];});
+  Object.entries(data.customCats||{}).forEach(([k,v])=>{EXP_CATS[k]={icon:v.icon||'🏷️',label:v.label};});
+}
+function syncCatSelects(){
+  const opts=Object.keys(EXP_CATS).map(k=>`<option value="${k}">${EXP_CATS[k].icon} ${escHtmlA(EXP_CATS[k].label)}</option>`).join('');
+  [['fixedCat',''],['expCat',''],['fltCat','<option value="all">الكل</option>']].forEach(([id,pre])=>{
+    const el=document.getElementById(id);if(!el)return;const v=el.value;
+    el.innerHTML=pre+opts;if(v&&[...el.options].some(o=>o.value===v))el.value=v;
+  });
+  const l=document.getElementById('customCatList');
+  if(l)l.innerHTML=Object.entries(data.customCats||{}).map(([k,v])=>`<span class="tag t-manual" style="display:inline-flex;align-items:center;gap:5px">${v.icon||'🏷️'} ${escHtmlA(v.label)} <span style="cursor:pointer;color:#e55" onclick="window.delCat('${k}')">✖</span></span>`).join('');
+}
+function addCat(){
+  const n=(document.getElementById('newCatName').value||'').trim();const ic=(document.getElementById('newCatIcon').value||'').trim()||'🏷️';
+  if(!n){toast('اكتب اسم النوع');return;}
+  if(Object.values(EXP_CATS).some(c=>c.label===n)){toast('هذا النوع موجود');return;}
+  if(!data.customCats)data.customCats={};
+  const id='c'+Date.now();data.customCats[id]={icon:ic,label:n};
+  save().then(()=>{document.getElementById('newCatName').value='';document.getElementById('newCatIcon').value='';renderAcc();toast('✅ تمت إضافة النوع');}).catch(()=>{delete data.customCats[id];toast('❌ فشل');});
+}
+function delCat(id){
+  if(!confirm('حذف هذا النوع؟ كل الصرفيات اللي بيه تنتقل لنوع "محل".'))return;
+  const bak=data.customCats[id];delete data.customCats[id];
+  const mv=a=>(a||[]).forEach(x=>{if(x.category===id)x.category='shop';});
+  mv(data.expenses);mv(data.fixedExpenses);(data.monthlyHistory||[]).forEach(h=>{mv(h.expDetail);mv(h.fixedDetail);});
+  save().then(()=>renderAcc()).catch(()=>{data.customCats[id]=bak;toast('❌ فشل');});
+}
+window.addCat=addCat;window.delCat=delCat;
 function renderAccExpBreakdown(sm){
   const el=document.getElementById('accExpBreakdown');if(!el)return;
   let rows='';
@@ -1487,9 +1535,12 @@ function renderHistDetail(h){
   if(!exp.length&&!inc.length&&!fixed.length)return`<div class="hist-detail"><div style="text-align:center;padding:10px;color:var(--muted);font-size:11px">لا توجد صرفيات أو دخل يدوي مسجل لهذا الشهر</div></div>`;
   let html='<div class="hist-detail">';
   if(fixed.length||exp.length){
-    html+='<div class="hist-sec-lbl">💸 الصرفيات</div>';
-    fixed.forEach(f=>{const ci=expCatInfo(f.category);html+=`<div class="exp-item"><div class="exp-name">📌 ${escHtmlA(f.name)} <span class="tag t-manual">${ci.icon} ${ci.label}</span></div><span class="exp-amt">${Number(f.amount||0).toLocaleString()} د.ع</span></div>`;});
-    exp.forEach(e=>{const ci=expCatInfo(e.category);html+=`<div class="exp-item"><div class="exp-name">${escHtmlA(e.name)} <span class="tag t-manual">${ci.icon} ${ci.label}</span></div><span class="exp-amt">${Number(e.amount||0).toLocaleString()} د.ع</span></div>`;});
+    html+='<div class="hist-sec-lbl">📊 توزيع الصرفيات حسب النوع</div>';
+    html+='<div class="mini-stats" style="padding:0;grid-template-columns:repeat(4,1fr);">'+Object.keys(EXP_CATS).map(k=>{
+      const ci=EXP_CATS[k];
+      const tot=[...fixed,...exp].filter(x=>(x.category||'shop')===k).reduce((t,x)=>t+(Number(x.amount)||0),0);
+      return`<div class="mini-stat"><div class="ms-n" style="font-size:15px">${Math.round(tot).toLocaleString('ar-IQ')}</div><div class="ms-l">${ci.icon} ${ci.label}</div></div>`;
+    }).join('')+'</div>';
   }
   if(inc.length){
     html+='<div class="hist-sec-lbl">💵 الدخل اليدوي</div>';
@@ -1500,6 +1551,7 @@ function renderHistDetail(h){
 }
 function renderAcc(){
   if(!data.expenses)data.expenses=[];if(!data.incomes)data.incomes=[];if(!data.debts)data.debts=[];if(!data.fixedExpenses)data.fixedExpenses=[];
+  applyCustomCats();syncCatSelects();
   renderFixedList();
   popMonthSels();
   const sm=document.getElementById('sumM')?.value||currentPeriodKey();
@@ -1521,6 +1573,13 @@ function renderAcc(){
   const cumLiveRev=allBookings.filter(b=>!b.cancelled).reduce((s,b)=>s+(b.price||0),0)+data.incomes.reduce((s,e)=>s+e.amount,0);
   const cumRev=cumHistRev+cumLiveRev;
   const accCumEl=document.getElementById('acc-cum');if(accCumEl)accCumEl.textContent=cumRev.toLocaleString('ar-IQ')+' د.ع';
+  // الصرفية التراكمية: صرفيات الأشهر المغلقة (من السجل) + صرفيات الفترات المفتوحة (يدوية + ثوابت مدفوعة لأشهر لسا ما انغلقت)
+  const cumHistExp=(data.monthlyHistory||[]).reduce((s,h)=>s+(h.expenses||0),0);
+  const closedKeys=new Set((data.monthlyHistory||[]).map(h=>h.month));
+  const liveKeys=new Set();(data.fixedExpenses||[]).forEach(f=>{(f.paidMonths||[]).forEach(m=>liveKeys.add(m));Object.keys(f.instPayments||{}).forEach(m=>liveKeys.add(m));});
+  const cumLiveFixed=[...liveKeys].filter(m=>!closedKeys.has(m)).reduce((s,m)=>s+monthFixedTotal(m),0);
+  const cumExp=cumHistExp+data.expenses.reduce((s,e)=>s+e.amount,0)+cumLiveFixed;
+  const accCumEEl=document.getElementById('acc-cum-e');if(accCumEEl)accCumEEl.textContent=cumExp.toLocaleString('ar-IQ')+' د.ع';
   document.getElementById('acc-e').textContent=mExp.toLocaleString('ar-IQ')+' د.ع';
   const accFixedEl=document.getElementById('acc-fixed');if(accFixedEl)accFixedEl.textContent=fixed.toLocaleString('ar-IQ')+' د.ع';
   const pel=document.getElementById('acc-p');pel.textContent=profit.toLocaleString('ar-IQ')+' د.ع';pel.className='acc-val '+(profit>=0?'gd':'rd');
@@ -2034,7 +2093,7 @@ function renderBlkDaySel(){
     btn.onclick=()=>{blkSelDay=key;renderBlkDaySel();renderBlkSlots();};
     g.appendChild(btn);
   });
-  renderBlkSlots();
+  renderBlkSlots();renderRecurring();
 }
 function renderBlkSlots(){
   const g=document.getElementById('blkSlotsGrid');if(!g)return;
@@ -2046,11 +2105,13 @@ function renderBlkSlots(){
   workSlots.forEach(s=>{
     const isBlocked=blocked.includes(s);
     const isBooked=bookedSet.has(s);
+    const isRec=recurBlocked(blkSelDay,s);
     const btn=document.createElement('button');
-    btn.className='blk-slot'+(isBlocked?' blocked':'')+(isBooked?' booked':'');
-    btn.textContent=s+(isBooked?'\n📅':'');
-    btn.title=isBooked?'هذا الوقت فيه حجز':'';
-    if(!isBooked){btn.onclick=()=>toggleBlkSlot(blkSelDay,s);}
+    btn.className='blk-slot'+((isBlocked||isRec)?' blocked':'')+(isBooked?' booked':'');
+    btn.textContent=s+(isBooked?'\n📅':(isRec?'\n🔁':''));
+    btn.title=isBooked?'هذا الوقت فيه حجز':(isRec?'محجوب بحجب متكرر — احذفه من قائمة الحجب المتكرر':'');
+    if(isRec){btn.disabled=true;}
+    else if(!isBooked){btn.onclick=()=>toggleBlkSlot(blkSelDay,s);}
     else{btn.disabled=true;}
     g.appendChild(btn);
   });
@@ -2068,6 +2129,40 @@ async function toggleBlkSlot(dateKey,slot){
   try{await save();renderBlkDaySel();toast(idx>=0?`✅ فُتح وقت ${slot}`:`🚫 حُجب وقت ${slot}`);}
   catch{if(idx>=0)arr.splice(idx,0,slot);else arr.pop();toast('❌ فشل');}
 }
+// ── حجب متكرر: أيام الأسبوع + ساعات ──
+let rcDaysSel=new Set(),rcSlotsSel=new Set();
+function recurBlocked(dateKey,slot){
+  const wd=new Date(dateKey+'T00:00:00').getDay();
+  return(data.recurringBlocks||[]).some(r=>(r.days==='all'||(r.days||[]).includes(wd))&&(r.slots||[]).includes(slot));
+}
+function renderRecurring(){
+  const dEl=document.getElementById('rcDays'),sEl=document.getElementById('rcSlots'),lEl=document.getElementById('rcList');
+  if(!dEl||!sEl||!lEl)return;
+  dEl.innerHTML=`<button class="blk-day-pill${rcDaysSel.size===7?' active':''}" onclick="rcToggleAll()">كل الأيام</button>`+DAYS.map((n,i)=>`<button class="blk-day-pill${rcDaysSel.has(i)?' active':''}" onclick="rcToggleDay(${i})">${n}</button>`).join('');
+  sEl.innerHTML=slots().map(x=>`<button class="blk-slot${rcSlotsSel.has(x)?' blocked':''}" onclick="rcToggleSlot('${x}')">${x}</button>`).join('');
+  const rules=data.recurringBlocks||[];
+  lEl.innerHTML=rules.length?rules.map(r=>`<div class="exp-item"><div><div class="exp-name">${r.days==='all'?'كل الأيام':(r.days||[]).map(i=>DAYS[i]).join('، ')}</div><div class="exp-sub">${(r.slots||[]).join(' • ')}</div></div><button class="exp-del" onclick="delRecurringBlock('${r.id}')">🗑️</button></div>`).join(''):'<div style="text-align:center;padding:8px;color:var(--muted);font-size:11px">لا يوجد حجب متكرر</div>';
+}
+function rcToggleDay(i){if(rcDaysSel.has(i))rcDaysSel.delete(i);else rcDaysSel.add(i);renderRecurring();}
+function rcToggleAll(){if(rcDaysSel.size===7)rcDaysSel.clear();else rcDaysSel=new Set([0,1,2,3,4,5,6]);renderRecurring();}
+function rcToggleSlot(x){if(rcSlotsSel.has(x))rcSlotsSel.delete(x);else rcSlotsSel.add(x);renderRecurring();}
+async function addRecurringBlock(){
+  if(!rcDaysSel.size){toast('اختار يوم واحد على الأقل');return;}
+  if(!rcSlotsSel.size){toast('اختار ساعة واحدة على الأقل');return;}
+  if(!data.recurringBlocks)data.recurringBlocks=[];
+  const r={id:'rb'+Date.now(),days:rcDaysSel.size===7?'all':[...rcDaysSel].sort((a,b)=>a-b),slots:[...rcSlotsSel]};
+  data.recurringBlocks.push(r);
+  try{await save();rcDaysSel=new Set();rcSlotsSel=new Set();renderRecurring();renderBlkSlots();toast('✅ تم الحجب المتكرر');}
+  catch{data.recurringBlocks.pop();toast('❌ فشل');}
+}
+async function delRecurringBlock(id){
+  if(!confirm('حذف هذا الحجب المتكرر؟'))return;
+  const idx=(data.recurringBlocks||[]).findIndex(r=>r.id===id);if(idx<0)return;
+  const rm=data.recurringBlocks.splice(idx,1)[0];
+  try{await save();renderRecurring();renderBlkSlots();toast('✅ تم الحذف');}
+  catch{data.recurringBlocks.splice(idx,0,rm);toast('❌ فشل');}
+}
+window.rcToggleDay=rcToggleDay;window.rcToggleAll=rcToggleAll;window.rcToggleSlot=rcToggleSlot;window.addRecurringBlock=addRecurringBlock;window.delRecurringBlock=delRecurringBlock;window.renderRecurring=renderRecurring;
 window.toggleBlkSlot=toggleBlkSlot;
 window.renderBlkDaySel=renderBlkDaySel;
 window.renderBlkSlots=renderBlkSlots;
@@ -2083,7 +2178,7 @@ async function saveManual(){
   if(!name){toast('أدخل الاسم');return;}if(!svc){toast('اختار الخدمة');return;}if(!dateKey){toast('اختار اليوم');return;}if(!slot){toast('اختار الساعة');return;}
   // ── تحقق من التضارب قبل الحفظ (الخدمة الخاصة تتجاوز هذا الفحص) ──
   const open=isOpenSvc(svcId);
-  const blocked=((data.blockedSlots||{})[dateKey]||[]).includes(slot);
+  const blocked=((data.blockedSlots||{})[dateKey]||[]).includes(slot)||recurBlocked(dateKey,slot);
   const occupied=data.bookings.some(b=>!b.cancelled&&b.dateKey===dateKey&&b.slot===slot);
   if(blocked){toast('⚠️ هذا الوقت محجوب — اختار وقت ثاني');return;}
   if(!open&&occupied){toast('⚠️ هذا الوقت محجوز — اختار وقت ثاني');return;}
